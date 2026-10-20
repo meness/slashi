@@ -2,7 +2,7 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
-## [0.1.0] — Unreleased
+## [0.1.0](https://github.com/meness/slashi/releases/tag/v0.1.0) (2026-10-20)
 
 ### Added
 - Spotlight popup (custom webview) and native Quick Pick mode, both keyboard-first, with Phosphor icons and light/dark/high-contrast theming.
