@@ -118,7 +118,7 @@ function providersPage(): string {
           ${
             p.features.length
               ? `<div class="chips">${p.features
-                  .map((f) => `<button class="chip" aria-pressed="${f.enabled}" ${p.enabled ? '' : 'disabled'} data-feature="${esc(p.id)}|${esc(f.id)}" title="${esc(f.description)}">${icon(f.enabled ? 'check' : 'minus')} ${esc(f.title)}</button>`)
+                  .map((f) => `<button class="chip" aria-pressed="${esc(String(f.enabled))}" ${p.enabled ? '' : 'disabled'} data-feature="${esc(p.id)}|${esc(f.id)}" title="${esc(f.description)}">${icon(f.enabled ? 'check' : 'minus')} ${esc(f.title)}</button>`)
                   .join('')}</div>`
               : ''
           }
@@ -144,7 +144,7 @@ function aiPage(): string {
         <span class="grow"></span>
         <button class="btn ghost" data-cmd="test" ${testing ? 'disabled' : ''}>${icon('lightning')} ${testing ? 'Testing…' : 'Test connection'}</button>
       </div>
-      ${test ? `<div class="test-result ${test.ok ? 'ok' : 'fail'}">${test.ok ? `${icon('check-circle')} ${esc(test.label ?? '')} replied in ${test.ms} ms: “${esc(test.text)}”` : `${icon('warning')} ${esc(test.text)}`}</div>` : ''}
+      ${test ? `<div class="test-result ${test.ok ? 'ok' : 'fail'}">${test.ok ? `${icon('check-circle')} ${esc(test.label ?? '')} replied in ${esc(String(test.ms))} ms: “${esc(test.text)}”` : `${icon('warning')} ${esc(test.text)}`}</div>` : ''}
     </div>
     <div class="panel">
       <h2>${icon('cpu')} Provider</h2>
@@ -162,7 +162,7 @@ function aiPage(): string {
         ${needsUrl ? `<label for="baseUrl">Server URL</label><input id="baseUrl" data-config="ai.baseUrl" value="${esc(ai.baseUrl)}" placeholder="${ai.provider === 'ollama' ? 'http://localhost:11434/v1' : 'http://localhost:1234/v1'}">` : ''}
         ${
           needsKey
-            ? `<label>API key</label><div class="row-actions"><button class="btn" data-key="${ai.provider}">${icon('key')} ${ai.keys[ai.provider] ? 'Replace key' : 'Add key'}</button>${ai.keys[ai.provider] ? `<button class="btn danger" data-clear="${ai.provider}">${icon('trash')} Remove</button>` : ''}</div>`
+            ? `<label>API key</label><div class="row-actions"><button class="btn" data-key="${esc(ai.provider)}">${icon('key')} ${ai.keys[ai.provider] ? 'Replace key' : 'Add key'}</button>${ai.keys[ai.provider] ? `<button class="btn danger" data-clear="${esc(ai.provider)}">${icon('trash')} Remove</button>` : ''}</div>`
             : ''
         }
         ${ai.provider === 'anthropic' ? `<label for="effort">Effort</label><select id="effort" data-config="ai.anthropicEffort">${['low', 'medium', 'high'].map((e) => `<option ${e === ai.effort ? 'selected' : ''}>${e}</option>`).join('')}</select>` : ''}
@@ -197,7 +197,7 @@ function commandsPage(): string {
       }
     </div>
     <div class="panel"><h2>${icon('package')} Installed packs</h2>
-      ${s.packs.length ? `<div class="list">${s.packs.map((p) => `<div class="item"><div class="text"><strong>${esc(p.name)}</strong><span>v${esc(p.version)} · ${p.commands} commands</span></div></div>`).join('')}</div>` : `<p class="muted">No packs installed. Browse the marketplace with <code>/market</code>.</p>`}
+      ${s.packs.length ? `<div class="list">${s.packs.map((p) => `<div class="item"><div class="text"><strong>${esc(p.name)}</strong><span>v${esc(p.version)} · ${esc(String(p.commands))} commands</span></div></div>`).join('')}</div>` : `<p class="muted">No packs installed. Browse the marketplace with <code>/market</code>.</p>`}
     </div>
   </div>`;
 }
