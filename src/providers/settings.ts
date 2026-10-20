@@ -194,7 +194,8 @@ async function editSetting(meta: SettingMeta, ctx: RunContext): Promise<void> {
       (await vscode.window.showInputBox({
         title: settingTitle(meta.key),
         prompt: meta.description,
-        value: typeof current === 'string' || typeof current === 'number' ? String(current) : '',
+        // Show a malformed value as JSON so the user can see and fix it.
+        value: typeof current === 'string' ? current : (JSON.stringify(current) ?? ''),
         ignoreFocusOut: true,
       }));
     if (input === undefined) return;
