@@ -310,13 +310,17 @@ export async function editTeamCommands(): Promise<void> {
   try {
     await vscode.workspace.fs.stat(uri);
   } catch {
+    // Unsaved editor at the team file path: nothing reaches the repo until the user saves.
     const starter = {
       $schema: SCHEMA_URL,
       commands: [
-        { name: 'check', title: 'Run All Checks', description: 'Lint, type-check and test', icon: 'check-circle', steps: [{ command: 'workbench.action.files.saveAll' }, { terminal: 'npm run lint && npm test' }] },
+        { name: 'tidy', title: 'Format and Save All', icon: 'check-circle', steps: [{ command: 'editor.action.formatDocument' }, { command: 'workbench.action.files.saveAll' }] },
       ],
     };
-    await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(`${JSON.stringify(starter, null, 2)}\n`));
+    const doc = await vscode.workspace.openTextDocument(uri.with({ scheme: 'untitled' }));
+    const editor = await vscode.window.showTextDocument(doc);
+    if (!doc.getText()) await editor.edit((e) => e.insert(new vscode.Position(0, 0), `${JSON.stringify(starter, null, 2)}\n`));
+    return;
   }
   await vscode.window.showTextDocument(uri);
 }

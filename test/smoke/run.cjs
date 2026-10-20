@@ -194,6 +194,15 @@ const check = (name, fn) => {
   welcome.webview._receive({ type: 'finish' });
   await waitFor(() => context.globalState.get('slashi.onboarded'), 'onboarded flag');
 
+  // Editing team commands with no team file opens an unsaved starter instead of writing to the repo.
+  await mock.commands.executeCommand('slashi.editTeamCommands');
+  check('opens an unsaved team commands starter without writing files', () => {
+    assert.equal(calls.shown.uri.scheme, 'untitled');
+    assert.ok(calls.shown.uri.path.endsWith(path.join('.vscode', 'slashi.json')));
+    assert.match(calls.shown.inserted, /"tidy"/);
+    assert.ok(!(calls.written ?? []).some((p) => p.endsWith('slashi.json')));
+  });
+
   // Artifacts used by scripts/screenshots.mjs
   const out = path.join(__dirname, 'out');
   fs.mkdirSync(out, { recursive: true });

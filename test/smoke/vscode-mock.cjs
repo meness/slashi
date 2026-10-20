@@ -27,7 +27,7 @@ class Uri {
   static parse(s) { return s.startsWith('file://') ? Uri.file(decodeURIComponent(s.slice(7))) : Object.assign(new Uri(s.split(':')[0], s), { fsPath: s }); }
   static joinPath(base, ...parts) { return new Uri(base.scheme, path.join(base.path, ...parts)); }
   toString() { return this.scheme === 'file' ? `file://${this.path}` : this.path; }
-  with() { return this; }
+  with(change = {}) { return new Uri(change.scheme ?? this.scheme, change.path ?? this.path); }
 }
 
 class Position { constructor(line, character) { this.line = line; this.character = character; } isEqual(o) { return o.line === this.line && o.character === this.character; } }
@@ -154,7 +154,10 @@ const vscode = {
     showInputBox: async () => undefined,
     showQuickPick: async () => undefined,
     withProgress: async (_o, task) => task({ report() {} }, new vscode.CancellationTokenSource().token),
-    showTextDocument: async (doc) => ({ document: doc, selections: [], selection: new Selection(0, 0, 0, 0) }),
+    showTextDocument: async (doc) => {
+      calls.shown = doc;
+      return { document: doc, selections: [], selection: new Selection(0, 0, 0, 0), edit: async (cb) => { cb({ insert: (_p, text) => { doc.inserted = text; } }); return true; } };
+    },
     createQuickPick: () => ({ show() {}, dispose() {}, onDidChangeValue: event(), onDidAccept: event(), onDidHide: event(), onDidTriggerItemButton: event() }),
   },
   workspace: {
@@ -181,7 +184,7 @@ const vscode = {
       readFile: async (u) => fs.readFileSync(u.fsPath),
       stat: async (u) => fs.statSync(u.fsPath),
       createDirectory: async () => {},
-      writeFile: async () => {},
+      writeFile: async (u) => { (calls.written ??= []).push(u.fsPath); },
       copy: async () => {},
       delete: async () => {},
     },
