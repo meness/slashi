@@ -88,7 +88,8 @@ export class NavigationProvider implements SlashProvider {
     for (const group of vscode.window.tabGroups.all) {
       for (const tab of group.tabs) {
         const input = tab.input;
-        const uri = input instanceof vscode.TabInputText ? input.uri : input instanceof vscode.TabInputTextDiff ? input.modified : undefined;
+        const uri =
+          input instanceof vscode.TabInputText ? input.uri : input instanceof vscode.TabInputTextDiff ? input.modified : undefined;
         const rel = uri ? vscode.workspace.asRelativePath(uri) : '';
         items.push(
           make({
@@ -109,7 +110,8 @@ export class NavigationProvider implements SlashProvider {
                 await vscode.window.tabGroups.close(tab);
               } else if (uri) {
                 await vscode.window.showTextDocument(uri, { viewColumn: group.viewColumn, preview: false });
-                if (ctx.action === 'pin') await vscode.commands.executeCommand(tab.isPinned ? 'workbench.action.unpinEditor' : 'workbench.action.pinEditor');
+                if (ctx.action === 'pin')
+                  await vscode.commands.executeCommand(tab.isPinned ? 'workbench.action.unpinEditor' : 'workbench.action.pinEditor');
               } else {
                 // Non-text tabs (settings, webviews…) can only be focused by index.
                 const index = group.tabs.indexOf(tab);
@@ -158,7 +160,12 @@ export class NavigationProvider implements SlashProvider {
     const doc = this.services.snapshot?.document ?? vscode.window.activeTextEditor?.document;
     if (!doc) return [];
     const result = await Promise.race([
-      Promise.resolve(vscode.commands.executeCommand<(vscode.DocumentSymbol | vscode.SymbolInformation)[]>('vscode.executeDocumentSymbolProvider', doc.uri)).catch(() => undefined),
+      Promise.resolve(
+        vscode.commands.executeCommand<(vscode.DocumentSymbol | vscode.SymbolInformation)[]>(
+          'vscode.executeDocumentSymbolProvider',
+          doc.uri,
+        ),
+      ).catch(() => undefined),
       new Promise<undefined>((r) => setTimeout(() => r(undefined), 600)),
     ]);
     if (!result?.length) return [];

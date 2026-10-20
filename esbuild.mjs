@@ -42,7 +42,10 @@ function copyAssets() {
   mkdirSync('dist/webview', { recursive: true });
   cpSync('src/webview/styles', 'dist/webview', { recursive: true });
   // Phosphor icons: regular (UI chrome) and duotone (result tiles). Only the woff2 fonts are shipped.
-  for (const [weight, font] of [['regular', 'Phosphor'], ['duotone', 'Phosphor-Duotone']]) {
+  for (const [weight, font] of [
+    ['regular', 'Phosphor'],
+    ['duotone', 'Phosphor-Duotone'],
+  ]) {
     const from = `node_modules/@phosphor-icons/web/src/${weight}`;
     const to = `dist/webview/phosphor/${weight}`;
     mkdirSync(to, { recursive: true });

@@ -34,7 +34,12 @@ export class AnthropicBackend implements Backend {
       const client = await this.client();
       const models: ModelInfo[] = [];
       for await (const m of client.models.list({ limit: 50 })) {
-        models.push({ backend: this.id, id: m.id, label: m.display_name || m.id, detail: m.id === ANTHROPIC_DEFAULT_MODEL ? 'Default' : undefined });
+        models.push({
+          backend: this.id,
+          id: m.id,
+          label: m.display_name || m.id,
+          detail: m.id === ANTHROPIC_DEFAULT_MODEL ? 'Default' : undefined,
+        });
       }
       return models.length ? models : KNOWN_MODELS;
     } catch {

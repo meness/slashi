@@ -29,7 +29,11 @@ export class AiManager {
       vscode: new VsCodeLmBackend(),
       anthropic: new AnthropicBackend(key('anthropic'), () => get('ai.anthropicEffort', 'medium')),
       openai: new OpenAiCompatibleBackend('openai', () => OPENAI_URL, key('openai')),
-      ollama: new OpenAiCompatibleBackend('ollama', () => get('ai.baseUrl', '') || OLLAMA_DEFAULT_URL, async () => undefined),
+      ollama: new OpenAiCompatibleBackend(
+        'ollama',
+        () => get('ai.baseUrl', '') || OLLAMA_DEFAULT_URL,
+        async () => undefined,
+      ),
       openaiCompatible: new OpenAiCompatibleBackend('openaiCompatible', () => get('ai.baseUrl', ''), key('openaiCompatible')),
       claudeCode: new CliBackend('claudeCode'),
       codex: new CliBackend('codex'),
@@ -95,7 +99,11 @@ export class AiManager {
     return this.cachedLabel;
   }
 
-  async stream(request: ChatRequest, onText: (text: string) => void, token: vscode.CancellationToken): Promise<{ text: string; label: string }> {
+  async stream(
+    request: ChatRequest,
+    onText: (text: string) => void,
+    token: vscode.CancellationToken,
+  ): Promise<{ text: string; label: string }> {
     const resolved = await this.resolve();
     const text = await resolved.backend.stream(resolved.model, request, onText, token);
     return { text, label: resolved.label };

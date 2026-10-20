@@ -109,7 +109,9 @@ function sourceFor(q: ParsedQuery): IndexedItem[] {
   if (!scope) return index;
   let cached = scopeIndex.get(scope.prefix);
   if (!cached) {
-    cached = index.filter((e) => e.item.kind !== 'scope' && e.item.providerId === scope.providerId && (!scope.feature || e.item.feature === scope.feature));
+    cached = index.filter(
+      (e) => e.item.kind !== 'scope' && e.item.providerId === scope.providerId && (!scope.feature || e.item.feature === scope.feature),
+    );
     scopeIndex.set(scope.prefix, cached);
   }
   return cached;
@@ -119,9 +121,33 @@ function aiItems(term: string): RankedView[] {
   if (!data?.aiEnabled || term.length < 3) return [];
   const items: RankedView[] = [];
   if (data.nlEnabled) {
-    items.push({ id: AI_DO, name: '', title: `Do with AI: “${term}”`, description: 'Let the AI pick and run the right actions (you confirm first)', icon: 'magic-wand', providerId: 'naturalLanguage', category: 'AI', kind: 'ai', score: 0 });
+    items.push({
+      id: AI_DO,
+      name: '',
+      title: `Do with AI: “${term}”`,
+      description: 'Let the AI pick and run the right actions (you confirm first)',
+      icon: 'magic-wand',
+      providerId: 'naturalLanguage',
+      category: 'AI',
+      kind: 'ai',
+      score: 0,
+    });
   }
-  items.push({ id: AI_ASK, name: '', title: `Ask AI: “${term}”`, description: data.context.hasSelection ? 'Includes your selection as context' : data.context.fileName ? `Includes ${data.context.fileName} as context` : 'Opens the answer panel', icon: 'chat-circle-dots', providerId: 'ai', category: 'AI', kind: 'ai', score: 0 });
+  items.push({
+    id: AI_ASK,
+    name: '',
+    title: `Ask AI: “${term}”`,
+    description: data.context.hasSelection
+      ? 'Includes your selection as context'
+      : data.context.fileName
+        ? `Includes ${data.context.fileName} as context`
+        : 'Opens the answer panel',
+    icon: 'chat-circle-dots',
+    providerId: 'ai',
+    category: 'AI',
+    kind: 'ai',
+    score: 0,
+  });
   return items;
 }
 
@@ -151,16 +177,16 @@ function buildRows(): Row[] {
       .map((id) => ({ ...byId.get(id)!, score: 0 }));
     if (recent.length) rows.push({ section: 'Recent' }, ...recent.map((item) => ({ item })));
     const shown = new Set(recent.map((r) => r.id));
-    const contextual = data.context.hasSelection ? ['ai:explain', 'ai:edit', 'ai:fix', 'tx:upper', 'tx:camel', 'tx:sort'] : ['ai:ask', 'files:new', 'nl:do', 'cmd:editor.action.formatDocument', 'term:run', 'git:commit'];
-    const suggested = [
-      ...contextual.map((id) => byId.get(id)),
-      ...data.items.filter((i) => (i.boost ?? 0) >= 6 && i.kind !== 'scope'),
-    ]
+    const contextual = data.context.hasSelection
+      ? ['ai:explain', 'ai:edit', 'ai:fix', 'tx:upper', 'tx:camel', 'tx:sort']
+      : ['ai:ask', 'files:new', 'nl:do', 'cmd:editor.action.formatDocument', 'term:run', 'git:commit'];
+    const suggested = [...contextual.map((id) => byId.get(id)), ...data.items.filter((i) => (i.boost ?? 0) >= 6 && i.kind !== 'scope')]
       .filter((i): i is ItemView => !!i && !shown.has(i.id))
       .filter((i, n, all) => all.findIndex((x) => x.id === i.id) === n)
       .slice(0, 8)
       .map((i) => ({ ...i, score: 0 }));
-    if (suggested.length) rows.push({ section: data.context.hasSelection ? 'For your selection' : 'Suggested' }, ...suggested.map((item) => ({ item })));
+    if (suggested.length)
+      rows.push({ section: data.context.hasSelection ? 'For your selection' : 'Suggested' }, ...suggested.map((item) => ({ item })));
     const scopes = data.items.filter((i) => i.kind === 'scope').map((i) => ({ ...i, score: 0 }));
     if (scopes.length) rows.push({ section: 'Search in…' }, ...scopes.map((item) => ({ item })));
     return rows;
@@ -195,7 +221,10 @@ function highlight(text: string, positions: number[] | undefined): string {
 }
 
 function rowHtml(item: RankedView, i: number): string {
-  const slash = item.name && item.kind !== 'ai' ? `<span class="slash">/${esc(item.name)}${item.args ? ` <span class="arg">‹${esc(item.args.placeholder)}›</span>` : ''}</span>` : '';
+  const slash =
+    item.name && item.kind !== 'ai'
+      ? `<span class="slash">/${esc(item.name)}${item.args ? ` <span class="arg">‹${esc(item.args.placeholder)}›</span>` : ''}</span>`
+      : '';
   let desc = data?.showDescriptions ? esc(item.description) : '';
   if (item.argText) desc = `<span class="args-preview">${esc(item.argText)}</span>${desc ? ` · ${desc}` : ''}`;
   return `<div class="row${i === active ? ' active' : ''}" id="opt-${i}" data-i="${i}" data-provider="${esc(item.providerId)}" role="option" aria-selected="${i === active}">
@@ -299,14 +328,21 @@ function renderMenu(): void {
   actionsEl.innerHTML =
     `<div class="head">${esc(menu.item.title)}</div>` +
     menu.actions
-      .map((a, i) => `${i === own && own ? '<hr>' : ''}<div class="action${i === menu!.active ? ' active' : ''}${a.danger ? ' danger' : ''}" data-a="${i}" role="menuitem">${icon(a.icon)}<span class="grow">${esc(a.title)}</span>${i === 0 && own ? '<kbd>↵</kbd>' : ''}</div>`)
+      .map(
+        (a, i) =>
+          `${i === own && own ? '<hr>' : ''}<div class="action${i === menu!.active ? ' active' : ''}${a.danger ? ' danger' : ''}" data-a="${i}" role="menuitem">${icon(a.icon)}<span class="grow">${esc(a.title)}</span>${i === 0 && own ? '<kbd>↵</kbd>' : ''}</div>`,
+      )
       .join('');
   actionsEl.querySelector('.action.active')?.scrollIntoView({ block: 'nearest' });
 }
 
 function renderFooter(): void {
   if (!data) return;
-  const ctx = data.context.hasSelection ? `${icon('cursor-text')} Selection${data.context.fileName ? ` in ${esc(data.context.fileName)}` : ''}` : data.context.fileName ? `${icon('file')} ${esc(data.context.fileName)}` : `${icon('lightning')} Slashi`;
+  const ctx = data.context.hasSelection
+    ? `${icon('cursor-text')} Selection${data.context.fileName ? ` in ${esc(data.context.fileName)}` : ''}`
+    : data.context.fileName
+      ? `${icon('file')} ${esc(data.context.fileName)}`
+      : `${icon('lightning')} Slashi`;
   footer.innerHTML = `
     <span class="context">${ctx}</span>
     <span class="grow"></span>
@@ -367,7 +403,8 @@ document.addEventListener(
         break;
       case 'Enter': {
         const term = currentQuery().term;
-        if ((isMac ? e.metaKey : e.ctrlKey) && term && data?.aiEnabled) vscode.postMessage(data.nlEnabled ? { type: 'ai', text: term } : { type: 'run', id: 'ai:ask', args: term });
+        if ((isMac ? e.metaKey : e.ctrlKey) && term && data?.aiEnabled)
+          vscode.postMessage(data.nlEnabled ? { type: 'ai', text: term } : { type: 'run', id: 'ai:ask', args: term });
         else if (e.shiftKey) openMenu(item);
         else if (e.altKey && item?.actions?.length) run(item, item.actions[0].id);
         else run(item);

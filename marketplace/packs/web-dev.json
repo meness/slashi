@@ -8,10 +8,33 @@
   "icon": "browsers",
   "tags": ["web", "node", "npm"],
   "commands": [
-    { "name": "localhost", "title": "Open localhost", "args": "port (default 3000)", "icon": "globe", "steps": [{ "open": "http://localhost:${args:3000}" }] },
-    { "name": "ports", "title": "What's Listening?", "description": "List processes listening on TCP ports", "icon": "plugs", "steps": [{ "terminal": "lsof -nP -iTCP -sTCP:LISTEN || netstat -ano | findstr LISTENING" }] },
-    { "name": "kill-port", "title": "Kill Process on Port", "args": "port", "icon": "skull", "steps": [{ "terminal": "npx --yes kill-port ${q:args}" }] },
-    { "name": "clean-install", "title": "Clean Reinstall node_modules", "icon": "broom", "steps": [{ "terminal": "rm -rf node_modules && npm install" }] },
+    {
+      "name": "localhost",
+      "title": "Open localhost",
+      "args": "port (default 3000)",
+      "icon": "globe",
+      "steps": [{ "open": "http://localhost:${args:3000}" }]
+    },
+    {
+      "name": "ports",
+      "title": "What's Listening?",
+      "description": "List processes listening on TCP ports",
+      "icon": "plugs",
+      "steps": [{ "terminal": "lsof -nP -iTCP -sTCP:LISTEN || netstat -ano | findstr LISTENING" }]
+    },
+    {
+      "name": "kill-port",
+      "title": "Kill Process on Port",
+      "args": "port",
+      "icon": "skull",
+      "steps": [{ "terminal": "npx --yes kill-port ${q:args}" }]
+    },
+    {
+      "name": "clean-install",
+      "title": "Clean Reinstall node_modules",
+      "icon": "broom",
+      "steps": [{ "terminal": "rm -rf node_modules && npm install" }]
+    },
     { "name": "curl", "title": "HTTP GET", "args": "URL", "icon": "cloud-arrow-down", "steps": [{ "terminal": "curl -sS -i ${q:args}" }] }
   ]
 }

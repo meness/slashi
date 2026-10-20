@@ -30,7 +30,12 @@ export class ThemesProvider implements SlashProvider {
   private readonly subs = [
     vscode.extensions.onDidChange(() => this.emitter.fire()),
     vscode.workspace.onDidChangeConfiguration((e) => {
-      if (e.affectsConfiguration('workbench.colorTheme') || e.affectsConfiguration('workbench.iconTheme') || e.affectsConfiguration('workbench.productIconTheme')) this.emitter.fire();
+      if (
+        e.affectsConfiguration('workbench.colorTheme') ||
+        e.affectsConfiguration('workbench.iconTheme') ||
+        e.affectsConfiguration('workbench.productIconTheme')
+      )
+        this.emitter.fire();
     }),
   ];
 
@@ -44,9 +49,32 @@ export class ThemesProvider implements SlashProvider {
     const config = vscode.workspace.getConfiguration('workbench');
     if (isFeatureEnabled('themes', 'toggle')) {
       items.push(
-        make({ id: 'theme:toggle', name: 'dark-light', title: 'Toggle Light/Dark Theme', icon: 'circle-half-tilt', feature: 'toggle', boost: 3, keywords: ['dark mode', 'light mode'], run: () => vscode.commands.executeCommand('workbench.action.toggleLightDarkThemes') }),
-        make({ id: 'theme:pick', name: 'themes', title: 'Browse Color Themes (live preview)', icon: 'palette', feature: 'toggle', run: () => vscode.commands.executeCommand('workbench.action.selectTheme') }),
-        make({ id: 'theme:more', name: 'more-themes', title: 'Find More Themes in the Marketplace', icon: 'storefront', feature: 'toggle', run: () => vscode.commands.executeCommand('workbench.extensions.search', '@category:themes') }),
+        make({
+          id: 'theme:toggle',
+          name: 'dark-light',
+          title: 'Toggle Light/Dark Theme',
+          icon: 'circle-half-tilt',
+          feature: 'toggle',
+          boost: 3,
+          keywords: ['dark mode', 'light mode'],
+          run: () => vscode.commands.executeCommand('workbench.action.toggleLightDarkThemes'),
+        }),
+        make({
+          id: 'theme:pick',
+          name: 'themes',
+          title: 'Browse Color Themes (live preview)',
+          icon: 'palette',
+          feature: 'toggle',
+          run: () => vscode.commands.executeCommand('workbench.action.selectTheme'),
+        }),
+        make({
+          id: 'theme:more',
+          name: 'more-themes',
+          title: 'Find More Themes in the Marketplace',
+          icon: 'storefront',
+          feature: 'toggle',
+          run: () => vscode.commands.executeCommand('workbench.extensions.search', '@category:themes'),
+        }),
       );
     }
     for (const ext of vscode.extensions.all) {
@@ -57,22 +85,62 @@ export class ThemesProvider implements SlashProvider {
           const id = theme.id ?? theme.label;
           if (!id) continue;
           const kind = theme.uiTheme?.startsWith('hc') ? 'High Contrast' : theme.uiTheme === 'vs' ? 'Light' : 'Dark';
-          items.push(this.themeItem('workbench.colorTheme', id, theme.label ?? id, `${kind} · ${extName}`, kind === 'Light' ? 'sun' : 'moon', 'color', config.get('colorTheme') === id));
+          items.push(
+            this.themeItem(
+              'workbench.colorTheme',
+              id,
+              theme.label ?? id,
+              `${kind} · ${extName}`,
+              kind === 'Light' ? 'sun' : 'moon',
+              'color',
+              config.get('colorTheme') === id,
+            ),
+          );
         }
       }
       if (isFeatureEnabled('themes', 'icon')) {
         for (const theme of (contributes.iconThemes ?? []) as ThemeContribution[]) {
-          if (theme.id) items.push(this.themeItem('workbench.iconTheme', theme.id, theme.label ?? theme.id, `File icons · ${extName}`, 'shapes', 'icon', config.get('iconTheme') === theme.id));
+          if (theme.id)
+            items.push(
+              this.themeItem(
+                'workbench.iconTheme',
+                theme.id,
+                theme.label ?? theme.id,
+                `File icons · ${extName}`,
+                'shapes',
+                'icon',
+                config.get('iconTheme') === theme.id,
+              ),
+            );
         }
         for (const theme of (contributes.productIconThemes ?? []) as ThemeContribution[]) {
-          if (theme.id) items.push(this.themeItem('workbench.productIconTheme', theme.id, theme.label ?? theme.id, `Product icons · ${extName}`, 'shapes', 'icon', config.get('productIconTheme') === theme.id));
+          if (theme.id)
+            items.push(
+              this.themeItem(
+                'workbench.productIconTheme',
+                theme.id,
+                theme.label ?? theme.id,
+                `Product icons · ${extName}`,
+                'shapes',
+                'icon',
+                config.get('productIconTheme') === theme.id,
+              ),
+            );
         }
       }
     }
     return items;
   }
 
-  private themeItem(setting: string, id: string, label: string, description: string, icon: string, feature: string, active: boolean): SlashItem {
+  private themeItem(
+    setting: string,
+    id: string,
+    label: string,
+    description: string,
+    icon: string,
+    feature: string,
+    active: boolean,
+  ): SlashItem {
     return make({
       id: `theme:${setting}:${id}`,
       title: label,

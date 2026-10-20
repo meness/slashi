@@ -1,6 +1,15 @@
 import * as vscode from 'vscode';
 import { get, isFeatureEnabled } from '../config';
-import { approvalSteps, compareVersions, describeStep, resolvePackUrl, validatePack, validateRegistry, type PackDef, type RegistryEntry } from '../core/commandSchema';
+import {
+  approvalSteps,
+  compareVersions,
+  describeStep,
+  resolvePackUrl,
+  validatePack,
+  validateRegistry,
+  type PackDef,
+  type RegistryEntry,
+} from '../core/commandSchema';
 import type { Services } from '../services/services';
 import type { RunContext, SlashItem, SlashProvider } from '../types';
 import { itemFactory } from './util';
@@ -100,23 +109,46 @@ export class MarketplaceProvider implements SlashProvider {
     const installed = new Map(this.services.packs.list().map((p) => [p.id, p]));
     const items: SlashItem[] = [
       make({
-        id: 'market:browse', name: 'market', title: 'Browse Action Marketplace', description: 'Find and install community action packs', icon: 'storefront', feature: 'browse', boost: 2,
-        kind: 'scope', scopePrefix: 'market', run: () => this.services.openPopup('/market '),
+        id: 'market:browse',
+        name: 'market',
+        title: 'Browse Action Marketplace',
+        description: 'Find and install community action packs',
+        icon: 'storefront',
+        feature: 'browse',
+        boost: 2,
+        kind: 'scope',
+        scopePrefix: 'market',
+        run: () => this.services.openPopup('/market '),
       }),
       make({
-        id: 'market:refresh', name: 'market-refresh', title: 'Refresh Marketplace', icon: 'arrows-clockwise', feature: 'browse',
+        id: 'market:refresh',
+        name: 'market-refresh',
+        title: 'Refresh Marketplace',
+        icon: 'arrows-clockwise',
+        feature: 'browse',
         run: async () => {
-          await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'Refreshing Slashi marketplace…' }, () => this.refresh(true));
+          await vscode.window.withProgress({ location: vscode.ProgressLocation.Window, title: 'Refreshing Slashi marketplace…' }, () =>
+            this.refresh(true),
+          );
           void vscode.window.setStatusBarMessage(`$(check) ${this.listings.length} packs available`, 3000);
         },
       }),
       make({
-        id: 'market:install-url', name: 'install-pack', title: 'Install Action Pack from URL or File', icon: 'download-simple', feature: 'install',
+        id: 'market:install-url',
+        name: 'install-pack',
+        title: 'Install Action Pack from URL or File',
+        icon: 'download-simple',
+        feature: 'install',
         args: { placeholder: 'https://…/pack.json (empty to pick a file)' },
         run: (ctx) => installFromUrlOrFile(this.services, ctx.args),
       }),
       make({
-        id: 'market:packs', name: 'packs', title: 'Manage Installed Packs', description: `${installed.size} installed`, icon: 'package', feature: 'browse',
+        id: 'market:packs',
+        name: 'packs',
+        title: 'Manage Installed Packs',
+        description: `${installed.size} installed`,
+        icon: 'package',
+        feature: 'browse',
         run: () => managePacks(this.services),
       }),
     ];
@@ -135,7 +167,11 @@ export class MarketplaceProvider implements SlashProvider {
           feature: 'browse',
           keywords: [...(listing.tags ?? []), listing.id, 'pack'],
           actions: [
-            { id: 'install', title: current ? (update ? `Update to v${listing.version}` : 'Reinstall') : 'Install', icon: 'download-simple' },
+            {
+              id: 'install',
+              title: current ? (update ? `Update to v${listing.version}` : 'Reinstall') : 'Install',
+              icon: 'download-simple',
+            },
             ...(current ? [{ id: 'uninstall', title: 'Uninstall', icon: 'trash', danger: true }] : []),
             { id: 'source', title: 'View source', icon: 'code' },
           ],
@@ -168,7 +204,11 @@ export class MarketplaceProvider implements SlashProvider {
 async function installFromUrlOrFile(services: Services, input: string): Promise<void> {
   let url = input.trim();
   if (!url) {
-    const files = await vscode.window.showOpenDialog({ canSelectMany: false, filters: { 'Slashi action pack': ['json'] }, title: 'Install action pack' });
+    const files = await vscode.window.showOpenDialog({
+      canSelectMany: false,
+      filters: { 'Slashi action pack': ['json'] },
+      title: 'Install action pack',
+    });
     if (!files?.[0]) return;
     url = files[0].toString();
   } else if (!/^[a-z]+:\/\//i.test(url)) {
@@ -178,7 +218,9 @@ async function installFromUrlOrFile(services: Services, input: string): Promise<
 }
 
 export async function installFromUrl(services: Services, url: string): Promise<void> {
-  const raw = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Downloading action pack…' }, () => fetchJson(url));
+  const raw = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Downloading action pack…' }, () =>
+    fetchJson(url),
+  );
   const { value: pack, errors } = validatePack(raw);
   if (!pack) throw new Error(`Invalid action pack: ${errors.slice(0, 3).join('; ')}`);
   const lines = pack.commands.map((c) => {
@@ -191,7 +233,10 @@ export async function installFromUrl(services: Services, url: string): Promise<v
   const verb = existing ? `Update ${pack.name} ${existing.version} → ${pack.version}` : `Install ${pack.name} v${pack.version}`;
   const choice = await vscode.window.showInformationMessage(
     `${verb} by ${pack.author}?`,
-    { modal: true, detail: `${pack.description}\n\n${lines.join('\n\n')}${asks ? '\n\n⚠ Steps marked ⚠ can run commands, change settings or open links. Each command asks you before it runs the first time.' : ''}` },
+    {
+      modal: true,
+      detail: `${pack.description}\n\n${lines.join('\n\n')}${asks ? '\n\n⚠ Steps marked ⚠ can run commands, change settings or open links. Each command asks you before it runs the first time.' : ''}`,
+    },
     existing ? 'Update' : 'Install',
   );
   if (!choice) return;

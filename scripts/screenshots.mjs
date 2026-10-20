@@ -93,8 +93,12 @@ const asset = (p) => pathToFileURL(join(root, 'dist', 'webview', p)).href;
 
 function page({ theme, script, styles, host }) {
   const t = THEMES[theme];
-  const vars = Object.entries(t.vars).map(([k, v]) => `${k}: ${v};`).join(' ');
-  const css = ['phosphor/regular/style.css', 'phosphor/duotone/style.css', 'base.css', ...styles].map((s) => `<link rel="stylesheet" href="${asset(s)}">`).join('');
+  const vars = Object.entries(t.vars)
+    .map(([k, v]) => `${k}: ${v};`)
+    .join(' ');
+  const css = ['phosphor/regular/style.css', 'phosphor/duotone/style.css', 'base.css', ...styles]
+    .map((s) => `<link rel="stylesheet" href="${asset(s)}">`)
+    .join('');
   return `<!doctype html><html><head><meta charset="utf-8">${css}<style>:root { ${vars} }</style></head>
   <body class="${t.body}"><div id="app"></div>
   <script>
@@ -143,18 +147,37 @@ const typeQuery = (q) => async (tab) => {
 };
 
 for (const theme of ['dark', 'light', 'hc']) {
-  await shoot(`spotlight-home-${theme}`, page({ theme, script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }));
+  await shoot(
+    `spotlight-home-${theme}`,
+    page({ theme, script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  );
 }
-await shoot('spotlight-search-dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { actions: typeQuery('/p ') });
-await shoot('spotlight-settings-light', page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { actions: typeQuery('font size') });
-await shoot('spotlight-files-dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), {
-  actions: async (tab) => {
-    await typeQuery('/f package')(tab);
-    await tab.waitForTimeout(200);
-    await tab.keyboard.press('Shift+Enter');
+await shoot(
+  'spotlight-search-dark',
+  page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  { actions: typeQuery('/p ') },
+);
+await shoot(
+  'spotlight-settings-light',
+  page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  { actions: typeQuery('font size') },
+);
+await shoot(
+  'spotlight-files-dark',
+  page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  {
+    actions: async (tab) => {
+      await typeQuery('/f package')(tab);
+      await tab.waitForTimeout(200);
+      await tab.keyboard.press('Shift+Enter');
+    },
   },
-});
-await shoot('spotlight-ai-light', page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { actions: typeQuery('make the font bigger and enable word wrap') });
+);
+await shoot(
+  'spotlight-ai-light',
+  page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  { actions: typeQuery('make the font bigger and enable word wrap') },
+);
 
 const answerHost = `(m, send) => {
   if (m.type !== 'ready') return;
@@ -175,17 +198,54 @@ It runs in both the extension host and the Spotlight webview, so typing never wa
   send({ type: 'done' });
 }`;
 for (const theme of ['dark', 'light', 'hc']) {
-  await shoot(`answer-${theme}`, page({ theme, script: 'answer.js', styles: ['answer.css'], host: answerHost }), { width: 900, height: 640 });
+  await shoot(`answer-${theme}`, page({ theme, script: 'answer.js', styles: ['answer.css'], host: answerHost }), {
+    width: 900,
+    height: 640,
+  });
 }
 
-const studioHost = (state, tab) => `(m, send) => { if (m.type === 'ready') send({ type: 'state', tab: '${tab}', state: ${JSON.stringify(state)} }); }`;
-const studioState = { ...studio, ai: { ...studio.ai, provider: 'anthropic', label: 'Claude · claude-opus-5-5', keys: { anthropic: true }, models: [{ backend: 'anthropic', id: 'claude-opus-5-5', label: 'Claude Opus 5.5', detail: 'Default' }, { backend: 'anthropic', id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' }] } };
-await shoot('studio-providers-dark', page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'providers') }), { width: 1200, height: 800 });
-await shoot('studio-ai-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
-await shoot('studio-ai-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
-await shoot('studio-help-dark', page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), { width: 1200, height: 800 });
-await shoot('studio-help-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), { width: 1200, height: 800 });
-await shoot('studio-help-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), { width: 1200, height: 800 });
+const studioHost = (state, tab) =>
+  `(m, send) => { if (m.type === 'ready') send({ type: 'state', tab: '${tab}', state: ${JSON.stringify(state)} }); }`;
+const studioState = {
+  ...studio,
+  ai: {
+    ...studio.ai,
+    provider: 'anthropic',
+    label: 'Claude · claude-opus-5-5',
+    keys: { anthropic: true },
+    models: [
+      { backend: 'anthropic', id: 'claude-opus-5-5', label: 'Claude Opus 5.5', detail: 'Default' },
+      { backend: 'anthropic', id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' },
+    ],
+  },
+};
+await shoot(
+  'studio-providers-dark',
+  page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'providers') }),
+  { width: 1200, height: 800 },
+);
+await shoot('studio-ai-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), {
+  width: 1200,
+  height: 800,
+});
+await shoot('studio-ai-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), {
+  width: 1200,
+  height: 800,
+});
+await shoot(
+  'studio-help-dark',
+  page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }),
+  { width: 1200, height: 800 },
+);
+await shoot(
+  'studio-help-light',
+  page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }),
+  { width: 1200, height: 800 },
+);
+await shoot('studio-help-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), {
+  width: 1200,
+  height: 800,
+});
 
 // Onboarding steps
 const onboardingState = {
@@ -193,7 +253,13 @@ const onboardingState = {
   platform: 'darwin',
   shortcut: '⌘/',
   stack: onboarding.stack.length ? onboarding.stack : ['npm', 'TypeScript', 'Vitest'],
-  ai: { ...onboarding.ai, label: 'GitHub Copilot · GPT', provider: 'vscode', vscode: [{ backend: 'vscode', id: 'copilot-gpt', label: 'GitHub Copilot', detail: 'copilot · gpt' }], ollama: [{ backend: 'ollama', id: 'llama3.2', label: 'llama3.2' }] },
+  ai: {
+    ...onboarding.ai,
+    label: 'GitHub Copilot · GPT',
+    provider: 'vscode',
+    vscode: [{ backend: 'vscode', id: 'copilot-gpt', label: 'GitHub Copilot', detail: 'copilot · gpt' }],
+    ollama: [{ backend: 'ollama', id: 'llama3.2', label: 'llama3.2' }],
+  },
 };
 const onboardingHost = (stepIndex, pressed = false) => `(m, send) => {
   if (m.type !== 'ready') return;
@@ -203,9 +269,24 @@ const onboardingHost = (stepIndex, pressed = false) => `(m, send) => {
     ${pressed ? "send({ type: 'shortcutPressed' });" : ''}
   }, 30);
 }`;
-const steps = [['welcome', 0], ['shortcut', 1, true], ['providers', 2], ['ai', 3], ['done', 5]];
+const steps = [
+  ['welcome', 0],
+  ['shortcut', 1, true],
+  ['providers', 2],
+  ['ai', 3],
+  ['done', 5],
+];
 for (const [name, index, pressed] of steps) {
-  await shoot(`onboarding-${name}-${name === 'providers' || name === 'done' ? 'light' : 'dark'}`, page({ theme: name === 'providers' || name === 'done' ? 'light' : 'dark', script: 'onboarding.js', styles: ['onboarding.css'], host: onboardingHost(index, pressed) }), { width: 1200, height: 800, actions: async (tab) => tab.waitForTimeout(name === 'welcome' ? 1400 : 200) });
+  await shoot(
+    `onboarding-${name}-${name === 'providers' || name === 'done' ? 'light' : 'dark'}`,
+    page({
+      theme: name === 'providers' || name === 'done' ? 'light' : 'dark',
+      script: 'onboarding.js',
+      styles: ['onboarding.css'],
+      host: onboardingHost(index, pressed),
+    }),
+    { width: 1200, height: 800, actions: async (tab) => tab.waitForTimeout(name === 'welcome' ? 1400 : 200) },
+  );
 }
 
 // Hero images: the real webview inside a VS Code-like window on a gradient backdrop.
@@ -251,7 +332,27 @@ function windowFrame({ theme, inner, title, tabs, sidebar = true }) {
     <div class="title"><div class="lights"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="t">${title}</div></div>
     <div class="main">
       <div class="activity">${ph('files')}${ph('magnifying-glass')}${ph('git-branch')}${ph('bug')}${ph('puzzle-piece')}</div>
-      <div class="side">${sidebar ? `<div class="h">EXPLORER · SLASHI</div>${['caret-down|folder-open|src', '|file-ts|  extension.ts|sel', '|file-ts|  registry.ts', '|folder|  core', '|folder|  providers', '|folder|  webview', 'caret-right|folder|docs', 'caret-right|folder|marketplace', '|package|package.json', '|book-open|README.md'].map((r) => { const [a, i, n, sel] = r.split('|'); return `<div class="r${sel ? ' sel' : ''}">${a ? ph(a) : '<span style="width:14px"></span>'}${ph(i)}<span>${n.trim()}</span></div>`; }).join('')}` : ''}</div>
+      <div class="side">${
+        sidebar
+          ? `<div class="h">EXPLORER · SLASHI</div>${[
+              'caret-down|folder-open|src',
+              '|file-ts|  extension.ts|sel',
+              '|file-ts|  registry.ts',
+              '|folder|  core',
+              '|folder|  providers',
+              '|folder|  webview',
+              'caret-right|folder|docs',
+              'caret-right|folder|marketplace',
+              '|package|package.json',
+              '|book-open|README.md',
+            ]
+              .map((r) => {
+                const [a, i, n, sel] = r.split('|');
+                return `<div class="r${sel ? ' sel' : ''}">${a ? ph(a) : '<span style="width:14px"></span>'}${ph(i)}<span>${n.trim()}</span></div>`;
+              })
+              .join('')}`
+          : ''
+      }</div>
       <div class="editor">
         <div class="tabs">${tabs.map((tb) => `<div class="tab${tb.on ? ' on' : ''}">${tb.icon ? `<img src="${pathToFileURL(join(root, 'media', dark ? 'slash-dark.svg' : 'slash-light.svg')).href}">` : ph('file-ts')}${tb.label}</div>`).join('')}</div>
         <div class="content">${inner}</div>
@@ -264,7 +365,13 @@ function windowFrame({ theme, inner, title, tabs, sidebar = true }) {
 async function hero(name, theme, innerPage, { actions, tabs, sidebar = true } = {}) {
   const innerFile = join(tmp, `${name}-inner.html`);
   writeFileSync(innerFile, innerPage);
-  const html = windowFrame({ theme, title: 'extension.ts — slashi', tabs, sidebar, inner: `<iframe id="f" src="${pathToFileURL(innerFile).href}"></iframe>` });
+  const html = windowFrame({
+    theme,
+    title: 'extension.ts — slashi',
+    tabs,
+    sidebar,
+    inner: `<iframe id="f" src="${pathToFileURL(innerFile).href}"></iframe>`,
+  });
   const file = join(tmp, `${name}.html`);
   writeFileSync(file, html);
   const tab = await browser.newPage({ viewport: { width: 1560, height: 1000 }, deviceScaleFactor: 2 });
@@ -279,21 +386,43 @@ async function hero(name, theme, innerPage, { actions, tabs, sidebar = true } = 
 }
 
 const spotlightTabs = [{ label: 'extension.ts' }, { label: 'Slashi', icon: true, on: true }];
-await hero('hero-dark', 'dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { tabs: spotlightTabs });
-await hero('hero-light', 'light', page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { tabs: spotlightTabs, actions: typeQuery('/p ') });
-await hero('hero-files-dark', 'dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), {
-  tabs: spotlightTabs,
-  actions: async (f) => {
-    await typeQuery('/f package')(f);
-    await f.waitForTimeout(200);
-    await f.press('#q', 'Shift+Enter');
+await hero(
+  'hero-dark',
+  'dark',
+  page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  { tabs: spotlightTabs },
+);
+await hero(
+  'hero-light',
+  'light',
+  page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  { tabs: spotlightTabs, actions: typeQuery('/p ') },
+);
+await hero(
+  'hero-files-dark',
+  'dark',
+  page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }),
+  {
+    tabs: spotlightTabs,
+    actions: async (f) => {
+      await typeQuery('/f package')(f);
+      await f.waitForTimeout(200);
+      await f.press('#q', 'Shift+Enter');
+    },
   },
+);
+await hero('hero-answer-dark', 'dark', page({ theme: 'dark', script: 'answer.js', styles: ['answer.css'], host: answerHost }), {
+  tabs: [{ label: 'search.ts' }, { label: 'Slashi AI', icon: true, on: true }],
 });
-await hero('hero-answer-dark', 'dark', page({ theme: 'dark', script: 'answer.js', styles: ['answer.css'], host: answerHost }), { tabs: [{ label: 'search.ts' }, { label: 'Slashi AI', icon: true, on: true }] });
-await hero('hero-onboarding-dark', 'dark', page({ theme: 'dark', script: 'onboarding.js', styles: ['onboarding.css'], host: onboardingHost(0) }), {
-  tabs: [{ label: 'Welcome to Slashi', icon: true, on: true }],
-  sidebar: false,
-  actions: (f) => f.waitForTimeout(1400),
-});
+await hero(
+  'hero-onboarding-dark',
+  'dark',
+  page({ theme: 'dark', script: 'onboarding.js', styles: ['onboarding.css'], host: onboardingHost(0) }),
+  {
+    tabs: [{ label: 'Welcome to Slashi', icon: true, on: true }],
+    sidebar: false,
+    actions: (f) => f.waitForTimeout(1400),
+  },
+);
 
 await browser.close();

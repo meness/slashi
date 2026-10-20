@@ -28,12 +28,22 @@ export class WebProvider implements SlashProvider {
   readonly prefix = 'web';
   readonly placeholder = 'Search the web…';
   readonly features = [
-    { id: 'builtin', title: 'Built-in engines', description: 'Google, Stack Overflow, GitHub, MDN, npm, PyPI, crates.io, DevDocs, Can I Use, YouTube.' },
+    {
+      id: 'builtin',
+      title: 'Built-in engines',
+      description: 'Google, Stack Overflow, GitHub, MDN, npm, PyPI, crates.io, DevDocs, Can I Use, YouTube.',
+    },
     { id: 'custom', title: 'Your engines', description: 'Engines from “slashi.web.engines”.' },
   ];
 
   items(): SlashItem[] {
-    const custom = Object.entries(get<Record<string, string>>('web.engines', {})).map(([name, url]) => ({ name, title: `Search ${name}`, icon: 'globe', url, custom: true }));
+    const custom = Object.entries(get<Record<string, string>>('web.engines', {})).map(([name, url]) => ({
+      name,
+      title: `Search ${name}`,
+      icon: 'globe',
+      url,
+      custom: true,
+    }));
     const engines = [...(isFeatureEnabled('web', 'builtin') ? ENGINES : []), ...(isFeatureEnabled('web', 'custom') ? custom : [])];
     return engines.map((engine) =>
       make({

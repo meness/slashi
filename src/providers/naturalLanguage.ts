@@ -1,6 +1,13 @@
 import * as vscode from 'vscode';
 import { get } from '../config';
-import { buildIntentPrompt, parseIntentResponse, stepReachesShell, validatePlan, type IntentCandidate, type PlanStep } from '../core/intent';
+import {
+  buildIntentPrompt,
+  parseIntentResponse,
+  stepReachesShell,
+  validatePlan,
+  type IntentCandidate,
+  type PlanStep,
+} from '../core/intent';
 import { parseQuery } from '../core/query';
 import { indexItems, rank } from '../core/search';
 import { execute } from '../executor';
@@ -71,7 +78,12 @@ export async function doWithAi(services: Services, task: string, snapshot: Edito
     if (r.id.startsWith('set:')) {
       const key = r.id.slice(4);
       const meta = settings.find((s) => s.key === key);
-      candidates.push({ id: key, title: settingTitle(key), kind: 'setting key', hint: meta?.type === 'enum' ? `one of ${meta.enum!.join(' | ')}` : meta?.type });
+      candidates.push({
+        id: key,
+        title: settingTitle(key),
+        kind: 'setting key',
+        hint: meta?.type === 'enum' ? `one of ${meta.enum!.join(' | ')}` : meta?.type,
+      });
     }
   }
 
@@ -86,7 +98,11 @@ export async function doWithAi(services: Services, task: string, snapshot: Edito
 
   const text = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.Notification, title: `Slashi is planning: “${task}”`, cancellable: true },
-    (_p, token) => services.ai.complete({ system: baseSystem(services, prompt.system), messages: [{ role: 'user', content: prompt.user }], maxTokens: 1500 }, token),
+    (_p, token) =>
+      services.ai.complete(
+        { system: baseSystem(services, prompt.system), messages: [{ role: 'user', content: prompt.user }], maxTokens: 1500 },
+        token,
+      ),
   );
 
   const plan = validatePlan(parseIntentResponse(text), new Set(byId.keys()), settingKeys);

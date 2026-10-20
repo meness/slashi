@@ -54,13 +54,30 @@ export class GitProvider implements SlashProvider {
   async items(): Promise<SlashItem[]> {
     const items: SlashItem[] = [];
     const cmd = (feature: string, name: string, title: string, icon: string, command: string, boost = 0) =>
-      make({ id: `git:${name}`, name, title, icon, feature, boost, keywords: ['git'], aiKind: 'git command', run: () => vscode.commands.executeCommand(command) });
+      make({
+        id: `git:${name}`,
+        name,
+        title,
+        icon,
+        feature,
+        boost,
+        keywords: ['git'],
+        aiKind: 'git command',
+        run: () => vscode.commands.executeCommand(command),
+      });
 
     if (isFeatureEnabled('git', 'core')) {
       items.push(
         make({
-          id: 'git:commit', name: 'commit', title: 'Git: Commit', description: 'Commit staged changes (or everything) with a message', icon: 'git-commit', feature: 'core', boost: 6,
-          args: { placeholder: 'commit message' }, keywords: ['git'],
+          id: 'git:commit',
+          name: 'commit',
+          title: 'Git: Commit',
+          description: 'Commit staged changes (or everything) with a message',
+          icon: 'git-commit',
+          feature: 'core',
+          boost: 6,
+          args: { placeholder: 'commit message' },
+          keywords: ['git'],
           run: async (ctx) => {
             const repo = currentRepo();
             const message = await ensureArgs(ctx.args, 'Commit message', { value: repo.inputBox.value });
@@ -105,8 +122,15 @@ export class GitProvider implements SlashProvider {
     if (isFeatureEnabled('git', 'branches')) {
       items.push(
         make({
-          id: 'git:branch', name: 'branch', title: 'Git: Create Branch', description: 'Create and switch to a new branch', icon: 'git-branch', feature: 'branches', boost: 3,
-          args: { placeholder: 'branch-name' }, keywords: ['git', 'new branch'],
+          id: 'git:branch',
+          name: 'branch',
+          title: 'Git: Create Branch',
+          description: 'Create and switch to a new branch',
+          icon: 'git-branch',
+          feature: 'branches',
+          boost: 3,
+          args: { placeholder: 'branch-name' },
+          keywords: ['git', 'new branch'],
           run: async (ctx) => {
             const name = await ensureArgs(ctx.args, 'New branch name');
             if (name) await currentRepo().createBranch(name.replace(/\s+/g, '-'), true);
@@ -126,7 +150,7 @@ export class GitProvider implements SlashProvider {
     const repos = repositories();
     const items: SlashItem[] = [];
     for (const repo of repos) {
-      const refs = repo.getRefs ? await repo.getRefs().catch(() => repo.state.refs ?? []) : repo.state.refs ?? [];
+      const refs = repo.getRefs ? await repo.getRefs().catch(() => repo.state.refs ?? []) : (repo.state.refs ?? []);
       const head = repo.state.HEAD?.name;
       const repoName = repos.length > 1 ? `${vscode.workspace.asRelativePath(repo.rootUri)} · ` : '';
       for (const ref of refs.slice(0, 300)) {

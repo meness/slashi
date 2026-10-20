@@ -39,10 +39,19 @@ export class Spotlight implements vscode.Disposable {
     services.registry.refreshVolatile();
     const init = buildSpotlightInit(services, initialQuery);
 
-    const panel = vscode.window.createWebviewPanel('slashi.spotlight', 'Slashi', { viewColumn: vscode.ViewColumn.Active, preserveFocus: false }, webviewOptions(this.extensionUri));
+    const panel = vscode.window.createWebviewPanel(
+      'slashi.spotlight',
+      'Slashi',
+      { viewColumn: vscode.ViewColumn.Active, preserveFocus: false },
+      webviewOptions(this.extensionUri),
+    );
     this.panel = panel;
     panel.iconPath = panelIcon(this.extensionUri);
-    panel.webview.html = webviewHtml(panel.webview, this.extensionUri, { title: 'Slashi', script: 'spotlight.js', styles: ['spotlight.css'] });
+    panel.webview.html = webviewHtml(panel.webview, this.extensionUri, {
+      title: 'Slashi',
+      script: 'spotlight.js',
+      styles: ['spotlight.css'],
+    });
     void vscode.commands.executeCommand('setContext', 'slashi.spotlightOpen', true);
 
     let closingForRun = false;
@@ -65,7 +74,10 @@ export class Spotlight implements vscode.Disposable {
           break;
         case 'query': {
           const data = await init;
-          const query = parseQuery(message.query, data.scopes.map((s) => s.prefix));
+          const query = parseQuery(
+            message.query,
+            data.scopes.map((s) => s.prefix),
+          );
           const items = await services.registry.searchRemote(query, data.maxResults, data.frecency);
           void this.post({ type: 'live', seq: message.seq, items });
           break;

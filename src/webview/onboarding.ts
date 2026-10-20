@@ -2,14 +2,35 @@
 
 import { esc, icon, vscode } from './common';
 
-interface Provider { id: string; title: string; description: string; icon: string; prefix: string; enabled: boolean }
-interface Model { backend: string; id: string; label: string; detail?: string }
+interface Provider {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  prefix: string;
+  enabled: boolean;
+}
+interface Model {
+  backend: string;
+  id: string;
+  label: string;
+  detail?: string;
+}
 interface State {
   platform: string;
   shortcut: string;
   useSlashKey: boolean;
   providers: Provider[];
-  ai: { label: string; provider: string; model: string; keys: Record<string, boolean>; vscode: Model[]; ollama: Model[]; cli: Model[]; other: Model[] };
+  ai: {
+    label: string;
+    provider: string;
+    model: string;
+    keys: Record<string, boolean>;
+    vscode: Model[];
+    ollama: Model[];
+    cli: Model[];
+    other: Model[];
+  };
   stack: string[];
   examples: { name: string; title: string; description?: string }[];
 }
@@ -77,7 +98,9 @@ function content(): string {
       return `<div class="center">
           <h1>Your new favorite shortcut</h1>
           <p class="lead">Press it anywhere in VS Code to open Slashi. Try it now.</p>
-          <div class="keycaps${pressed ? ' pressed' : ''}">${slashKeys().map((k) => `<span class="cap">${k}</span>`).join('<span class="plus">+</span>')}</div>
+          <div class="keycaps${pressed ? ' pressed' : ''}">${slashKeys()
+            .map((k) => `<span class="cap">${k}</span>`)
+            .join('<span class="plus">+</span>')}</div>
           <p class="pressed-msg${pressed ? ' visible' : ''}">${icon('check-circle')} Perfect — that’s all you need to remember.</p>
           <div class="option">
             <button class="switch" role="switch" aria-checked="${s.useSlashKey}" id="slashkey" aria-label="Use ${mac() ? 'Cmd' : 'Ctrl'}+/ for Slashi"></button>
@@ -91,7 +114,9 @@ function content(): string {
           <p class="lead">Everything is on by default. Turn off what you don’t need — fine-tune features later in Studio.</p>
           <div class="providers">${s.providers
             .map(
-              (p) => `<button class="provider${p.enabled ? ' on' : ''}" data-provider="${esc(p.id)}" data-toggle="${esc(p.id)}" aria-pressed="${p.enabled}">
+              (
+                p,
+              ) => `<button class="provider${p.enabled ? ' on' : ''}" data-provider="${esc(p.id)}" data-toggle="${esc(p.id)}" aria-pressed="${p.enabled}">
               <span class="tile">${icon(p.icon, 'duotone')}</span>
               <span class="text"><strong>${esc(p.title)}</strong><code>/${esc(p.prefix)}</code></span>
               <span class="check">${icon(p.enabled ? 'check-circle' : 'circle')}</span>

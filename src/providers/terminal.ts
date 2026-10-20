@@ -32,22 +32,39 @@ export class TerminalProvider implements SlashProvider {
     if (isFeatureEnabled('terminal', 'run')) {
       items.push(
         make({
-          id: 'term:run', name: 'run', title: 'Run in Terminal', description: 'Run a shell command in the Slashi terminal', icon: 'terminal-window', feature: 'run',
-          args: { placeholder: 'command, e.g. git status' }, boost: 7, keywords: ['shell', 'exec', 'execute'],
+          id: 'term:run',
+          name: 'run',
+          title: 'Run in Terminal',
+          description: 'Run a shell command in the Slashi terminal',
+          icon: 'terminal-window',
+          feature: 'run',
+          args: { placeholder: 'command, e.g. git status' },
+          boost: 7,
+          keywords: ['shell', 'exec', 'execute'],
           run: async (ctx) => {
             const cmd = await ensureArgs(ctx.args, 'Command to run');
             if (cmd) this.services.terminal.run(cmd);
           },
         }),
         make({
-          id: 'term:run-new', name: 'run-new', title: 'Run in New Terminal', icon: 'terminal', feature: 'run', args: { placeholder: 'command' },
+          id: 'term:run-new',
+          name: 'run-new',
+          title: 'Run in New Terminal',
+          icon: 'terminal',
+          feature: 'run',
+          args: { placeholder: 'command' },
           run: async (ctx) => {
             const cmd = await ensureArgs(ctx.args, 'Command to run');
             if (cmd) this.services.terminal.run(cmd, { reuse: false });
           },
         }),
         make({
-          id: 'term:selection', name: 'run-selection', title: 'Run Selected Text in Terminal', icon: 'play', feature: 'run', needsEditor: true,
+          id: 'term:selection',
+          name: 'run-selection',
+          title: 'Run Selected Text in Terminal',
+          icon: 'play',
+          feature: 'run',
+          needsEditor: true,
           run: async (ctx) => {
             await ctx.editor();
             await vscode.commands.executeCommand('workbench.action.terminal.runSelectedText');

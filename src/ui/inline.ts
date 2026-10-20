@@ -32,7 +32,10 @@ export class InlineSlashCompletions implements vscode.CompletionItemProvider {
     return [
       open,
       ...items.slice(0, 400).map((item, i) => {
-        const completion = new vscode.CompletionItem({ label: `/${item.name}`, description: item.title }, vscode.CompletionItemKind.Function);
+        const completion = new vscode.CompletionItem(
+          { label: `/${item.name}`, description: item.title },
+          vscode.CompletionItemKind.Function,
+        );
         completion.range = range;
         completion.filterText = `/${item.name} ${item.title}`;
         completion.sortText = String(i + 1).padStart(4, '0');

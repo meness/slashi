@@ -7,7 +7,11 @@ import type { Services } from '../services/services';
 
 /** Everything the Spotlight webview needs to rank locally. */
 export async function buildSpotlightInit(services: Services, initialQuery: string): Promise<SpotlightInit> {
-  const [items, scopes, aiLabel] = await Promise.all([services.registry.localItems(), services.registry.scopesWithRemote(), services.ai.label()]);
+  const [items, scopes, aiLabel] = await Promise.all([
+    services.registry.localItems(),
+    services.registry.scopesWithRemote(),
+    services.ai.label(),
+  ]);
   const views: ItemView[] = items.map(toView);
   for (const scope of scopes) {
     views.push({

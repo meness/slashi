@@ -4,10 +4,39 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const out = await build({ stdin: { contents: "export * from './src/core/search'; export * from './src/core/query';", resolveDir: root, loader: 'ts' }, bundle: true, write: false, format: 'esm', platform: 'node' });
-const { indexItems, rank, parseQuery } = await import(`data:text/javascript;base64,${Buffer.from(out.outputFiles[0].text).toString('base64')}`);
+const out = await build({
+  stdin: { contents: "export * from './src/core/search'; export * from './src/core/query';", resolveDir: root, loader: 'ts' },
+  bundle: true,
+  write: false,
+  format: 'esm',
+  platform: 'node',
+});
+const { indexItems, rank, parseQuery } = await import(
+  `data:text/javascript;base64,${Buffer.from(out.outputFiles[0].text).toString('base64')}`
+);
 
-const words = ['editor', 'format', 'document', 'terminal', 'git', 'commit', 'settings', 'font', 'size', 'toggle', 'workspace', 'search', 'file', 'open', 'debug', 'test', 'run', 'theme', 'color', 'extension'];
+const words = [
+  'editor',
+  'format',
+  'document',
+  'terminal',
+  'git',
+  'commit',
+  'settings',
+  'font',
+  'size',
+  'toggle',
+  'workspace',
+  'search',
+  'file',
+  'open',
+  'debug',
+  'test',
+  'run',
+  'theme',
+  'color',
+  'extension',
+];
 const pick = (i, n) => words[(i * 7 + n * 13) % words.length];
 const queries = ['/format', 'font size', '/set font', 'gcm', 'toggle term', 'open recent workspace', '/run npm test', 'xyzzy'];
 
@@ -37,5 +66,7 @@ for (const size of [1_000, 5_000, 20_000, 50_000]) {
   }
   times.sort((a, b) => a - b);
   const avg = times.reduce((a, b) => a + b, 0) / times.length;
-  console.log(`${String(size).padStart(7)} | ${indexMs.toFixed(1).padStart(8)} | ${avg.toFixed(2).padStart(11)} | ${times[Math.floor(times.length * 0.95)].toFixed(2).padStart(11)}`);
+  console.log(
+    `${String(size).padStart(7)} | ${indexMs.toFixed(1).padStart(8)} | ${avg.toFixed(2).padStart(11)} | ${times[Math.floor(times.length * 0.95)].toFixed(2).padStart(11)}`,
+  );
 }

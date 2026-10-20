@@ -26,7 +26,12 @@ const context = {
   extensionUri: mock.Uri.file(path.join(__dirname, '../..')),
   globalState: memento(),
   workspaceState: memento(),
-  secrets: { get: async (k) => secrets.get(k), store: async (k, v) => void secrets.set(k, v), delete: async (k) => void secrets.delete(k), onDidChange: () => ({ dispose() {} }) },
+  secrets: {
+    get: async (k) => secrets.get(k),
+    store: async (k, v) => void secrets.set(k, v),
+    delete: async (k) => void secrets.delete(k),
+    onDidChange: () => ({ dispose() {} }),
+  },
 };
 
 const waitFor = async (predicate, label, timeout = 5000) => {
@@ -94,15 +99,50 @@ const check = (name, fn) => {
 
   check(`posts ${init.items.length} local items from ${providers.size} providers`, () => {
     assert.ok(init.items.length > 300, `only ${init.items.length} items`);
-    for (const p of ['commands', 'settings', 'transforms', 'ai', 'naturalLanguage', 'project', 'git', 'terminal', 'web', 'custom', 'marketplace', 'system', 'files', 'navigation']) {
+    for (const p of [
+      'commands',
+      'settings',
+      'transforms',
+      'ai',
+      'naturalLanguage',
+      'project',
+      'git',
+      'terminal',
+      'web',
+      'custom',
+      'marketplace',
+      'system',
+      'files',
+      'navigation',
+    ]) {
       assert.ok(providers.has(p), `missing provider ${p}`);
     }
   });
   check('detects this repo’s npm scripts and tools', () => {
-    for (const n of ['build', 'test', 'typecheck', 'npm-install', 'npm-add', 'vitest', 'tsc', 'stack']) assert.ok(names.has(n), `missing /${n}`);
+    for (const n of ['build', 'test', 'typecheck', 'npm-install', 'npm-add', 'vitest', 'tsc', 'stack'])
+      assert.ok(names.has(n), `missing /${n}`);
   });
   check('has core commands, text tools and file CRUD', () => {
-    for (const n of ['format', 'split', 'zen', 'upper', 'camel', 'json', 'uuid', 'new', 'mkdir', 'rename', 'dup', 'delete', 'run', 'ask', 'do', 'commit', 'market', 'acme-hello']) {
+    for (const n of [
+      'format',
+      'split',
+      'zen',
+      'upper',
+      'camel',
+      'json',
+      'uuid',
+      'new',
+      'mkdir',
+      'rename',
+      'dup',
+      'delete',
+      'run',
+      'ask',
+      'do',
+      'commit',
+      'market',
+      'acme-hello',
+    ]) {
       assert.ok(names.has(n), `missing /${n}`);
     }
   });
@@ -167,7 +207,10 @@ const check = (name, fn) => {
     assert.ok(completions.length > 50);
     assert.ok(completions.some((c) => c.label.label === '/upper'));
   });
-  const none = await calls.completion.provideCompletionItems({ languageId: 'typescript', lineAt: () => ({ text: '//' }) }, new mock.Position(0, 2));
+  const none = await calls.completion.provideCompletionItems(
+    { languageId: 'typescript', lineAt: () => ({ text: '//' }) },
+    new mock.Position(0, 2),
+  );
   check('stays quiet in code files by default', () => assert.equal(none, undefined));
 
   // Feature toggles hide items without disabling the provider.
@@ -245,7 +288,10 @@ const check = (name, fn) => {
   restore();
   check('the wizard adds to a team file with comments instead of replacing it', () => {
     const saved = JSON.parse(calls.writtenText[teamPath]);
-    assert.deepEqual(saved.commands.map((c) => c.name), ['ship', 'deploy']);
+    assert.deepEqual(
+      saved.commands.map((c) => c.name),
+      ['ship', 'deploy'],
+    );
   });
   teamText = '{"commands": [{"name": "ship", "steps": [],}]}';
   delete calls.writtenText[teamPath];
@@ -289,7 +335,15 @@ const check = (name, fn) => {
 
   // /fix on a file too large to send whole refuses instead of offering an Apply that would cut the file.
   const big = 'x'.repeat(70_000);
-  const bigDoc = { uri: mock.Uri.file(path.join(__dirname, 'big.ts')), languageId: 'typescript', isUntitled: false, isClosed: false, lineCount: 1, version: 1, getText: () => big };
+  const bigDoc = {
+    uri: mock.Uri.file(path.join(__dirname, 'big.ts')),
+    languageId: 'typescript',
+    isUntitled: false,
+    isClosed: false,
+    lineCount: 1,
+    version: 1,
+    getText: () => big,
+  };
   const bigSel = new mock.Selection(0, 0, 0, 0);
   mock.window.activeTextEditor = { document: bigDoc, selection: bigSel, selections: [bigSel], viewColumn: 1 };
   const answersBefore = calls.panels.filter((p) => p.viewType === 'slashi.answer').length;
@@ -306,11 +360,18 @@ const check = (name, fn) => {
   let reply = () => [];
   mock.lm.selectChatModels = async () => [
     {
-      id: 'fake', name: 'Fake', family: 'fake', vendor: 'test',
+      id: 'fake',
+      name: 'Fake',
+      family: 'fake',
+      vendor: 'test',
       sendRequest: async (messages) => {
         requests.push(messages);
         const parts = reply(requests.length);
-        return { text: (async function* () { for (const p of parts) yield await p; })() };
+        return {
+          text: (async function* () {
+            for (const p of parts) yield await p;
+          })(),
+        };
       },
     },
   ];
@@ -361,7 +422,9 @@ const check = (name, fn) => {
 
   // Help & Support: links open only by key, and diagnostics never include secrets.
   await api.run('/help-center');
-  check('/help-center opens the Studio Help & Support tab', () => assert.ok(calls.posted.some((m) => m.type === 'tab' && m.tab === 'help')));
+  check('/help-center opens the Studio Help & Support tab', () =>
+    assert.ok(calls.posted.some((m) => m.type === 'tab' && m.tab === 'help')),
+  );
   await api.run('/support');
   check('/support opens the donation page', () => assert.equal(calls.opened, 'https://github.com/meness/slashi/blob/main/DONATE.md'));
   studio.webview._receive({ type: 'openLink', link: 'bug' });

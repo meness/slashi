@@ -7,8 +7,20 @@ import type { Services } from '../services/services';
 import { panelIcon, webviewHtml, webviewOptions } from './html';
 
 const CONFIG_KEYS = new Set([
-  'shortcut.useSlashKey', 'popup.style', 'popup.maxResults', 'popup.showDescriptions', 'statusBar.enabled', 'inlineTrigger.enabled', 'history.enabled',
-  'ai.provider', 'ai.model', 'ai.baseUrl', 'ai.anthropicEffort', 'ai.confirmBeforeRun', 'ai.customInstructions', 'ai.includeFileContext',
+  'shortcut.useSlashKey',
+  'popup.style',
+  'popup.maxResults',
+  'popup.showDescriptions',
+  'statusBar.enabled',
+  'inlineTrigger.enabled',
+  'history.enabled',
+  'ai.provider',
+  'ai.model',
+  'ai.baseUrl',
+  'ai.anthropicEffort',
+  'ai.confirmBeforeRun',
+  'ai.customInstructions',
+  'ai.includeFileContext',
 ]);
 
 type FromStudio =
@@ -47,10 +59,17 @@ export class Studio implements vscode.Disposable {
       if (tab) void this.panel.webview.postMessage({ type: 'tab', tab });
       return;
     }
-    const panel = vscode.window.createWebviewPanel('slashi.studio', 'Slashi Studio', vscode.ViewColumn.Active, { ...webviewOptions(this.extensionUri), retainContextWhenHidden: true });
+    const panel = vscode.window.createWebviewPanel('slashi.studio', 'Slashi Studio', vscode.ViewColumn.Active, {
+      ...webviewOptions(this.extensionUri),
+      retainContextWhenHidden: true,
+    });
     this.panel = panel;
     panel.iconPath = panelIcon(this.extensionUri);
-    panel.webview.html = webviewHtml(panel.webview, this.extensionUri, { title: 'Slashi Studio', script: 'studio.js', styles: ['studio.css'] });
+    panel.webview.html = webviewHtml(panel.webview, this.extensionUri, {
+      title: 'Slashi Studio',
+      script: 'studio.js',
+      styles: ['studio.css'],
+    });
     panel.onDidDispose(() => (this.panel = undefined));
     panel.webview.onDidReceiveMessage(async (m: FromStudio) => {
       try {
@@ -83,7 +102,12 @@ export class Studio implements vscode.Disposable {
         }
         break;
       case 'setKey': {
-        const key = await vscode.window.showInputBox({ title: `${BACKEND_LABELS[m.backend]} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in your settings files.' });
+        const key = await vscode.window.showInputBox({
+          title: `${BACKEND_LABELS[m.backend]} API key`,
+          password: true,
+          ignoreFocusOut: true,
+          prompt: 'Stored in VS Code Secret Storage, never in your settings files.',
+        });
         if (key) {
           await ai.setKey(m.backend, key);
           void this.loadModels();
@@ -123,10 +147,22 @@ export class Studio implements vscode.Disposable {
     const timer = setTimeout(() => cts.cancel(), 60_000);
     try {
       const label = await this.services.ai.label();
-      const text = await this.services.ai.complete({ system: 'You are a connectivity check.', messages: [{ role: 'user', content: 'Reply with exactly: Slashi is connected.' }], maxTokens: 200 }, cts.token);
+      const text = await this.services.ai.complete(
+        {
+          system: 'You are a connectivity check.',
+          messages: [{ role: 'user', content: 'Reply with exactly: Slashi is connected.' }],
+          maxTokens: 200,
+        },
+        cts.token,
+      );
       void this.panel?.webview.postMessage({ type: 'test', ok: true, text: text.trim(), ms: Date.now() - started, label });
     } catch (err) {
-      void this.panel?.webview.postMessage({ type: 'test', ok: false, text: err instanceof Error ? err.message : String(err), ms: Date.now() - started });
+      void this.panel?.webview.postMessage({
+        type: 'test',
+        ok: false,
+        text: err instanceof Error ? err.message : String(err),
+        ms: Date.now() - started,
+      });
     } finally {
       clearTimeout(timer);
     }
@@ -147,7 +183,9 @@ export class Studio implements vscode.Disposable {
         enabled: isProviderEnabled(p.id),
         features: p.features.length > 1 ? p.features.map((f) => ({ ...f, enabled: isFeatureEnabled(p.id, f.id) })) : [],
       }));
-    const custom = (await services.registry.localItems()).filter((i) => i.providerId === 'custom' && !['custom:new', 'custom:edit', 'custom:team', 'custom:export'].includes(i.id));
+    const custom = (await services.registry.localItems()).filter(
+      (i) => i.providerId === 'custom' && !['custom:new', 'custom:edit', 'custom:team', 'custom:export'].includes(i.id),
+    );
     const keys = Object.fromEntries(await Promise.all(services.ai.keyBackends().map(async (b) => [b, await services.ai.hasKey(b)])));
     const ext = vscode.extensions.getExtension('meness.slashi');
     void this.panel.webview.postMessage({

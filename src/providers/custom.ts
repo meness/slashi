@@ -147,15 +147,51 @@ export class CustomProvider implements SlashProvider {
     errors.forEach((e) => this.services.log.warn(e));
     if (this.warned.has(key)) return;
     this.warned.add(key);
-    void vscode.window.showWarningMessage(`Slashi: ${errors.length === 1 ? '1 problem' : `${errors.length} problems`} in your custom commands. ${errors[0]}`, 'Show Log').then((c) => c && this.services.log.show());
+    void vscode.window
+      .showWarningMessage(
+        `Slashi: ${errors.length === 1 ? '1 problem' : `${errors.length} problems`} in your custom commands. ${errors[0]}`,
+        'Show Log',
+      )
+      .then((c) => c && this.services.log.show());
   }
 
   private builtins(): SlashItem[] {
     return [
-      make({ id: 'custom:new', name: 'new-command', title: 'Create Custom Command', description: 'A guided wizard — no JSON needed', icon: 'plus-circle', feature: 'user', boost: 4, keywords: ['macro', 'alias', 'automation'], run: () => vscode.commands.executeCommand('slashi.newCommand') }),
-      make({ id: 'custom:edit', name: 'edit-commands', title: 'Edit My Commands (settings.json)', icon: 'brackets-curly', feature: 'user', run: () => vscode.commands.executeCommand('workbench.action.openSettingsJson', { revealSetting: { key: 'slashi.customCommands' } }) }),
-      make({ id: 'custom:team', name: 'team-commands', title: 'Edit Team Commands (.vscode/slashi.json)', icon: 'users-three', feature: 'team', run: () => vscode.commands.executeCommand('slashi.editTeamCommands') }),
-      make({ id: 'custom:export', name: 'export-pack', title: 'Export My Commands as an Action Pack', icon: 'export', feature: 'user', run: () => vscode.commands.executeCommand('slashi.exportPack') }),
+      make({
+        id: 'custom:new',
+        name: 'new-command',
+        title: 'Create Custom Command',
+        description: 'A guided wizard — no JSON needed',
+        icon: 'plus-circle',
+        feature: 'user',
+        boost: 4,
+        keywords: ['macro', 'alias', 'automation'],
+        run: () => vscode.commands.executeCommand('slashi.newCommand'),
+      }),
+      make({
+        id: 'custom:edit',
+        name: 'edit-commands',
+        title: 'Edit My Commands (settings.json)',
+        icon: 'brackets-curly',
+        feature: 'user',
+        run: () => vscode.commands.executeCommand('workbench.action.openSettingsJson', { revealSetting: { key: 'slashi.customCommands' } }),
+      }),
+      make({
+        id: 'custom:team',
+        name: 'team-commands',
+        title: 'Edit Team Commands (.vscode/slashi.json)',
+        icon: 'users-three',
+        feature: 'team',
+        run: () => vscode.commands.executeCommand('slashi.editTeamCommands'),
+      }),
+      make({
+        id: 'custom:export',
+        name: 'export-pack',
+        title: 'Export My Commands as an Action Pack',
+        icon: 'export',
+        feature: 'user',
+        run: () => vscode.commands.executeCommand('slashi.exportPack'),
+      }),
     ];
   }
 }
@@ -182,13 +218,23 @@ export async function newCommandWizard(services: Services): Promise<void> {
     ignoreFocusOut: true,
   });
   if (!name) return;
-  const title = await vscode.window.showInputBox({ title: 'New Slashi command (2/3): title', prompt: 'Shown in the popup', value: name.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()), ignoreFocusOut: true });
+  const title = await vscode.window.showInputBox({
+    title: 'New Slashi command (2/3): title',
+    prompt: 'Shown in the popup',
+    value: name.replace(/-/g, ' ').replace(/^./, (c) => c.toUpperCase()),
+    ignoreFocusOut: true,
+  });
   if (title === undefined) return;
 
   const steps: StepDef[] = [];
   for (;;) {
     const pick = await vscode.window.showQuickPick(
-      [...STEP_TYPES, ...(steps.length ? [{ type: 'done' as const, label: `$(check) Done — save /${name} with ${steps.length} step(s)`, detail: '' }] : [])],
+      [
+        ...STEP_TYPES,
+        ...(steps.length
+          ? [{ type: 'done' as const, label: `$(check) Done — save /${name} with ${steps.length} step(s)`, detail: '' }]
+          : []),
+      ],
       { title: `New Slashi command (3/3): step ${steps.length + 1}`, placeHolder: 'What should this step do?', ignoreFocusOut: true },
     );
     if (!pick) return;
@@ -212,10 +258,15 @@ export async function newCommandWizard(services: Services): Promise<void> {
   } else {
     await writeTeamCommand(def);
   }
-  const choice = await vscode.window.showInformationMessage(`/${name} is ready. Type /${name} in Slashi to run it.`, 'Run Now', 'Edit JSON');
+  const choice = await vscode.window.showInformationMessage(
+    `/${name} is ready. Type /${name} in Slashi to run it.`,
+    'Run Now',
+    'Edit JSON',
+  );
   if (choice === 'Run Now') await services.runSlash(`/${name}`);
   if (choice === 'Edit JSON') {
-    if (where.value === 'user') await vscode.commands.executeCommand('workbench.action.openSettingsJson', { revealSetting: { key: 'slashi.customCommands' } });
+    if (where.value === 'user')
+      await vscode.commands.executeCommand('workbench.action.openSettingsJson', { revealSetting: { key: 'slashi.customCommands' } });
     else await editTeamCommands();
   }
 }
@@ -226,11 +277,18 @@ async function askStep(type: keyof StepDefMap, services: Services): Promise<Step
     case 'slash': {
       const items = (await services.registry.localItems()).filter((i) => i.name && i.providerId !== 'custom');
       const pick = await vscode.window.showQuickPick(
-        items.map((i) => ({ label: `/${i.name}`, description: i.title, detail: i.args ? `accepts: ${i.args.placeholder}` : undefined, item: i })),
+        items.map((i) => ({
+          label: `/${i.name}`,
+          description: i.title,
+          detail: i.args ? `accepts: ${i.args.placeholder}` : undefined,
+          item: i,
+        })),
         { placeHolder: 'Pick a slash command', matchOnDescription: true },
       );
       if (!pick) return undefined;
-      const args = pick.item.args ? await input(`Arguments for /${pick.item.name} (optional, supports \${args})`, pick.item.args.placeholder) : '';
+      const args = pick.item.args
+        ? await input(`Arguments for /${pick.item.name} (optional, supports \${args})`, pick.item.args.placeholder)
+        : '';
       return { slash: `/${pick.item.name}${args ? ` ${args}` : ''}` };
     }
     case 'command': {
@@ -304,7 +362,8 @@ async function readTeamFile(uri: vscode.Uri): Promise<{ $schema?: string; comman
     throw new Error(`Fix ${TEAM_FILE} first: ${(err as Error).message}`);
   }
   if (Array.isArray(json)) return { commands: json };
-  if (!json || typeof json !== 'object' || (json.commands !== undefined && !Array.isArray(json.commands))) throw new Error(`${TEAM_FILE} must be an array or an object with a "commands" array.`);
+  if (!json || typeof json !== 'object' || (json.commands !== undefined && !Array.isArray(json.commands)))
+    throw new Error(`${TEAM_FILE} must be an array or an object with a "commands" array.`);
   return { ...json, commands: json.commands ?? [] };
 }
 
@@ -326,7 +385,12 @@ export async function editTeamCommands(): Promise<void> {
     const starter = {
       $schema: SCHEMA_URL,
       commands: [
-        { name: 'tidy', title: 'Format and Save All', icon: 'check-circle', steps: [{ command: 'editor.action.formatDocument' }, { command: 'workbench.action.files.saveAll' }] },
+        {
+          name: 'tidy',
+          title: 'Format and Save All',
+          icon: 'check-circle',
+          steps: [{ command: 'editor.action.formatDocument' }, { command: 'workbench.action.files.saveAll' }],
+        },
       ],
     };
     const doc = await vscode.workspace.openTextDocument(uri.with({ scheme: 'untitled' }));
@@ -350,7 +414,11 @@ export async function exportPack(): Promise<void> {
     { canPickMany: true, title: 'Commands to include in the pack' },
   );
   if (!picks?.length) return;
-  const id = await vscode.window.showInputBox({ prompt: 'Pack ID (lower-case, dashes)', validateInput: (v) => (PACK_ID_PATTERN.test(v) ? undefined : 'Use 2–50 lower-case letters, digits or dashes'), ignoreFocusOut: true });
+  const id = await vscode.window.showInputBox({
+    prompt: 'Pack ID (lower-case, dashes)',
+    validateInput: (v) => (PACK_ID_PATTERN.test(v) ? undefined : 'Use 2–50 lower-case letters, digits or dashes'),
+    ignoreFocusOut: true,
+  });
   if (!id) return;
   const pack: PackDef = {
     $schema: SCHEMA_URL,
@@ -365,6 +433,9 @@ export async function exportPack(): Promise<void> {
   const doc = await vscode.workspace.openTextDocument({ language: 'json', content: `${JSON.stringify(pack, null, 2)}\n` });
   await vscode.window.showTextDocument(doc);
   void vscode.window
-    .showInformationMessage(`Save this as ${id}.slashi-pack.json. Share the file, or install it with “Slashi: Install Action Pack from URL or File…”.`, 'Publishing Guide')
+    .showInformationMessage(
+      `Save this as ${id}.slashi-pack.json. Share the file, or install it with “Slashi: Install Action Pack from URL or File…”.`,
+      'Publishing Guide',
+    )
     .then((choice) => choice && vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS.packs)));
 }

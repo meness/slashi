@@ -69,7 +69,15 @@ interface Ctx {
   techs: Set<string>;
 }
 
-function add(ctx: Ctx, tech: string, group: ProjectGroup, name: string, title: string, command: string, opts: { icon?: string; description?: string; args?: string } = {}): void {
+function add(
+  ctx: Ctx,
+  tech: string,
+  group: ProjectGroup,
+  name: string,
+  title: string,
+  command: string,
+  opts: { icon?: string; description?: string; args?: string } = {},
+): void {
   // Script and task names from repo files end up in the shell command; skip any that could inject.
   if (!/^[\w:.@/+-]+$/.test(name)) return;
   const fullName = ctx.prefix + name;
@@ -135,7 +143,7 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
 
   // package.json scripts
   for (const [script, body] of Object.entries(scripts)) {
-    if (typeof body !== 'string' || /^(pre|post)/.test(script) && scripts[script.replace(/^(pre|post)/, '')]) continue;
+    if (typeof body !== 'string' || (/^(pre|post)/.test(script) && scripts[script.replace(/^(pre|post)/, '')])) continue;
     add(ctx, pm, 'scripts', script, `${pm}: ${script}`, `${RUN[pm]} ${script}`, { icon: scriptIcon(script), description: body });
   }
 
@@ -144,15 +152,32 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
     add(ctx, pm, 'packageManager', `${pm}-${name}`, `${pm} ${title}`, cmd, { icon, args });
   const addCmd = { npm: 'npm install', pnpm: 'pnpm add', yarn: 'yarn add', bun: 'bun add' }[pm];
   P('install', 'install', pm === 'yarn' ? 'yarn install' : `${pm} install`, 'download-simple');
-  P('ci', 'clean install (frozen lockfile)', { npm: 'npm ci', pnpm: 'pnpm install --frozen-lockfile', yarn: 'yarn install --immutable', bun: 'bun install --frozen-lockfile' }[pm], 'lock-key');
+  P(
+    'ci',
+    'clean install (frozen lockfile)',
+    { npm: 'npm ci', pnpm: 'pnpm install --frozen-lockfile', yarn: 'yarn install --immutable', bun: 'bun install --frozen-lockfile' }[pm],
+    'lock-key',
+  );
   P('add', 'add package', `${addCmd} \${args}`, 'plus-circle', 'package names, e.g. zod react-query');
   P('add-dev', 'add dev dependency', `${addCmd} -D \${args}`, 'plus-circle', 'package names');
-  P('remove', 'remove package', `${{ npm: 'npm uninstall', pnpm: 'pnpm remove', yarn: 'yarn remove', bun: 'bun remove' }[pm]} \${args}`, 'minus-circle', 'package names');
+  P(
+    'remove',
+    'remove package',
+    `${{ npm: 'npm uninstall', pnpm: 'pnpm remove', yarn: 'yarn remove', bun: 'bun remove' }[pm]} \${args}`,
+    'minus-circle',
+    'package names',
+  );
   P('update', 'update packages', `${pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn up' : `${pm} update`}`, 'arrow-circle-up');
   P('outdated', 'list outdated', `${pm === 'yarn' ? 'yarn outdated' : `${pm} outdated`}`, 'list-magnifying-glass');
   if (pm !== 'bun') P('audit', 'security audit', `${pm === 'yarn' ? 'yarn npm audit' : `${pm} audit`}`, 'shield-check');
-  if (pm !== 'bun') P('why', 'why is a package installed', `${pm === 'npm' ? 'npm explain' : `${pm} why`} \${args}`, 'question', 'package name');
-  P('list', 'list top-level dependencies', `${pm === 'yarn' ? 'yarn info --name-only' : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`}`, 'list-bullets');
+  if (pm !== 'bun')
+    P('why', 'why is a package installed', `${pm === 'npm' ? 'npm explain' : `${pm} why`} \${args}`, 'question', 'package name');
+  P(
+    'list',
+    'list top-level dependencies',
+    `${pm === 'yarn' ? 'yarn info --name-only' : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`}`,
+    'list-bullets',
+  );
   P('dlx', 'run a package binary (dlx/npx)', `${DLX[pm]} \${args}`, 'rocket-launch', 'command, e.g. create-vite@latest');
   P('exec', 'run a local binary', `${EXEC[pm]} \${args}`, 'terminal-window', 'binary and args');
   if (pm === 'npm') {
@@ -310,7 +335,13 @@ function mentions(text: string | undefined, name: string): boolean {
 function pythonProject(ctx: Ctx): void {
   const { scan } = ctx;
   const py = [scan.read['pyproject.toml'], scan.read['requirements.txt'], scan.read['Pipfile']].filter(Boolean).join('\n');
-  const tool = has(scan, 'uv.lock') ? 'uv' : has(scan, 'poetry.lock') || /\[tool\.poetry\]/.test(scan.read['pyproject.toml'] ?? '') ? 'Poetry' : has(scan, 'Pipfile') ? 'Pipenv' : 'pip';
+  const tool = has(scan, 'uv.lock')
+    ? 'uv'
+    : has(scan, 'poetry.lock') || /\[tool\.poetry\]/.test(scan.read['pyproject.toml'] ?? '')
+      ? 'Poetry'
+      : has(scan, 'Pipfile')
+        ? 'Pipenv'
+        : 'pip';
   ctx.techs.add('Python');
   ctx.techs.add(tool);
   const T = (name: string, title: string, cmd: string, icon: string, args?: string, group: ProjectGroup = 'tools') =>
@@ -331,7 +362,8 @@ function pythonProject(ctx: Ctx): void {
     T('pipenv-add', 'add package', 'pipenv install ${args}', 'plus-circle', 'package names', 'packageManager');
   } else {
     T('venv', 'create virtual env (.venv)', 'python -m venv .venv', 'cube', undefined, 'packageManager');
-    if (scan.read['requirements.txt'] !== undefined) T('pip-install', 'install requirements', 'python -m pip install -r requirements.txt', 'download-simple', undefined, 'packageManager');
+    if (scan.read['requirements.txt'] !== undefined)
+      T('pip-install', 'install requirements', 'python -m pip install -r requirements.txt', 'download-simple', undefined, 'packageManager');
     else T('pip-install', 'install project (editable)', 'python -m pip install -e .', 'download-simple', undefined, 'packageManager');
     T('pip-add', 'pip install package', 'python -m pip install ${args}', 'plus-circle', 'package names', 'packageManager');
     T('pip-outdated', 'list outdated', 'python -m pip list --outdated', 'list-magnifying-glass', undefined, 'packageManager');
@@ -363,7 +395,12 @@ function pythonProject(ctx: Ctx): void {
   if (mentions(py, 'flask')) ctx.techs.add('Flask');
 }
 
-function simple(ctx: Ctx, tech: string, rows: Array<[name: string, title: string, cmd: string, icon: string, args?: string]>, group: ProjectGroup = 'tools'): void {
+function simple(
+  ctx: Ctx,
+  tech: string,
+  rows: Array<[name: string, title: string, cmd: string, icon: string, args?: string]>,
+  group: ProjectGroup = 'tools',
+): void {
   ctx.techs.add(tech);
   for (const [name, title, cmd, icon, args] of rows) add(ctx, tech, group, name, `${tech}: ${title}`, cmd, { icon, args });
 }
@@ -377,7 +414,11 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
   if (deno) {
     ctx.techs.add('Deno');
     const tasks = (deno.tasks && typeof deno.tasks === 'object' ? deno.tasks : {}) as Record<string, string>;
-    for (const [task, body] of Object.entries(tasks)) add(ctx, 'Deno', 'scripts', `deno-${task}`, `deno task: ${task}`, `deno task ${task}`, { icon: scriptIcon(task), description: String(body) });
+    for (const [task, body] of Object.entries(tasks))
+      add(ctx, 'Deno', 'scripts', `deno-${task}`, `deno task: ${task}`, `deno task ${task}`, {
+        icon: scriptIcon(task),
+        description: String(body),
+      });
     simple(ctx, 'Deno', [
       ['deno-test', 'test', 'deno test', 'flask'],
       ['deno-fmt', 'format', 'deno fmt', 'magic-wand'],
@@ -389,16 +430,24 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
   const make = scan.read['Makefile'] ?? scan.read['makefile'];
   if (make !== undefined) {
     ctx.techs.add('Make');
-    for (const target of makeTargets(make)) add(ctx, 'Make', 'scripts', `make-${target}`, `make ${target}`, `make ${target}`, { icon: scriptIcon(target) });
+    for (const target of makeTargets(make))
+      add(ctx, 'Make', 'scripts', `make-${target}`, `make ${target}`, `make ${target}`, { icon: scriptIcon(target) });
   }
   const just = scan.read['justfile'] ?? scan.read['Justfile'];
   if (just !== undefined) {
     ctx.techs.add('just');
-    for (const recipe of justRecipes(just)) add(ctx, 'just', 'scripts', `just-${recipe}`, `just ${recipe}`, `just ${recipe}`, { icon: scriptIcon(recipe) });
+    for (const recipe of justRecipes(just))
+      add(ctx, 'just', 'scripts', `just-${recipe}`, `just ${recipe}`, `just ${recipe}`, { icon: scriptIcon(recipe) });
   }
-  if (has(scan, 'Taskfile.yml', 'Taskfile.yaml')) simple(ctx, 'Task', [['task', 'run task', 'task ${args}', 'list-checks', 'task name (empty lists tasks)']], 'scripts');
+  if (has(scan, 'Taskfile.yml', 'Taskfile.yaml'))
+    simple(ctx, 'Task', [['task', 'run task', 'task ${args}', 'list-checks', 'task name (empty lists tasks)']], 'scripts');
 
-  if (scan.read['pyproject.toml'] !== undefined || scan.read['requirements.txt'] !== undefined || scan.read['Pipfile'] !== undefined || has(scan, 'setup.py', 'manage.py')) {
+  if (
+    scan.read['pyproject.toml'] !== undefined ||
+    scan.read['requirements.txt'] !== undefined ||
+    scan.read['Pipfile'] !== undefined ||
+    has(scan, 'setup.py', 'manage.py')
+  ) {
     pythonProject(ctx);
   }
 
@@ -450,7 +499,9 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
       ['mvn-package', 'package', `${mvn} package`, 'package'],
       ['mvn-test', 'test', `${mvn} test`, 'flask'],
       ['mvn-install', 'clean install', `${mvn} clean install`, 'download-simple'],
-      ...(pom.includes('spring-boot') ? [['mvn-boot', 'Spring Boot run', `${mvn} spring-boot:run`, 'rocket-launch'] as [string, string, string, string]] : []),
+      ...(pom.includes('spring-boot')
+        ? [['mvn-boot', 'Spring Boot run', `${mvn} spring-boot:run`, 'rocket-launch'] as [string, string, string, string]]
+        : []),
     ]);
     ctx.techs.add('Java');
   }
@@ -461,8 +512,12 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
       ['gradle-build', 'build', `${g} build`, 'hammer'],
       ['gradle-test', 'test', `${g} test`, 'flask'],
       ['gradle-clean', 'clean', `${g} clean`, 'broom'],
-      ...(gradle.includes('spring') ? [['gradle-boot', 'Spring Boot run', `${g} bootRun`, 'rocket-launch'] as [string, string, string, string]] : []),
-      ...(gradle.includes('com.android') ? [['gradle-debug', 'assemble debug APK', `${g} assembleDebug`, 'android-logo'] as [string, string, string, string]] : []),
+      ...(gradle.includes('spring')
+        ? [['gradle-boot', 'Spring Boot run', `${g} bootRun`, 'rocket-launch'] as [string, string, string, string]]
+        : []),
+      ...(gradle.includes('com.android')
+        ? [['gradle-debug', 'assemble debug APK', `${g} assembleDebug`, 'android-logo'] as [string, string, string, string]]
+        : []),
     ]);
   }
 
@@ -471,7 +526,9 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
     simple(ctx, 'Ruby', [
       ['bundle-install', 'bundle install', 'bundle install', 'download-simple'],
       ['bundle-add', 'add gem', 'bundle add ${args}', 'plus-circle', 'gem name'],
-      ...(mentions(gemfile, 'rspec') || mentions(gemfile, 'rspec-rails') ? [['rspec', 'run specs', 'bundle exec rspec', 'flask'] as [string, string, string, string]] : []),
+      ...(mentions(gemfile, 'rspec') || mentions(gemfile, 'rspec-rails')
+        ? [['rspec', 'run specs', 'bundle exec rspec', 'flask'] as [string, string, string, string]]
+        : []),
     ]);
     if (mentions(gemfile, 'rails')) {
       simple(ctx, 'Rails', [
@@ -486,13 +543,21 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
 
   const composer = safeJson(scan.read['composer.json']);
   if (composer) {
-    simple(ctx, 'Composer', [
-      ['composer-install', 'install', 'composer install', 'download-simple'],
-      ['composer-update', 'update', 'composer update', 'arrow-circle-up'],
-      ['composer-require', 'require package', 'composer require ${args}', 'plus-circle', 'vendor/package'],
-    ], 'packageManager');
+    simple(
+      ctx,
+      'Composer',
+      [
+        ['composer-install', 'install', 'composer install', 'download-simple'],
+        ['composer-update', 'update', 'composer update', 'arrow-circle-up'],
+        ['composer-require', 'require package', 'composer require ${args}', 'plus-circle', 'vendor/package'],
+      ],
+      'packageManager',
+    );
     const scripts = (composer.scripts && typeof composer.scripts === 'object' ? composer.scripts : {}) as Record<string, unknown>;
-    for (const script of Object.keys(scripts)) add(ctx, 'Composer', 'scripts', `composer-${script}`, `composer: ${script}`, `composer run-script ${script}`, { icon: scriptIcon(script) });
+    for (const script of Object.keys(scripts))
+      add(ctx, 'Composer', 'scripts', `composer-${script}`, `composer: ${script}`, `composer run-script ${script}`, {
+        icon: scriptIcon(script),
+      });
     if (has(scan, 'artisan')) {
       simple(ctx, 'Laravel', [
         ['artisan-serve', 'serve', 'php artisan serve', 'rocket-launch'],
@@ -509,7 +574,9 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
       ['mix-deps', 'deps.get', 'mix deps.get', 'download-simple'],
       ['mix-test', 'test', 'mix test', 'flask'],
       ['mix-format', 'format', 'mix format', 'magic-wand'],
-      ...(scan.read['mix.exs']!.includes(':phoenix') ? [['phx-server', 'Phoenix server', 'mix phx.server', 'rocket-launch'] as [string, string, string, string]] : []),
+      ...(scan.read['mix.exs']!.includes(':phoenix')
+        ? [['phx-server', 'Phoenix server', 'mix phx.server', 'rocket-launch'] as [string, string, string, string]]
+        : []),
     ]);
   }
 
@@ -577,7 +644,8 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
     ]);
   }
 
-  if (has(scan, '.pre-commit-config.yaml')) simple(ctx, 'pre-commit', [['pre-commit', 'run on all files', 'pre-commit run --all-files', 'check-circle']]);
+  if (has(scan, '.pre-commit-config.yaml'))
+    simple(ctx, 'pre-commit', [['pre-commit', 'run on all files', 'pre-commit run --all-files', 'check-circle']]);
 }
 
 /** Runs detection over every scanned directory. Root commands have no name prefix. */
@@ -589,7 +657,11 @@ export function detectProject(scans: readonly DirectoryScan[]): DetectionResult 
   for (const scan of [...scans].sort((a, b) => a.dir.localeCompare(b.dir))) {
     let prefix = '';
     if (scan.dir) {
-      let base = scan.dir.split('/').pop()!.toLowerCase().replace(/[^a-z0-9-]/g, '-');
+      let base = scan.dir
+        .split('/')
+        .pop()!
+        .toLowerCase()
+        .replace(/[^a-z0-9-]/g, '-');
       if (usedPrefixes.has(base)) base = scan.dir.toLowerCase().replace(/[^a-z0-9-]/g, '-');
       usedPrefixes.add(base);
       prefix = `${base}:`;

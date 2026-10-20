@@ -2,9 +2,27 @@
 
 import { esc, icon, isMac, vscode } from './common';
 
-interface Feature { id: string; title: string; description: string; enabled: boolean }
-interface Provider { id: string; title: string; description: string; icon: string; prefix: string; enabled: boolean; features: Feature[] }
-interface Model { backend: string; id: string; label: string; detail?: string }
+interface Feature {
+  id: string;
+  title: string;
+  description: string;
+  enabled: boolean;
+}
+interface Provider {
+  id: string;
+  title: string;
+  description: string;
+  icon: string;
+  prefix: string;
+  enabled: boolean;
+  features: Feature[];
+}
+interface Model {
+  backend: string;
+  id: string;
+  label: string;
+  detail?: string;
+}
 interface State {
   version: string;
   platform: string;
@@ -14,7 +32,17 @@ interface State {
   inlineTrigger: boolean;
   history: boolean;
   providers: Provider[];
-  ai: { provider: string; model: string; baseUrl: string; effort: string; confirm: boolean; customInstructions: string; label: string; keys: Record<string, boolean>; models: Model[] };
+  ai: {
+    provider: string;
+    model: string;
+    baseUrl: string;
+    effort: string;
+    confirm: boolean;
+    customInstructions: string;
+    label: string;
+    keys: Record<string, boolean>;
+    models: Model[];
+  };
   commands: { name: string; title: string; description?: string; icon: string; category: string }[];
   packs: { id: string; name: string; version: string; commands: number }[];
   stack: string[];
@@ -118,7 +146,10 @@ function providersPage(): string {
           ${
             p.features.length
               ? `<div class="chips">${p.features
-                  .map((f) => `<button class="chip" aria-pressed="${esc(String(f.enabled))}" ${p.enabled ? '' : 'disabled'} data-feature="${esc(p.id)}|${esc(f.id)}" title="${esc(f.description)}">${icon(f.enabled ? 'check' : 'minus')} ${esc(f.title)}</button>`)
+                  .map(
+                    (f) =>
+                      `<button class="chip" aria-pressed="${esc(String(f.enabled))}" ${p.enabled ? '' : 'disabled'} data-feature="${esc(p.id)}|${esc(f.id)}" title="${esc(f.description)}">${icon(f.enabled ? 'check' : 'minus')} ${esc(f.title)}</button>`,
+                  )
                   .join('')}</div>`
               : ''
           }
@@ -260,7 +291,8 @@ function generalPage(): string {
 function helpPage(): string {
   const run = (command: string, label: string, ic: string, arg?: string) =>
     `<button class="btn ghost" data-run="${esc(command)}"${arg ? ` data-arg="${esc(arg)}"` : ''}>${icon(ic)} ${label}</button>`;
-  const link = (key: string, label: string, ic: string) => `<button class="btn ghost" data-link="${esc(key)}">${icon(ic)} ${label}</button>`;
+  const link = (key: string, label: string, ic: string) =>
+    `<button class="btn ghost" data-link="${esc(key)}">${icon(ic)} ${label}</button>`;
   return `<div class="page">
     <h1>Help & Support</h1>
     <p class="lead">Learn Slashi, fix a problem, send feedback, or help keep the project going.</p>

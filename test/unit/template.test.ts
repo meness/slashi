@@ -17,7 +17,12 @@ describe('expandTemplate', () => {
     expect(expandTemplate('echo $${HOME}', resolve)).toBe('echo ${HOME}');
   });
   it('lists referenced variables', () => {
-    expect(templateVariables('a ${args} ${q:file} ${env:X} $${skip} ${input:name}').sort()).toEqual(['args', 'env:X', 'file', 'input:name']);
+    expect(templateVariables('a ${args} ${q:file} ${env:X} $${skip} ${input:name}').sort()).toEqual([
+      'args',
+      'env:X',
+      'file',
+      'input:name',
+    ]);
   });
 });
 

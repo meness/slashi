@@ -12,7 +12,11 @@ export type CommandSource = 'user' | 'team' | 'pack' | 'extension';
 class Cancelled extends Error {}
 
 /** Builds the `${…}` variable resolver for the current editor and run. */
-export async function variableResolver(editor: vscode.TextEditor | undefined, args: string, vars: Record<string, string>): Promise<(name: string) => string | undefined> {
+export async function variableResolver(
+  editor: vscode.TextEditor | undefined,
+  args: string,
+  vars: Record<string, string>,
+): Promise<(name: string) => string | undefined> {
   const doc = editor?.document;
   const file = doc && !doc.isUntitled ? doc.uri.fsPath : '';
   const folder = (doc && vscode.workspace.getWorkspaceFolder(doc.uri)?.uri.fsPath) ?? workspaceRoot() ?? '';
@@ -69,7 +73,12 @@ async function approveSteps(ctx: RunContext, def: CustomCommandDef, source: Comm
   if (state.get<string>(key) === fingerprint) return true;
   const detail = risky.map((s) => `• ${describeStep(s)}`).join('\n');
   const origin = source === 'team' ? 'this workspace (.vscode/slashi.json)' : 'an installed action pack';
-  const choice = await vscode.window.showWarningMessage(`/${def.name} comes from ${origin} and will:`, { modal: true, detail }, 'Run', 'Always Allow');
+  const choice = await vscode.window.showWarningMessage(
+    `/${def.name} comes from ${origin} and will:`,
+    { modal: true, detail },
+    'Run',
+    'Always Allow',
+  );
   if (choice === 'Always Allow') await state.update(key, fingerprint);
   return choice === 'Run' || choice === 'Always Allow';
 }
@@ -79,7 +88,11 @@ export async function runCustomCommand(def: CustomCommandDef, ctx: RunContext, s
   const editor = await ctx.editor();
   let args = ctx.args;
   if (!args && usesArgs(def)) {
-    const value = await vscode.window.showInputBox({ title: def.title ?? `/${def.name}`, prompt: def.args ?? 'Arguments', ignoreFocusOut: true });
+    const value = await vscode.window.showInputBox({
+      title: def.title ?? `/${def.name}`,
+      prompt: def.args ?? 'Arguments',
+      ignoreFocusOut: true,
+    });
     if (value === undefined) return;
     args = value;
   }
@@ -99,7 +112,13 @@ export async function runCustomCommand(def: CustomCommandDef, ctx: RunContext, s
   }
 }
 
-async function runStep(step: StepDef, ctx: RunContext, expand: (s: string) => string, vars: Record<string, string>, editor: vscode.TextEditor | undefined): Promise<void> {
+async function runStep(
+  step: StepDef,
+  ctx: RunContext,
+  expand: (s: string) => string,
+  vars: Record<string, string>,
+  editor: vscode.TextEditor | undefined,
+): Promise<void> {
   if ('command' in step) {
     const args = step.args === undefined ? [] : [expandDeep(step.args, expand)];
     await vscode.commands.executeCommand(step.command, ...args);
@@ -131,7 +150,9 @@ async function runStep(step: StepDef, ctx: RunContext, expand: (s: string) => st
     await ctx.services.showAnswer({
       title: 'Custom AI step',
       prompt: expand(step.ai),
-      system: 'You are a concise, expert software engineer helping inside VS Code.' + (output === 'panel' ? '' : ' Reply with ONLY the resulting text or code, no explanations and no code fences.'),
+      system:
+        'You are a concise, expert software engineer helping inside VS Code.' +
+        (output === 'panel' ? '' : ' Reply with ONLY the resulting text or code, no explanations and no code fences.'),
       user: expand(step.ai),
       mode: output === 'panel' ? 'answer' : output === 'replace' ? 'edit' : 'insert',
       editor: editor ?? (await ctx.editor()),

@@ -4,10 +4,30 @@
   "title": "Design System: Slashi",
   "extensions": {
     "colorMeta": {
-      "brand-violet": { "role": "primary", "displayName": "Slash Violet", "canonical": "#8b5cf6", "tonalRamp": ["#2e1065", "#4c1d95", "#5b21b6", "#6d28d9", "#7c3aed", "#8b5cf6", "#a78bfa", "#ddd6fe"] },
-      "brand-cyan": { "role": "primary", "displayName": "Slash Cyan", "canonical": "#06b6d4", "tonalRamp": ["#083344", "#164e63", "#155e75", "#0e7490", "#0891b2", "#06b6d4", "#22d3ee", "#cffafe"] },
-      "ai-rose": { "role": "secondary", "displayName": "AI Rose", "canonical": "#f472b6", "tonalRamp": ["#500724", "#831843", "#9d174d", "#be185d", "#db2777", "#ec4899", "#f472b6", "#fce7f3"] },
-      "celebrate-amber": { "role": "tertiary", "displayName": "Celebrate Amber", "canonical": "#f5a524", "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#f5a524", "#fef3c7"] },
+      "brand-violet": {
+        "role": "primary",
+        "displayName": "Slash Violet",
+        "canonical": "#8b5cf6",
+        "tonalRamp": ["#2e1065", "#4c1d95", "#5b21b6", "#6d28d9", "#7c3aed", "#8b5cf6", "#a78bfa", "#ddd6fe"]
+      },
+      "brand-cyan": {
+        "role": "primary",
+        "displayName": "Slash Cyan",
+        "canonical": "#06b6d4",
+        "tonalRamp": ["#083344", "#164e63", "#155e75", "#0e7490", "#0891b2", "#06b6d4", "#22d3ee", "#cffafe"]
+      },
+      "ai-rose": {
+        "role": "secondary",
+        "displayName": "AI Rose",
+        "canonical": "#f472b6",
+        "tonalRamp": ["#500724", "#831843", "#9d174d", "#be185d", "#db2777", "#ec4899", "#f472b6", "#fce7f3"]
+      },
+      "celebrate-amber": {
+        "role": "tertiary",
+        "displayName": "Celebrate Amber",
+        "canonical": "#f5a524",
+        "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#f5a524", "#fef3c7"]
+      },
       "accent-fallback": { "role": "neutral", "displayName": "Theme Focus Accent (fallback)", "canonical": "#7c5cff" }
     },
     "typographyMeta": {
@@ -16,7 +36,11 @@
       "section-label": { "displayName": "Section label", "purpose": "Sticky result-group headers, uppercase." }
     },
     "shadows": [
-      { "name": "overlay", "value": "0 24px 70px -12px rgb(0 0 0 / 0.55), 0 8px 24px -8px rgb(0 0 0 / 0.4)", "purpose": "Floating surfaces only: Spotlight card, actions menu, onboarding demo. Softer, violet-tinted in light themes; none in high contrast." },
+      {
+        "name": "overlay",
+        "value": "0 24px 70px -12px rgb(0 0 0 / 0.55), 0 8px 24px -8px rgb(0 0 0 / 0.4)",
+        "purpose": "Floating surfaces only: Spotlight card, actions menu, onboarding demo. Softer, violet-tinted in light themes; none in high contrast."
+      },
       { "name": "brand-glow", "value": "0 6px 18px -6px color-mix(in srgb, #8b5cf6 70%, transparent)", "purpose": "Under the slash mark." },
       { "name": "focus-halo", "value": "0 0 0 3px var(--accent-soft)", "purpose": "Focused inputs and the composer." }
     ],
@@ -92,12 +116,36 @@
       "Fully legible in high contrast (shadows and soft fills switch off, borders take over)"
     ],
     "rules": [
-      { "name": "The Borrowed Palette Rule", "body": "A new color must come from a --vscode-* variable, a color-mix() of existing tokens, or a new token in base.css with a body.vscode-light variant. Hex literals in component CSS are a bug. The only exception is #fff on the brand gradient.", "section": "colors" },
-      { "name": "The Tint, Don't Fill Rule", "body": "Accent and provider colors appear as 10–16% color-mix fills with a slightly stronger border, never as solid backgrounds. The single solid accent surface is the primary button, which takes the theme's own button color.", "section": "colors" },
-      { "name": "The Half-Step Rule", "body": "The UI scale moves in half-pixel steps between 10.5 and 14.5px because it sits beside the editor's own 13px chrome. Pick an existing step; do not add new sizes inside that range.", "section": "typography" },
-      { "name": "The Mono Means Syntax Rule", "body": "Mono is only for things the user could type or copy: commands, args, paths, code, model ids. Never for decoration.", "section": "typography" },
-      { "name": "The Float-Only Rule", "body": "Only floating surfaces cast --shadow. A card inside a page never does.", "section": "elevation" },
-      { "name": "The High-Contrast Rule", "body": "In vscode-high-contrast* themes, --shadow and --accent-soft are switched off and --border becomes the contrast border. The active row gets a dashed contrast outline instead of a tint. Every new state needs a visible non-color, non-shadow signal.", "section": "elevation" }
+      {
+        "name": "The Borrowed Palette Rule",
+        "body": "A new color must come from a --vscode-* variable, a color-mix() of existing tokens, or a new token in base.css with a body.vscode-light variant. Hex literals in component CSS are a bug. The only exception is #fff on the brand gradient.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tint, Don't Fill Rule",
+        "body": "Accent and provider colors appear as 10–16% color-mix fills with a slightly stronger border, never as solid backgrounds. The single solid accent surface is the primary button, which takes the theme's own button color.",
+        "section": "colors"
+      },
+      {
+        "name": "The Half-Step Rule",
+        "body": "The UI scale moves in half-pixel steps between 10.5 and 14.5px because it sits beside the editor's own 13px chrome. Pick an existing step; do not add new sizes inside that range.",
+        "section": "typography"
+      },
+      {
+        "name": "The Mono Means Syntax Rule",
+        "body": "Mono is only for things the user could type or copy: commands, args, paths, code, model ids. Never for decoration.",
+        "section": "typography"
+      },
+      {
+        "name": "The Float-Only Rule",
+        "body": "Only floating surfaces cast --shadow. A card inside a page never does.",
+        "section": "elevation"
+      },
+      {
+        "name": "The High-Contrast Rule",
+        "body": "In vscode-high-contrast* themes, --shadow and --accent-soft are switched off and --border becomes the contrast border. The active row gets a dashed contrast outline instead of a tint. Every new state needs a visible non-color, non-shadow signal.",
+        "section": "elevation"
+      }
     ],
     "dos": [
       "Do take every neutral from a --vscode-* variable or a color-mix() of base.css tokens, and give every new hue a body.vscode-light variant.",

@@ -22,8 +22,16 @@ export class ProjectProvider implements SlashProvider {
   readonly placeholder = 'Run a script or project tool…';
   readonly features = [
     { id: 'scripts', title: 'Scripts', description: 'package.json scripts, Makefile targets, just recipes, deno tasks, composer scripts.' },
-    { id: 'packageManager', title: 'Package manager', description: 'install, add, remove, update, audit… for npm, pnpm, yarn, bun, uv, Poetry, pip, Composer.' },
-    { id: 'tools', title: 'Frameworks & tools', description: 'Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Docker, Cargo, Go, .NET, Maven, Gradle, Terraform…' },
+    {
+      id: 'packageManager',
+      title: 'Package manager',
+      description: 'install, add, remove, update, audit… for npm, pnpm, yarn, bun, uv, Poetry, pip, Composer.',
+    },
+    {
+      id: 'tools',
+      title: 'Frameworks & tools',
+      description: 'Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Docker, Cargo, Go, .NET, Maven, Gradle, Terraform…',
+    },
   ];
   readonly scopes = [{ prefix: 'npm', title: 'Scripts', icon: 'package', placeholder: 'Run a package script…', feature: 'scripts' }];
 
@@ -111,7 +119,11 @@ export class ProjectProvider implements SlashProvider {
   private async scan(folder: vscode.WorkspaceFolder): Promise<DirectoryScan[]> {
     const dirs = new Set<string>(['']);
     try {
-      const found = await vscode.workspace.findFiles(new vscode.RelativePattern(folder, MANIFEST_GLOB), '{**/node_modules/**,**/.git/**,**/vendor/**,**/target/**,**/dist/**,**/build/**,**/.venv/**,**/venv/**}', 400);
+      const found = await vscode.workspace.findFiles(
+        new vscode.RelativePattern(folder, MANIFEST_GLOB),
+        '{**/node_modules/**,**/.git/**,**/vendor/**,**/target/**,**/dist/**,**/build/**,**/.venv/**,**/venv/**}',
+        400,
+      );
       for (const uri of found) {
         const rel = path.posix.dirname(vscode.workspace.asRelativePath(uri, false).replace(/\\/g, '/'));
         dirs.add(rel === '.' ? '' : rel);

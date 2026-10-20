@@ -102,7 +102,8 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
   command('slashi.welcome', () => onboarding.open());
   command('slashi.openNative', (query?: unknown) => services.openPopup(typeof query === 'string' ? query : '', 'native'));
   command('slashi.run', async (slash?: unknown) => {
-    const text = typeof slash === 'string' && slash ? slash : await vscode.window.showInputBox({ prompt: 'Slash command to run', value: '/' });
+    const text =
+      typeof slash === 'string' && slash ? slash : await vscode.window.showInputBox({ prompt: 'Slash command to run', value: '/' });
     if (!text) return;
     services.snapshot = snapshotEditor();
     if (!(await services.runSlash(text))) void vscode.window.showWarningMessage(`Slashi: no command matches “${text}”.`);
@@ -118,7 +119,15 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
   command('slashi.openMarketplace', scoped('market'));
   command('slashi.doWithAI', async (task?: unknown) => {
     const snapshot = snapshotEditor();
-    const text = typeof task === 'string' && task ? task : await vscode.window.showInputBox({ title: 'Do with AI', prompt: 'Describe what you want to do', placeHolder: 'e.g. split the editor, turn on word wrap and run the tests', ignoreFocusOut: true });
+    const text =
+      typeof task === 'string' && task
+        ? task
+        : await vscode.window.showInputBox({
+            title: 'Do with AI',
+            prompt: 'Describe what you want to do',
+            placeHolder: 'e.g. split the editor, turn on word wrap and run the tests',
+            ignoreFocusOut: true,
+          });
     if (text) await doWithAi(services, text, snapshot);
   });
   command('slashi.ask', async (question?: unknown) => {
@@ -140,7 +149,12 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
       { title: 'Which provider is the key for?' },
     );
     if (!backend) return;
-    const key = await vscode.window.showInputBox({ title: `${backend.label} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in your settings files.' });
+    const key = await vscode.window.showInputBox({
+      title: `${backend.label} API key`,
+      password: true,
+      ignoreFocusOut: true,
+      prompt: 'Stored in VS Code Secret Storage, never in your settings files.',
+    });
     if (!key) return;
     await services.ai.setKey(backend.value, key);
     if (get('ai.provider', 'auto') === 'auto' && backend.value !== 'openaiCompatible') await updateGlobal('ai.provider', backend.value);
@@ -157,13 +171,17 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
   command('slashi.editTeamCommands', () => editTeamCommands());
   command('slashi.exportPack', () => exportPack());
   command('slashi.installPack', async (url?: unknown) => {
-    const value = typeof url === 'string' && url ? url : await vscode.window.showInputBox({ prompt: 'Action pack URL (https://…) or file path' });
+    const value =
+      typeof url === 'string' && url ? url : await vscode.window.showInputBox({ prompt: 'Action pack URL (https://…) or file path' });
     if (value) await installFromUrl(services, /^[a-z]+:\/\//i.test(value) ? value : vscode.Uri.file(value).toString());
   });
   command('slashi.customizeShortcuts', () => vscode.commands.executeCommand('workbench.action.openGlobalKeybindings', 'slashi.'));
   command('slashi.copyDiagnostics', async () => {
     await vscode.env.clipboard.writeText(await diagnostics(services));
-    const choice = await vscode.window.showInformationMessage('Slashi diagnostics copied. Paste them into your bug report.', 'Report a Bug');
+    const choice = await vscode.window.showInformationMessage(
+      'Slashi diagnostics copied. Paste them into your bug report.',
+      'Report a Bug',
+    );
     if (choice) await vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS.bug));
   });
   command('slashi.clearHistory', async () => {
@@ -191,7 +209,9 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
   status.command = 'slashi.open';
   const updateStatus = async () => {
     const label = await services.ai.label();
-    const tooltip = new vscode.MarkdownString(`**Slashi** — \`${shortcutLabel()}\`\n\nType \`/\` to do anything.\n\nAI: ${label || '_not connected_ — `/ai-setup`'}`);
+    const tooltip = new vscode.MarkdownString(
+      `**Slashi** — \`${shortcutLabel()}\`\n\nType \`/\` to do anything.\n\nAI: ${label || '_not connected_ — `/ai-setup`'}`,
+    );
     tooltip.isTrusted = false;
     status.tooltip = tooltip;
     if (get('statusBar.enabled', true)) status.show();
@@ -241,10 +261,22 @@ async function toggleProviders(registry: Registry): Promise<void> {
   const items: Item[] = [];
   for (const p of registry.all().filter((p) => p.id !== 'system')) {
     items.push({ label: p.title, kind: vscode.QuickPickItemKind.Separator, provider: p.id });
-    items.push({ label: `$(circle-large-filled) ${p.title}`, description: `/${p.prefix}`, detail: p.description, picked: isProviderEnabled(p.id), provider: p.id });
+    items.push({
+      label: `$(circle-large-filled) ${p.title}`,
+      description: `/${p.prefix}`,
+      detail: p.description,
+      picked: isProviderEnabled(p.id),
+      provider: p.id,
+    });
     if (p.features.length > 1) {
       for (const f of p.features) {
-        items.push({ label: `      ${f.title}`, description: f.description, picked: isFeatureEnabled(p.id, f.id), provider: p.id, feature: f.id });
+        items.push({
+          label: `      ${f.title}`,
+          description: f.description,
+          picked: isFeatureEnabled(p.id, f.id),
+          provider: p.id,
+          feature: f.id,
+        });
       }
     }
   }
@@ -260,7 +292,8 @@ async function toggleProviders(registry: Registry): Promise<void> {
     if (item.kind === vscode.QuickPickItemKind.Separator) continue;
     const enabled = on.has(`${item.provider}|${item.feature ?? ''}`);
     if (item.feature) {
-      if (isFeatureEnabled(item.provider as never, item.feature) !== enabled) await setFeatureEnabled(item.provider as never, item.feature, enabled);
+      if (isFeatureEnabled(item.provider as never, item.feature) !== enabled)
+        await setFeatureEnabled(item.provider as never, item.feature, enabled);
     } else if (isProviderEnabled(item.provider as never) !== enabled) {
       await updateGlobal(`providers.${item.provider}`, enabled);
     }

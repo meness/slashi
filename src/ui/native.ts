@@ -28,8 +28,18 @@ export async function openNative(services: Services, initialQuery = ''): Promise
   const scopes = services.registry.scopes();
   const prefixes = scopes.map((s) => s.prefix);
   const scopeItems: SlashItem[] = scopes.map((s) => ({
-    id: `scope:${s.prefix}`, name: s.prefix, title: s.title, description: s.placeholder, icon: s.icon, providerId: s.providerId,
-    category: 'Search in…', kind: 'scope', scopePrefix: s.prefix, feature: s.feature ?? 'default', boost: 2, run: () => undefined,
+    id: `scope:${s.prefix}`,
+    name: s.prefix,
+    title: s.title,
+    description: s.placeholder,
+    icon: s.icon,
+    providerId: s.providerId,
+    category: 'Search in…',
+    kind: 'scope',
+    scopePrefix: s.prefix,
+    feature: s.feature ?? 'default',
+    boost: 2,
+    run: () => undefined,
   }));
   const all = [...items, ...scopeItems];
   const index = indexItems(all);
@@ -44,7 +54,9 @@ export async function openNative(services: Services, initialQuery = ''): Promise
 
   const toPick = (r: RankedView): Pick => ({
     label: `$(${toCodicon(r.icon)}) ${r.title}`,
-    description: [r.name ? `/${r.name}${r.args ? ` ‹${r.args.placeholder}›` : ''}` : '', r.badge ? `· ${r.badge}` : ''].filter(Boolean).join(' '),
+    description: [r.name ? `/${r.name}${r.args ? ` ‹${r.args.placeholder}›` : ''}` : '', r.badge ? `· ${r.badge}` : '']
+      .filter(Boolean)
+      .join(' '),
     detail: get('popup.showDescriptions', true) ? r.description : undefined,
     alwaysShow: true,
     id: r.id,
@@ -59,7 +71,11 @@ export async function openNative(services: Services, initialQuery = ''): Promise
     const scope = query.scope ? scopes.find((s) => s.prefix === query.scope) : undefined;
     let source = index;
     if (scope) {
-      source = byScope.get(scope.prefix) ?? indexItems(all.filter((i) => i.providerId === scope.providerId && i.kind !== 'scope' && (!scope.feature || i.feature === scope.feature)));
+      source =
+        byScope.get(scope.prefix) ??
+        indexItems(
+          all.filter((i) => i.providerId === scope.providerId && i.kind !== 'scope' && (!scope.feature || i.feature === scope.feature)),
+        );
       byScope.set(scope.prefix, source);
     }
     const local = rank(source, query, { limit, frecency: services.history.map });
@@ -89,7 +105,7 @@ export async function openNative(services: Services, initialQuery = ''): Promise
     try {
       if (pick.ai === 'do') return await doWithAi(services, query.term, snapshot);
       const item = services.registry.find(pick.ai === 'ask' ? 'ai:ask' : pick.id!);
-      if (item) await execute(services, item, pick.ai === 'ask' ? query.term : pick.argText ?? '', action, snapshot);
+      if (item) await execute(services, item, pick.ai === 'ask' ? query.term : (pick.argText ?? ''), action, snapshot);
     } catch (err) {
       await reportError(services, err, pick.label);
     }
