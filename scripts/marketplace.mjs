@@ -45,7 +45,8 @@ if (process.argv.includes('--check')) {
   try {
     current = readFileSync(indexPath, 'utf8');
   } catch {}
-  if (current !== index) {
+  // Compare ignoring line endings (Windows checkouts may use CRLF).
+  if (current.replace(/\r\n/g, '\n') !== index) {
     console.error('✗ marketplace/index.json is out of date — run `npm run marketplace`.');
     process.exit(1);
   }

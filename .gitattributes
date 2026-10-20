@@ -1,0 +1,5 @@
+# Keep LF everywhere so generated files (marketplace/index.json) and scripts match on Windows.
+* text=auto eol=lf
+*.png binary
+*.woff2 binary
+*.vsix binary
