@@ -24,7 +24,7 @@ jobs:
       created: ${{ steps.release.outputs.release_created }}
       tag: ${{ steps.release.outputs.tag_name }}
     steps:
-      - uses: googleapis/release-please-action@v5
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
         with:
           # A PAT or app token lets CI run on the release PR; GITHUB_TOKEN-created PRs don't trigger workflows.
@@ -45,10 +45,10 @@ jobs:
       OVSX_PAT: ${{ secrets.OVSX_PAT }}
       TAG: ${{ needs.release-please.outputs.tag }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ needs.release-please.outputs.tag }}
-      - uses: actions/setup-node@v7
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 22
           cache: npm
@@ -66,7 +66,7 @@ jobs:
       # Entra ID over OIDC (no stored secret) is preferred: Azure DevOps global PATs stop working on 2026-12-01.
       - name: Sign in to Microsoft Entra ID
         if: env.AZURE_CLIENT_ID != ''
-        uses: azure/login@v3
+        uses: azure/login@a641126d1b8aa4d1fa005f4f92df94a3a4c4c906 # v3.1.0
         with:
           client-id: ${{ vars.AZURE_CLIENT_ID }}
           tenant-id: ${{ vars.AZURE_TENANT_ID }}

@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Question or help
+    url: https://github.com/meness/slashi/discussions/categories/q-a
+    about: Ask how to do something with Slashi, or share a tip.
   - name: Security vulnerability
     url: https://github.com/meness/slashi/security/advisories/new
     about: Please report security issues privately.
