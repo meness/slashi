@@ -7,7 +7,7 @@ Thanks for helping make Slashi better! Bug reports, ideas, action packs, docs an
 ```bash
 git clone https://github.com/meness/slashi && cd slashi
 npm ci
-npm run check        # typecheck, unit tests, smoke test, marketplace validation
+npm run check        # typecheck, lint, format, unit tests, smoke test, marketplace validation
 ```
 
 Open the folder in VS Code and press **F5** to launch an Extension Development Host with your build. Run `npm run watch` to rebuild on save, then **Developer: Reload Window** in the host.
@@ -41,6 +41,7 @@ docs/                 plan & audit, building actions
 - **Keep `src/core` pure.** It must not import `vscode`, so it stays testable and can run in webviews.
 - **Every icon is a [Phosphor](https://phosphoricons.com) name.** A unit test checks that each one exists.
 - **Add tests** for new logic in `src/core` and new detections in `detect.ts`.
+- **Lint and format.** oxlint (type-aware) and Prettier run on staged files before each commit and in CI. `npm run lint:fix && npm run format` fixes most findings. Turn a rule off only with a reason in `.oxlintrc.json`, or an inline `oxlint-disable-next-line` with a comment saying why.
 - **Webviews** must work in light, dark and high-contrast themes. Use the tokens in `src/webview/styles/base.css`, never hard-coded colors, except the brand gradient. No inline `style` attributes (CSP).
 - **Security first:** never run terminal commands without the user choosing them. Keep secrets in `SecretStorage` and escape model output.
 - Run `npm run screenshots` if you change the UI, and include before/after images in your PR.
@@ -56,7 +57,7 @@ docs/                 plan & audit, building actions
 - Small, focused PRs with a clear description.
 - Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org): `type(scope): summary`, for example `feat(git): add stash provider`. A `commit-msg` hook (lefthook, installed by `npm install`) and a CI check on PR titles enforce it. PRs are squash-merged, so the title becomes the commit on `main`.
 - The type decides the next version: `fix:` and `perf:` bump the patch, `feat:` the minor, and `!` after the type (`feat!:`) or a `BREAKING CHANGE:` footer the major. While Slashi is below 1.0, breaking changes bump the minor instead. `docs`, `build`, `ci`, `test`, `refactor`, `style` and `chore` don't trigger a release.
-- CI must be green: typecheck, unit tests, smoke test, marketplace validation and packaging on Linux, macOS and Windows.
+- CI must be green: lint and format, typecheck, unit tests, smoke test, marketplace validation and packaging on Linux, macOS and Windows.
 
 ## Releases
 

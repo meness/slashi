@@ -22,8 +22,8 @@ describe('intent', () => {
   it('extracts JSON from fenced or chatty output', () => {
     expect(extractJson('Sure!\n```json\n{"a": "}"}\n```')).toEqual({ a: '}' });
     expect(extractJson('Plan: {"a": {"b": 1}} done')).toEqual({ a: { b: 1 } });
-    expect(() => extractJson('no json here')).toThrow();
-    expect(() => extractJson('{"a": 1')).toThrow();
+    expect(() => extractJson('no json here')).toThrow('The model did not return JSON.');
+    expect(() => extractJson('{"a": 1')).toThrow('The model returned incomplete JSON.');
   });
 
   it('parses and filters malformed steps', () => {

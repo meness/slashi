@@ -122,7 +122,9 @@ export class TerminalProvider implements SlashProvider {
     // Task providers can be slow (e.g. npm scanning); never block the popup for long.
     const list = await Promise.race([
       Promise.resolve(vscode.tasks.fetchTasks()).catch(() => [] as vscode.Task[]),
-      new Promise<vscode.Task[] | undefined>((r) => setTimeout(() => r(undefined), 1500)),
+      new Promise<vscode.Task[] | undefined>((r) => {
+        setTimeout(() => r(undefined), 1500);
+      }),
     ]);
     if (!list) {
       // Finish in the background and refresh once ready.

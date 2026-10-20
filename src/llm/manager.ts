@@ -27,7 +27,7 @@ export class AiManager {
     const key = (id: BackendId) => async () => this.secrets.get(secretKey(id));
     this.backends = {
       vscode: new VsCodeLmBackend(),
-      anthropic: new AnthropicBackend(key('anthropic'), () => get('ai.anthropicEffort', 'medium')),
+      anthropic: new AnthropicBackend(key('anthropic'), () => get<'low' | 'medium' | 'high'>('ai.anthropicEffort', 'medium')),
       openai: new OpenAiCompatibleBackend('openai', () => OPENAI_URL, key('openai')),
       ollama: new OpenAiCompatibleBackend(
         'ollama',

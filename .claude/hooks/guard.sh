@@ -14,13 +14,15 @@ case "$1" in
   post)
     if [[ "$rel" == src/core/*.ts ]] && grep -qE "from ['\"]vscode['\"]|require\(['\"]vscode['\"]\)" "$file"; then
       echo "$rel imports vscode, but src/core must stay pure (CONTRIBUTING.md). Move that code out of src/core." >&2; exit 2
-    fi ;;
+    fi
+    # Keep edited files formatted; Prettier skips ignored and unknown files.
+    [[ -f "$file" ]] && npx --no -- prettier --write --ignore-unknown --log-level=silent "$file" ;;
   stop)
     # Don't loop: if we already blocked once this turn, let Claude stop.
     [[ $(jq -r '.stop_hook_active' <<<"$input") == true ]] && exit 0
     [[ -z $(git status --porcelain -- src test schemas marketplace) ]] && exit 0
-    if ! out=$(npm run -s typecheck 2>&1 && npm test -s 2>&1); then
-      echo "Typecheck/tests failed:" >&2; tail -40 <<<"$out" >&2; exit 2
+    if ! out=$(npm run -s typecheck 2>&1 && npm run -s lint 2>&1 && npm test -s 2>&1); then
+      echo "Typecheck/lint/tests failed:" >&2; tail -40 <<<"$out" >&2; exit 2
     fi ;;
 esac
 exit 0

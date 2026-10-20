@@ -2,7 +2,10 @@
 
 interface VsCodeApi {
   postMessage(message: unknown): void;
+  // Typed per call, like VS Code's own acquireVsCodeApi() declaration.
+  // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
   getState<T>(): T | undefined;
+  // oxlint-disable-next-line typescript/no-unnecessary-type-parameters
   setState<T>(state: T): void;
 }
 

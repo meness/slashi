@@ -1,5 +1,27 @@
-# Keep LF everywhere so generated files (marketplace/index.json) and scripts match on Windows.
+# LF everywhere, on every OS: generated files (marketplace/index.json), shell hooks and
+# `prettier --check` must match byte for byte on Windows too.
 * text=auto eol=lf
-*.png binary
+
+# Binary assets: never normalize or diff as text.
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.icns  binary
+*.woff  binary
 *.woff2 binary
-*.vsix binary
+*.ttf   binary
+*.vsix  binary
+*.zip   binary
+
+# Generated: collapsed in GitHub diffs and left out of language stats. Change the source, not these.
+marketplace/index.json linguist-generated
+package-lock.json      linguist-generated
+
+# JSON files that allow comments, so GitHub highlights them correctly.
+tsconfig.json                 linguist-language=JSON-with-Comments
+src/webview/tsconfig.json     linguist-language=JSON-with-Comments
+test/integration/tsconfig.json linguist-language=JSON-with-Comments
+.vscode/*.json                linguist-language=JSON-with-Comments
+.oxlintrc.json                linguist-language=JSON-with-Comments

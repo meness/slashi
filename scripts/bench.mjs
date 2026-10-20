@@ -1,6 +1,6 @@
 // Benchmarks Slashi's ranking on synthetic catalogues: node scripts/bench.mjs
 import { build } from 'esbuild';
-import { dirname, join, resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');

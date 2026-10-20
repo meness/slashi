@@ -8,7 +8,7 @@ export function webviewHtml(
   options: { title: string; script: string; styles: string[]; body?: string },
 ): string {
   const nonce = randomBytes(16).toString('base64');
-  const asset = (path: string) => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview', path));
+  const asset = (path: string) => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview', path)).toString();
   const csp = [
     "default-src 'none'",
     `img-src ${webview.cspSource} https: data:`,

@@ -458,7 +458,7 @@ export async function pickModel(services: Services): Promise<void> {
     { label: '$(sparkle) Auto', description: 'Copilot/VS Code models → Claude → OpenAI → Ollama', detail: 'Use whatever is available' },
     ...models.map((m) => ({
       label: `${m.id === current ? '$(check) ' : ''}${m.label}`,
-      description: `${BACKEND_LABELS[m.backend]}`,
+      description: BACKEND_LABELS[m.backend],
       detail: m.detail,
       model: m,
     })),
