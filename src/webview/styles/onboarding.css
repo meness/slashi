@@ -80,6 +80,7 @@ h1 .ph { color: var(--celebrate); }
   text-align: left; cursor: pointer; transition: border-color 160ms, transform 160ms var(--ease), opacity 160ms;
 }
 .provider:hover, .ai-option:hover, .example:hover { transform: translateY(-1px); border-color: var(--border); }
+.provider:active, .ai-option:active, .example:active { transform: scale(0.97); }
 .provider:focus-visible, .ai-option:focus-visible, .example:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .provider:not(.on) { opacity: 0.5; }
 .provider .text, .ai-option .text { flex: 1; min-width: 0; }

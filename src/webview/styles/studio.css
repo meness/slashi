@@ -25,8 +25,10 @@ nav button {
   cursor: pointer;
   color: var(--muted);
   font-weight: 500;
+  transition: background 120ms var(--ease), transform 120ms var(--ease);
 }
 nav button i { font-size: 17px; }
+nav button:active { transform: scale(0.97); }
 nav button:hover { background: color-mix(in srgb, var(--fg) 6%, transparent); color: var(--fg); }
 nav button[aria-current='page'] { background: var(--accent-soft); color: var(--fg); }
 nav button[aria-current='page'] i { color: var(--brand-a); }

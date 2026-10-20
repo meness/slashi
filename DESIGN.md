@@ -267,8 +267,8 @@ Pills, 24px tall, 11.5px. **Filter chips** (Studio) are hairline and muted at re
 - **Do** use the radius scale (`--radius-xs` … `--radius`) and keep containers rounder than their contents.
 - **Do** verify every UI change in light, dark and high-contrast with `npm run screenshots`.
 - **Do** use Phosphor icons only (regular for chrome, duotone for tiles); a unit test checks the names.
-- **Do** honor `prefers-reduced-motion`; `base.css` already kills animations and transitions globally.
-- **Do** keep motion short and eased with `--ease` (`cubic-bezier(0.2, 0.8, 0.2, 1)`): 110–160ms for UI, up to 360ms for onboarding step entrances.
+- **Do** honor `prefers-reduced-motion`; `base.css` drops movement and keyframes but keeps opacity and color fades, and the spinner slows instead of stopping.
+- **Do** keep motion short and eased with `--ease` (`cubic-bezier(0.2, 0.8, 0.2, 1)`): 110–160ms for UI, up to 360ms for onboarding step entrances. Presses scale to 0.97, and popovers grow from their trigger. Spotlight itself opens with no animation, because it is a keyboard toggle used all day.
 
 ### Don't:
 - **Don't** write hex literals in component CSS; add a token instead (the `#fff` on the brand gradient is the only exception).

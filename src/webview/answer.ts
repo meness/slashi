@@ -176,6 +176,7 @@ document.addEventListener('click', (e) => {
   const target = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!target) return;
   const block = (attr: string) => codeBlocks[Number(target.getAttribute(attr))];
+  if (target.hasAttribute('data-copy') || target.id === 'copy') copied(target);
   if (target.hasAttribute('data-copy')) vscode.postMessage({ type: 'copy', text: block('data-copy').code });
   else if (target.hasAttribute('data-insert')) vscode.postMessage({ type: 'insert', text: block('data-insert').code });
   else if (target.hasAttribute('data-file')) vscode.postMessage({ type: 'newFile', text: block('data-file').code, language: block('data-file').lang });
@@ -185,6 +186,24 @@ document.addEventListener('click', (e) => {
   else if (target.id === 'stop') vscode.postMessage({ type: 'stop' });
   else if (target.id === 'send') send();
 });
+
+// Confirms the copy on the button itself, then restores the label.
+function copied(button: HTMLElement): void {
+  const label = button.dataset.label ?? button.innerHTML;
+  button.dataset.label = label;
+  const swap = (html: string) => {
+    button.innerHTML = html;
+    button.classList.remove('swap');
+    void button.offsetWidth; // restart the swap animation
+    button.classList.add('swap');
+  };
+  swap(`${icon('check')} Copied`);
+  window.clearTimeout(Number(button.dataset.timer));
+  button.dataset.timer = String(window.setTimeout(() => {
+    swap(label);
+    delete button.dataset.label;
+  }, 1200));
+}
 
 function send(): void {
   const text = follow.value.trim();
