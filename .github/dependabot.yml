@@ -10,6 +10,9 @@ updates:
     ignore:
       # Keep the API types pinned to the minimum supported VS Code version.
       - dependency-name: '@types/vscode'
+      # Match the Node.js version bundled with VS Code (22.x).
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
   - package-ecosystem: github-actions
     directory: /
     schedule:
