@@ -39,7 +39,24 @@ const waitFor = async (predicate, label, timeout = 5000) => {
   }
 };
 
+// Removes expected errors (each is both logged and shown) so the final “no errors” check stays meaningful.
+const takeErrors = (messages, pattern) => {
+  let taken = 0;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    if (messages[i][0] === 'error' && pattern.test(messages[i][1])) {
+      messages.splice(i, 1);
+      taken++;
+    }
+  }
+  return taken;
+};
+
 let passed = 0;
+// A step awaiting something that never happens empties the event loop, and Node would exit 0 as if all passed.
+process.on('beforeExit', () => {
+  console.error(`Smoke test stopped early after ${passed} checks (a step never finished).`);
+  process.exit(1);
+});
 const check = (name, fn) => {
   fn();
   passed++;
@@ -202,6 +219,173 @@ const check = (name, fn) => {
     assert.match(calls.shown.inserted, /"tidy"/);
     assert.ok(!(calls.written ?? []).some((p) => p.endsWith('slashi.json')));
   });
+
+  // Team commands: a file with // comments is read, and the wizard never wipes it.
+  const teamPath = path.join(mock.workspace.workspaceFolders[0].uri.fsPath, '.vscode', 'slashi.json');
+  let teamText = '// shared with the team\n{"commands": [{"name": "ship", "steps": [{"terminal": "echo ship"}]}]}';
+  const readFile = mock.workspace.fs.readFile;
+  mock.workspace.fs.readFile = async (u) => (u.fsPath === teamPath ? Buffer.from(teamText) : readFile(u));
+  const reloadTeam = () => mock.workspace.getConfiguration('slashi').update('customCommands', []);
+  await reloadTeam();
+
+  // Scripted answers for the input boxes and pickers the next command asks.
+  const script = (answers) => {
+    const { showInputBox, showQuickPick } = mock.window;
+    const next = async () => answers.shift();
+    mock.window.showInputBox = next;
+    mock.window.showQuickPick = async (items) => {
+      const pick = answers.shift();
+      return typeof pick === 'function' ? (await items).find(pick) : pick;
+    };
+    return () => Object.assign(mock.window, { showInputBox, showQuickPick });
+  };
+  const wizard = () => ['deploy', 'Deploy', (i) => i.type === 'notify', 'hi', (i) => i.type === 'done', (i) => i.value === 'team'];
+  let restore = script(wizard());
+  await mock.commands.executeCommand('slashi.newCommand');
+  restore();
+  check('the wizard adds to a team file with comments instead of replacing it', () => {
+    const saved = JSON.parse(calls.writtenText[teamPath]);
+    assert.deepEqual(saved.commands.map((c) => c.name), ['ship', 'deploy']);
+  });
+  teamText = '{"commands": [{"name": "ship", "steps": [],}]}';
+  delete calls.writtenText[teamPath];
+  restore = script(wizard());
+  await mock.commands.executeCommand('slashi.newCommand');
+  restore();
+  const brokenErrors = takeErrors(calls.messages, /Fix \.vscode\/slashi\.json first/);
+  check('the wizard refuses to rewrite a team file it cannot parse', () => {
+    assert.equal(brokenErrors, 2, 'expected the error to be logged and shown');
+    assert.equal(calls.writtenText[teamPath], undefined);
+  });
+
+  // Team commands that reach a shell ask first; "Always Allow" lasts until the steps change.
+  teamText = '// shared with the team\n{"commands": [{"name": "ship", "steps": [{"terminal": "echo ship"}]}]}';
+  await reloadTeam();
+  const showWarning = mock.window.showWarningMessage;
+  let prompts = 0;
+  let approval;
+  mock.window.showWarningMessage = async (message, ...rest) => {
+    if (/^\/ship comes from/.test(message)) {
+      prompts++;
+      return approval;
+    }
+    return showWarning(message, ...rest);
+  };
+  const ran = () => calls.terminals.filter((t) => t.text.startsWith('echo ship')).length;
+  await api.run('/ship');
+  check('a team command does not run when its prompt is dismissed', () => assert.deepEqual([prompts, ran()], [1, 0]));
+  approval = 'Always Allow';
+  await api.run('/ship');
+  await api.run('/ship');
+  check('“Always Allow” runs it and skips the prompt next time', () => assert.deepEqual([prompts, ran()], [2, 2]));
+  teamText = teamText.replace('echo ship', 'echo ship --force');
+  await reloadTeam();
+  approval = undefined;
+  await api.run('/ship');
+  check('changed steps ask again', () => assert.deepEqual([prompts, ran()], [3, 2]));
+  mock.window.showWarningMessage = showWarning;
+  mock.workspace.fs.readFile = readFile;
+  await reloadTeam();
+
+  // /fix on a file too large to send whole refuses instead of offering an Apply that would cut the file.
+  const big = 'x'.repeat(70_000);
+  const bigDoc = { uri: mock.Uri.file(path.join(__dirname, 'big.ts')), languageId: 'typescript', isUntitled: false, isClosed: false, lineCount: 1, version: 1, getText: () => big };
+  const bigSel = new mock.Selection(0, 0, 0, 0);
+  mock.window.activeTextEditor = { document: bigDoc, selection: bigSel, selections: [bigSel], viewColumn: 1 };
+  const answersBefore = calls.panels.filter((p) => p.viewType === 'slashi.answer').length;
+  await api.run('/fix');
+  mock.window.activeTextEditor = undefined;
+  const tooLarge = takeErrors(calls.messages, /too large to edit/);
+  check('AI edits refuse code that was cut to fit the model', () => {
+    assert.equal(tooLarge, 2, 'expected a “too large” error');
+    assert.equal(calls.panels.filter((p) => p.viewType === 'slashi.answer').length, answersBefore);
+  });
+
+  // A fake VS Code language model drives the AI flows below.
+  const requests = [];
+  let reply = () => [];
+  mock.lm.selectChatModels = async () => [
+    {
+      id: 'fake', name: 'Fake', family: 'fake', vendor: 'test',
+      sendRequest: async (messages) => {
+        requests.push(messages);
+        const parts = reply(requests.length);
+        return { text: (async function* () { for (const p of parts) yield await p; })() };
+      },
+    },
+  ];
+
+  // Do with AI: an item that runs a shell command is confirmed even with confirmation turned off.
+  await mock.workspace.getConfiguration('slashi').update('ai.confirmBeforeRun', false);
+  reply = () => ['{"reply": "ok", "steps": [{"type": "item", "id": "term:run", "args": "echo pwned"}]}'];
+  await api.run('/do make the font bigger');
+  check('Do with AI confirms shell-running items when confirmation is off', () => {
+    assert.ok(calls.messages.some((m) => m[0] === 'info' && m[2]?.modal && /echo pwned/.test(m[2].detail)));
+    assert.ok(!calls.terminals.some((t) => t.text === 'echo pwned'));
+  });
+  const modals = calls.messages.filter((m) => m[2]?.modal).length;
+  reply = () => ['{"reply": "ok", "steps": [{"type": "setting", "key": "editor.fontSize", "value": 20}]}'];
+  await api.run('/do make the font bigger');
+  check('…and still runs editor-only plans without asking', () => {
+    assert.equal(mock._settings['editor.fontSize'], 20);
+    assert.equal(calls.messages.filter((m) => m[2]?.modal).length, modals);
+  });
+  await mock.workspace.getConfiguration('slashi').update('ai.confirmBeforeRun', true);
+
+  // A second question while the first still streams: the old stream must not leak into the new conversation.
+  let releaseFirst;
+  const firstHeld = new Promise((r) => (releaseFirst = r));
+  reply = (n) => (n === 3 ? ['old-', firstHeld.then(() => 'tail')] : ['new']); // request 3 is “/ask one”
+  const firstAsk = api.run('/ask one');
+  const answerPanel = await waitFor(() => calls.panels.find((p) => p.viewType === 'slashi.answer'), 'answer panel');
+  answerPanel.webview._receive({ type: 'ready' });
+  await waitFor(() => calls.posted.some((m) => m.type === 'delta' && m.text === 'old-'), 'first delta');
+  const mark = calls.posted.length;
+  await api.run('/ask two');
+  releaseFirst();
+  await firstAsk;
+  const after = calls.posted.slice(mark);
+  check('a replaced AI answer posts nothing more', () => {
+    assert.ok(!after.some((m) => m.type === 'delta' && m.text === 'tail'));
+    assert.equal(after.filter((m) => m.type === 'done').length, 1);
+  });
+  answerPanel.webview._receive({ type: 'followup', text: 'more' });
+  await waitFor(() => requests.length === 5, 'follow-up request');
+  check('…and its text never joins the next conversation', () => {
+    const history = requests[4].map((m) => m.c);
+    assert.equal(history.length, 3);
+    assert.ok(!history.some((c) => /old-/.test(c)), JSON.stringify(history));
+    assert.equal(history[1], 'new');
+  });
+  mock.lm.selectChatModels = async () => [];
+
+  // Help & Support: links open only by key, and diagnostics never include secrets.
+  await api.run('/help-center');
+  check('/help-center opens the Studio Help & Support tab', () => assert.ok(calls.posted.some((m) => m.type === 'tab' && m.tab === 'help')));
+  await api.run('/support');
+  check('/support opens the donation page', () => assert.equal(calls.opened, 'https://github.com/meness/slashi/blob/main/DONATE.md'));
+  studio.webview._receive({ type: 'openLink', link: 'bug' });
+  await waitFor(() => calls.opened?.includes('bug_report.yml'), 'bug link');
+  calls.opened = undefined;
+  studio.webview._receive({ type: 'openLink', link: 'toString' });
+  studio.webview._receive({ type: 'openLink', link: 'https://evil.dev' });
+  await waitFor(() => calls.messages.filter((m) => m[0] === 'error' && /Unknown link/.test(m[1])).length === 2, 'rejected links');
+  check('Studio opens only known help links', () => {
+    assert.equal(calls.opened, undefined);
+    assert.equal(takeErrors(calls.messages, /Unknown link/), 2);
+  });
+  secrets.set('slashi.apiKey.anthropic', 'sk-ant-SMOKE-SECRET');
+  await mock.workspace.getConfiguration('slashi').update('ai.baseUrl', 'https://private.example.internal/v1');
+  await api.run('/diagnostics');
+  check('/diagnostics copies versions and setup without secrets', () => {
+    assert.match(calls.clipboard, /^Slashi: \d+\.\d+\.\d+\nEditor: Visual Studio Code /);
+    assert.match(calls.clipboard, /^AI: .+ \(setting: auto\)$/m);
+    assert.match(calls.clipboard, /Features off: extensions\.installed, transforms\.case/);
+    assert.ok(!/SMOKE-SECRET|private\.example|sk-ant/.test(calls.clipboard), calls.clipboard);
+    assert.ok(!calls.clipboard.includes(path.resolve(__dirname, '../..')), 'no workspace paths');
+  });
+  secrets.delete('slashi.apiKey.anthropic');
+  await mock.workspace.getConfiguration('slashi').update('ai.baseUrl', '');
 
   // Artifacts used by scripts/screenshots.mjs
   const out = path.join(__dirname, 'out');

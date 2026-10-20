@@ -1,6 +1,8 @@
 // Detects the technologies a repository uses and generates matching slash commands.
 // Pure: the extension host scans the workspace and passes file names + manifest contents in.
 
+import { parseJsonc } from './text';
+
 export interface DirectoryScan {
   /** Path relative to the workspace folder, '' for the root. Uses forward slashes. */
   dir: string;
@@ -97,8 +99,7 @@ function safeJson(text: string | undefined): Record<string, unknown> | undefined
   if (!text) return undefined;
   try {
     // Tolerate JSONC comments in deno.jsonc and friends.
-    const cleaned = text.replace(/^\s*\/\/.*$/gm, '');
-    const parsed = JSON.parse(cleaned);
+    const parsed = parseJsonc(text);
     return parsed && typeof parsed === 'object' ? (parsed as Record<string, unknown>) : undefined;
   } catch {
     return undefined;

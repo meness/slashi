@@ -119,6 +119,7 @@ const vscode = {
   SymbolKind: new Proxy({}, { get: (_t, k) => (typeof k === 'string' ? k.length : 0) }),
   env: {
     shell: '/bin/bash',
+    appName: 'Visual Studio Code',
     clipboard: { readText: async () => '', writeText: async (t) => { calls.clipboard = t; } },
     openExternal: async (u) => { calls.opened = u.toString(); return true; },
   },
@@ -184,7 +185,7 @@ const vscode = {
       readFile: async (u) => fs.readFileSync(u.fsPath),
       stat: async (u) => fs.statSync(u.fsPath),
       createDirectory: async () => {},
-      writeFile: async (u) => { (calls.written ??= []).push(u.fsPath); },
+      writeFile: async (u, bytes) => { (calls.written ??= []).push(u.fsPath); (calls.writtenText ??= {})[u.fsPath] = Buffer.from(bytes ?? []).toString('utf8'); },
       copy: async () => {},
       delete: async () => {},
     },

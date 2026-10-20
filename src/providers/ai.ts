@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { get, updateGlobal } from '../config';
+import { innermostRoot } from '../core/paths';
+import { stripFences } from '../core/text';
 import { BACKEND_LABELS } from '../llm/types';
 import type { Services } from '../services/services';
 import type { RunContext, SlashItem, SlashProvider } from '../types';
@@ -29,6 +31,8 @@ interface CodeContext {
   file: string;
   code: string;
   hasSelection: boolean;
+  /** The code was cut at MAX_CONTEXT, so the model never saw all of what an edit would replace. */
+  truncated: boolean;
   diagnostics: string;
 }
 
@@ -36,7 +40,7 @@ async function codeContext(ctx: RunContext, requireCode: boolean): Promise<CodeC
   const editor = await ctx.editor();
   if (!editor) {
     if (requireCode) void vscode.window.showWarningMessage('Open a file (and optionally select code) first.');
-    return requireCode ? undefined : { language: '', file: '', code: '', hasSelection: false, diagnostics: '' };
+    return requireCode ? undefined : { language: '', file: '', code: '', hasSelection: false, truncated: false, diagnostics: '' };
   }
   const doc = editor.document;
   const sel = editor.selection;
@@ -44,14 +48,15 @@ async function codeContext(ctx: RunContext, requireCode: boolean): Promise<CodeC
   const range = hasSelection ? new vscode.Range(sel.start, sel.end) : new vscode.Range(0, 0, doc.lineCount, 0);
   const includeFile = hasSelection || requireCode || get('ai.includeFileContext', true);
   let code = includeFile ? doc.getText(range) : '';
-  if (code.length > MAX_CONTEXT) code = `${code.slice(0, MAX_CONTEXT)}\n… (truncated)`;
+  const truncated = code.length > MAX_CONTEXT;
+  if (truncated) code = `${code.slice(0, MAX_CONTEXT)}\n… (truncated)`;
   const diagnostics = vscode.languages
     .getDiagnostics(doc.uri)
     .filter((d) => range.intersection(d.range))
     .slice(0, 30)
     .map((d) => `- line ${d.range.start.line + 1}: ${d.message}${d.source ? ` (${d.source})` : ''}`)
     .join('\n');
-  return { editor, language: doc.languageId, file: doc.isUntitled ? 'untitled' : vscode.workspace.asRelativePath(doc.uri), code, hasSelection, diagnostics };
+  return { editor, language: doc.languageId, file: doc.isUntitled ? 'untitled' : vscode.workspace.asRelativePath(doc.uri), code, hasSelection, truncated, diagnostics };
 }
 
 function codeBlock(c: CodeContext): string {
@@ -86,8 +91,10 @@ export class AiProvider implements SlashProvider {
     const s = this.services;
     const answer = (title: string, prompt: string, user: string, c?: CodeContext, extra = '') =>
       s.showAnswer({ title, prompt, system: baseSystem(s, extra), user, mode: 'answer', editor: c?.editor, language: c?.language });
-    const edit = (title: string, prompt: string, instruction: string, c: CodeContext) =>
-      s.showAnswer({
+    const edit = async (title: string, prompt: string, instruction: string, c: CodeContext) => {
+      // Applying an answer for cut-off code would delete everything after the cut.
+      if (c.truncated) throw new Error(`${c.hasSelection ? 'The selection' : c.file} is too large to edit in one go. Select ${c.hasSelection ? 'a smaller part' : 'the part to change'} and try again.`);
+      await s.showAnswer({
         title,
         prompt,
         system: baseSystem(s, EDIT_RULES),
@@ -96,6 +103,7 @@ export class AiProvider implements SlashProvider {
         editor: c.editor,
         language: c.language,
       });
+    };
 
     return [
       make({
@@ -227,7 +235,7 @@ async function shellCommand(services: Services, description: string): Promise<vo
       token,
     ),
   );
-  const clean = command.replace(/^```\w*\n?|```$/g, '').trim();
+  const clean = stripFences(command).trim();
   if (!clean) return;
   const choice = await vscode.window.showInformationMessage(clean, { modal: true, detail: 'Review the command before running it.' }, 'Run in Terminal', 'Copy');
   if (choice === 'Run in Terminal') services.terminal.run(clean);
@@ -248,7 +256,7 @@ export function gitApi(): { repositories: GitRepository[] } | undefined {
 async function commitMessage(services: Services): Promise<void> {
   const api = gitApi();
   const uri = vscode.window.activeTextEditor?.document.uri;
-  const repo = api?.repositories.find((r) => uri?.fsPath.startsWith(r.rootUri.fsPath)) ?? api?.repositories[0];
+  const repo = innermostRoot(uri?.fsPath, api?.repositories ?? [], (r) => r.rootUri.fsPath) ?? api?.repositories[0];
   if (!repo) throw new Error('No Git repository found.');
   let diff = await repo.diff(true);
   const staged = !!diff.trim();
@@ -265,7 +273,7 @@ async function commitMessage(services: Services): Promise<void> {
       token,
     ),
   );
-  repo.inputBox.value = message.replace(/^```\w*\n?|```$/g, '').trim();
+  repo.inputBox.value = stripFences(message).trim();
   await vscode.commands.executeCommand('workbench.view.scm');
   void vscode.window.setStatusBarMessage(`$(sparkle) Commit message written${staged ? '' : ' (from unstaged changes)'}`, 4000);
 }

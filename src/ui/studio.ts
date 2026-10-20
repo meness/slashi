@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, updateGlobal } from '../config';
 import type { ProviderId } from '../core/protocol';
+import { HELP_LINKS, type HelpLink } from '../data/links';
 import type { BackendId, ModelInfo } from '../llm/types';
 import type { Services } from '../services/services';
 import { panelIcon, webviewHtml, webviewOptions } from './html';
@@ -20,7 +21,8 @@ type FromStudio =
   | { type: 'selectModel'; model: ModelInfo }
   | { type: 'refreshModels' }
   | { type: 'testAi' }
-  | { type: 'command'; command: string; args?: unknown };
+  | { type: 'command'; command: string; args?: unknown }
+  | { type: 'openLink'; link: HelpLink };
 
 /** Studio: one place to toggle providers/features, connect AI and manage commands. */
 export class Studio implements vscode.Disposable {
@@ -102,6 +104,10 @@ export class Studio implements vscode.Disposable {
         break;
       case 'command':
         await vscode.commands.executeCommand(m.command, m.args);
+        break;
+      case 'openLink':
+        if (!Object.hasOwn(HELP_LINKS, m.link)) throw new Error(`Unknown link ${m.link}`);
+        await vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS[m.link]));
         break;
     }
   }

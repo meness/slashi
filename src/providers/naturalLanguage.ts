@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { get } from '../config';
-import { buildIntentPrompt, parseIntentResponse, validatePlan, type IntentCandidate, type PlanStep } from '../core/intent';
+import { buildIntentPrompt, parseIntentResponse, stepReachesShell, validatePlan, type IntentCandidate, type PlanStep } from '../core/intent';
 import { parseQuery } from '../core/query';
 import { indexItems, rank } from '../core/search';
 import { execute } from '../executor';
@@ -101,8 +101,8 @@ export async function doWithAi(services: Services, task: string, snapshot: Edito
     if (step.type === 'setting') return `Set ${settingTitle(step.key)} = ${JSON.stringify(step.value)}`;
     return `Run in terminal: ${step.command}`;
   };
-  const hasTerminal = plan.steps.some((s) => s.type === 'terminal');
-  if (get('ai.confirmBeforeRun', true) || hasTerminal) {
+  const reachesShell = plan.steps.some((s) => stepReachesShell(s, (id) => byId.get(id)?.providerId));
+  if (get('ai.confirmBeforeRun', true) || reachesShell) {
     const detail = plan.steps.map((s, i) => `${i + 1}. ${describe(s)}${s.why ? `  (${s.why})` : ''}`).join('\n');
     const choice = await vscode.window.showInformationMessage(plan.reply || 'Run this plan?', { modal: true, detail }, 'Run');
     if (choice !== 'Run') return;

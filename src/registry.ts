@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { hiddenMatcher, isFeatureEnabled, isProviderEnabled } from './config';
+import { enabledFeatures, hiddenMatcher, isFeatureEnabled, isProviderEnabled } from './config';
 import type { FrecencyMap, ItemView, ProviderId, RankedView, ScopeView } from './core/protocol';
 import type { ParsedQuery } from './core/query';
 import { indexItems, rank, type IndexedItem } from './core/search';
@@ -17,6 +17,8 @@ export class Registry implements vscode.Disposable {
   private readonly cache = new Map<ProviderId, CacheEntry>();
   private readonly pending = new Map<ProviderId, Promise<CacheEntry>>();
   private readonly byId = new Map<string, SlashItem>();
+  /** Ids each provider has put in `byId`, so items that disappear are dropped on the next load. */
+  private readonly idsByProvider = new Map<ProviderId, Set<string>>();
   private readonly disposables: vscode.Disposable[] = [];
   private readonly onDidChangeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.onDidChangeEmitter.event;
@@ -85,14 +87,26 @@ export class Registry implements vscode.Disposable {
         } catch (err) {
           this.log.error(`Provider ${provider.id} failed`, err);
         }
+        const ids = this.idsByProvider.get(provider.id) ?? new Set<string>();
+        this.idsByProvider.set(provider.id, ids);
+        const current = this.pending.get(provider.id) === pending;
+        // Only the newest load prunes, so a superseded load that finishes late can't drop the newer items.
+        const fresh = current ? new Set(items.map((i) => i.id)) : undefined;
+        if (fresh) {
+          for (const id of ids) if (!fresh.has(id)) {
+            this.byId.delete(id);
+            ids.delete(id);
+          }
+        }
         for (const item of items) {
           item.providerId = provider.id;
           item.feature ??= 'default';
           this.byId.set(item.id, item);
+          ids.add(item.id);
         }
         const remote = items.filter((i) => i.remote);
         const entry: CacheEntry = { items: items.filter((i) => !i.remote), remote, remoteIndex: indexItems(remote) };
-        if (this.pending.get(provider.id) === pending) {
+        if (current) {
           this.cache.set(provider.id, entry);
           this.pending.delete(provider.id);
         }
@@ -106,7 +120,8 @@ export class Registry implements vscode.Disposable {
 
   private visible(provider: SlashProvider): (item: SlashItem) => boolean {
     const hidden = hiddenMatcher();
-    return (item) => isFeatureEnabled(provider.id, item.feature) && !hidden(item.id);
+    const enabled = enabledFeatures();
+    return (item) => enabled(provider.id, item.feature) && !hidden(item.id);
   }
 
   /** Local (non-remote) items of every enabled provider. */

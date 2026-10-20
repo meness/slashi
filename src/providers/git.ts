@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { isFeatureEnabled } from '../config';
+import { innermostRoot } from '../core/paths';
 import type { SlashItem, SlashProvider } from '../types';
 import { ensureArgs, itemFactory } from './util';
 
@@ -30,7 +31,7 @@ function repositories(): Repo[] {
 function currentRepo(): Repo {
   const repos = repositories();
   const uri = vscode.window.activeTextEditor?.document.uri;
-  const repo = repos.find((r) => uri?.fsPath.startsWith(r.rootUri.fsPath)) ?? repos[0];
+  const repo = innermostRoot(uri?.fsPath, repos, (r) => r.rootUri.fsPath) ?? repos[0];
   if (!repo) throw new Error('No Git repository is open.');
   return repo;
 }

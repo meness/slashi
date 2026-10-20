@@ -26,6 +26,7 @@ const TABS = [
   { id: 'commands', title: 'My Commands', icon: 'lightning-a' },
   { id: 'shortcuts', title: 'Shortcuts', icon: 'keyboard' },
   { id: 'general', title: 'General', icon: 'sliders-horizontal' },
+  { id: 'help', title: 'Help & Support', icon: 'lifebuoy' },
 ];
 
 const BACKENDS = [
@@ -70,6 +71,8 @@ function page(): string {
       return shortcutsPage();
     case 'general':
       return generalPage();
+    case 'help':
+      return helpPage();
     default:
       return providersPage();
   }
@@ -233,6 +236,63 @@ function generalPage(): string {
   </div>`;
 }
 
+function helpPage(): string {
+  const run = (command: string, label: string, ic: string, arg?: string) =>
+    `<button class="btn ghost" data-run="${esc(command)}"${arg ? ` data-arg="${esc(arg)}"` : ''}>${icon(ic)} ${label}</button>`;
+  const link = (key: string, label: string, ic: string) => `<button class="btn ghost" data-link="${esc(key)}">${icon(ic)} ${label}</button>`;
+  return `<div class="page">
+    <h1>Help & Support</h1>
+    <p class="lead">Learn Slashi, fix a problem, send feedback, or help keep the project going.</p>
+    <div class="panel"><h2>${icon('book-open')} Get started</h2>
+      <div class="row-actions">
+        ${run('slashi.welcome', 'Replay onboarding', 'rocket-launch')}
+        ${run('workbench.action.openWalkthrough', 'Open walkthrough', 'map-trifold', 'meness.slashi#slashi.welcome')}
+        <button class="btn ghost" data-tab="shortcuts">${icon('keyboard')} Keyboard shortcuts</button>
+        ${link('docs', 'Documentation', 'book-bookmark')}
+        ${link('packs', 'Build an action pack', 'puzzle-piece')}
+      </div>
+    </div>
+    <div class="panel"><h2>${icon('lifebuoy')} Troubleshoot</h2>
+      <p class="muted">Check the log, or refresh if results look out of date. When you report a bug, include the diagnostics: versions and setup only, never keys, file names or code.</p>
+      <div class="row-actions">
+        <button class="btn" data-run="slashi.copyDiagnostics">${icon('clipboard-text')} Copy diagnostics</button>
+        ${run('slashi.run', 'Show log', 'scroll', '/slashi-log')}
+        ${run('slashi.refresh', 'Refresh catalogues', 'arrows-clockwise')}
+        <button class="btn ghost" data-tab="ai" data-cmd="test">${icon('plugs-connected')} Test AI connection</button>
+      </div>
+    </div>
+    <div class="panel"><h2>${icon('chat-teardrop-text')} Feedback</h2>
+      <div class="row-actions">
+        ${link('bug', 'Report a bug', 'bug')}
+        ${link('idea', 'Suggest a feature', 'lightbulb')}
+        ${link('rate', 'Rate on the Marketplace', 'star')}
+        ${link('openVsx', 'Rate on Open VSX', 'star')}
+        ${link('source', 'Star on GitHub', 'github-logo')}
+      </div>
+    </div>
+    <div class="panel"><h2>${icon('code')} For developers</h2>
+      <p class="muted">You’re running Slashi <code>v${esc(state!.version)}</code>.</p>
+      <div class="row-actions">
+        ${link('changelog', 'What’s new', 'git-commit')}
+        ${link('source', 'Source code', 'github-logo')}
+        ${link('api', 'Extension API', 'brackets-curly')}
+        ${link('security', 'Security policy', 'shield-check')}
+      </div>
+    </div>
+    <div class="panel"><h2>${icon('heart')} Support Slashi</h2>
+      <p class="muted">Slashi is free and open source, with no ads and no tracking. If it saves you time, a donation helps pay for new features and fixes.</p>
+      <div class="row-actions"><button class="btn" data-link="donate">${icon('hand-heart')} Donate</button></div>
+    </div>
+  </div>`;
+}
+
+function startTest(): void {
+  testing = true;
+  test = undefined;
+  render();
+  post({ type: 'testAi' });
+}
+
 window.addEventListener('message', (event) => {
   const m = event.data;
   if (m.type === 'state') {
@@ -256,7 +316,8 @@ document.addEventListener('click', (e) => {
   if (d.tab) {
     tab = d.tab;
     vscode.setState({ tab });
-    render();
+    if (d.cmd === 'test') startTest();
+    else render();
   } else if (d.providerToggle) post({ type: 'toggleProvider', id: d.providerToggle, enabled: el.getAttribute('aria-checked') !== 'true' });
   else if (d.feature) {
     const [provider, feature] = d.feature.split('|');
@@ -270,12 +331,9 @@ document.addEventListener('click', (e) => {
   else if (d.bool) post({ type: 'setConfig', key: d.bool, value: el.getAttribute('aria-checked') !== 'true' });
   else if (d.style) post({ type: 'setConfig', key: 'popup.style', value: d.style });
   else if (d.run) post({ type: 'command', command: d.run, args: d.arg });
-  else if (d.cmd === 'test') {
-    testing = true;
-    test = undefined;
-    render();
-    post({ type: 'testAi' });
-  } else if (d.cmd === 'refresh') post({ type: 'refreshModels' });
+  else if (d.link) post({ type: 'openLink', link: d.link });
+  else if (d.cmd === 'test') startTest();
+  else if (d.cmd === 'refresh') post({ type: 'refreshModels' });
 });
 
 document.addEventListener('change', (e) => {
