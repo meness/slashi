@@ -22,8 +22,14 @@
   --brand-a: #8b5cf6;
   --brand-b: #06b6d4;
   --brand: linear-gradient(135deg, var(--brand-a), var(--brand-b));
-  --radius: 14px;
-  --radius-sm: 9px;
+  --brand-ink: var(--brand-a); /* brand violet as text: darkened in light themes for contrast */
+  --ai: #f472b6;
+  --celebrate: #f5a524;
+  --radius-xs: 5px;  /* kbd, inline code */
+  --radius-sm: 8px;  /* buttons, inputs, nav items, menu rows */
+  --radius-md: 10px; /* list rows, tiles, code blocks, notices */
+  --radius-lg: 12px; /* cards, panels, popover menus, composer */
+  --radius: 14px;    /* the floating Spotlight card */
   --shadow: 0 24px 70px -12px rgb(0 0 0 / 0.55), 0 8px 24px -8px rgb(0 0 0 / 0.4);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -31,6 +37,9 @@
 body.vscode-light {
   --shadow: 0 24px 60px -16px rgb(30 20 60 / 0.25), 0 6px 18px -6px rgb(30 20 60 / 0.15);
   --surface-2: color-mix(in srgb, var(--surface) 80%, var(--fg) 3%);
+  --brand-ink: #6d28d9;
+  --ai: #be185d;
+  --celebrate: #b45309;
 }
 
 body.vscode-high-contrast,
@@ -48,7 +57,7 @@ body.vscode-high-contrast-light {
 [data-provider='commands'] { --tile: #a78bfa; }
 [data-provider='settings'] { --tile: #94a3b8; }
 [data-provider='extensions'] { --tile: #818cf8; }
-[data-provider='ai'] { --tile: #f472b6; }
+[data-provider='ai'] { --tile: var(--ai); }
 [data-provider='naturalLanguage'] { --tile: #c084fc; }
 [data-provider='transforms'] { --tile: #2dd4bf; }
 [data-provider='terminal'] { --tile: #a3e635; }
@@ -64,7 +73,6 @@ body.vscode-light [data-provider='project'] { --tile: #047857; }
 body.vscode-light [data-provider='commands'] { --tile: #6d28d9; }
 body.vscode-light [data-provider='settings'] { --tile: #475569; }
 body.vscode-light [data-provider='extensions'] { --tile: #4338ca; }
-body.vscode-light [data-provider='ai'] { --tile: #be185d; }
 body.vscode-light [data-provider='naturalLanguage'] { --tile: #7e22ce; }
 body.vscode-light [data-provider='transforms'] { --tile: #0f766e; }
 body.vscode-light [data-provider='terminal'] { --tile: #4d7c0f; }
@@ -105,7 +113,7 @@ kbd {
   background: color-mix(in srgb, var(--fg) 7%, transparent);
   border: 1px solid var(--hairline);
   border-bottom-width: 2px;
-  border-radius: 5px;
+  border-radius: var(--radius-xs);
 }
 
 .ph, .ph-duotone { line-height: 1; }
@@ -116,7 +124,7 @@ kbd {
   flex: none;
   width: 32px;
   height: 32px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   font-size: 18px;
   color: var(--tile);
   background: color-mix(in srgb, var(--tile) 15%, transparent);
@@ -128,7 +136,7 @@ kbd {
   place-items: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--brand);
   color: #fff;
   font-weight: 800;
@@ -143,7 +151,7 @@ kbd {
   height: 28px;
   padding: 0 12px;
   border: 1px solid transparent;
-  border-radius: 8px;
+  border-radius: var(--radius-sm);
   background: var(--button);
   color: var(--accent-fg);
   font-weight: 600;
@@ -186,7 +194,7 @@ kbd {
 .switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: var(--vscode-scrollbarSlider-background, rgb(128 128 128 / 0.3)); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb { background: var(--vscode-scrollbarSlider-background, rgb(128 128 128 / 0.3)); border-radius: var(--radius-md); border: 3px solid transparent; background-clip: content-box; }
 ::-webkit-scrollbar-thumb:hover { background-color: var(--vscode-scrollbarSlider-hoverBackground, rgb(128 128 128 / 0.5)); }
 
 @media (prefers-reduced-motion: reduce) {
