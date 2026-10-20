@@ -202,6 +202,17 @@ const check = (name, fn) => {
   await waitFor(() => calls.messages.some((m) => m[0] === 'warning' && /Connect a model/.test(m[1])), 'AI setup hint');
   check('guides users to connect a model when AI is not configured', () => assert.ok(true));
 
+  // A hand-edited, unknown ai.provider falls back to auto instead of crashing on a missing backend.
+  await mock.workspace.getConfiguration('slashi').update('ai.provider', 'bogus');
+  const hints = calls.messages.filter((m) => m[0] === 'warning' && /Connect a model/.test(m[1])).length;
+  panel2.webview._receive({ type: 'ai', text: 'make the font bigger' });
+  await waitFor(
+    () => calls.messages.filter((m) => m[0] === 'warning' && /Connect a model/.test(m[1])).length > hints,
+    'AI setup hint for an unknown provider',
+  );
+  check('treats an unknown ai.provider as auto', () => assert.ok(true));
+  await mock.workspace.getConfiguration('slashi').update('ai.provider', 'auto');
+
   // Inline “/” completions in Markdown.
   const doc = { languageId: 'markdown', lineAt: () => ({ text: '/up' }) };
   const completions = await calls.completion.provideCompletionItems(doc, new mock.Position(0, 3));
