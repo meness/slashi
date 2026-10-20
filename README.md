@@ -6,13 +6,18 @@
 
 ### Do anything in VS Code. Just type `/`
 
-One beautiful, keyboard-first popup for files, settings, extensions, git, terminal, your project’s scripts, AI — and the commands you build yourself.
+One keyboard-first popup for your files, settings, extensions, Git, terminal, project scripts and AI, plus the commands you build yourself.
+
+[![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/meness.slashi.svg?label=VS%20Code%20Marketplace&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
+[![Installs](https://vsmarketplacebadges.dev/installs-short/meness.slashi.svg?label=installs&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
+[![Rating](https://vsmarketplacebadges.dev/rating-short/meness.slashi.svg?label=rating&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi&ssr=false#review-details)
+[![Open VSX](https://img.shields.io/open-vsx/v/meness/slashi?label=Open%20VSX&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
+[![Open VSX downloads](https://img.shields.io/open-vsx/dt/meness/slashi?label=downloads&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 
 [![CI](https://github.com/meness/slashi/actions/workflows/ci.yml/badge.svg)](https://github.com/meness/slashi/actions/workflows/ci.yml)
 [![Core coverage](https://img.shields.io/badge/core%20coverage-95%25-22c55e.svg)](vitest.config.mts)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.90%2B-06b6d4.svg)](https://code.visualstudio.com/)
-[![PRs welcome](https://img.shields.io/badge/PRs-welcome-22c55e.svg)](CONTRIBUTING.md)
 
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="media/screenshots/hero-light.png">
@@ -23,36 +28,32 @@ One beautiful, keyboard-first popup for files, settings, extensions, git, termin
 
 ---
 
-## Why Slashi?
-
-Slash commands are everywhere again — chat apps, Notion, AI agents. Slashi brings that muscle memory to VS Code so you can do **99% of your daily work without touching the mouse**:
-
-- **One shortcut** — `Cmd` + `/` on macOS, `Ctrl` + `/` on Windows and Linux.
-- **Everything in one list** — 170+ VS Code commands, every extension command, every setting, your workspace files, open tabs, symbols, problems, git branches, themes and more.
-- **Knows your project** — detects npm/pnpm/yarn/bun, Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Playwright, Docker, Make, Python, Rust, Go, .NET, Java, Terraform… and gives you `/test`, `/dev`, `/prisma-migrate`, `/compose-up` instantly.
-- **Full file CRUD** — `/new`, `/mkdir`, `/rename`, `/move`, `/dup`, `/delete`, copy paths, reveal — from the keyboard.
-- **AI built in** — `/ask`, `/explain`, `/fix`, `/edit`, `/tests`, `/review`, `/commit-msg` with GitHub Copilot, Claude Code, Codex, Claude, OpenAI, Ollama or any OpenAI-compatible server.
-- **Plain English** — `/do make the font bigger and turn on word wrap` plans real actions and runs them after you confirm.
-- **Make it yours** — build commands with a wizard, share them with your team, or install packs from the action marketplace.
-- **Beautiful in every theme** — light, dark, high contrast and any custom theme, with [Phosphor](https://phosphoricons.com) icons for every action.
-
 ## Install
 
-**From a `.vsix`** (until Slashi is on the Marketplace):
+| Where | How |
+|---|---|
+| **VS Code Marketplace** | [Install from the Marketplace](https://marketplace.visualstudio.com/items?itemName=meness.slashi), or search **Slashi** in the Extensions view |
+| **Open VSX** (VSCodium and other editors that use Open VSX) | [Install from Open VSX](https://open-vsx.org/extension/meness/slashi) |
+| **Command line** | `code --install-extension meness.slashi` |
+| **VSIX file** | Download `slashi-<version>.vsix` from the [latest release](https://github.com/meness/slashi/releases/latest), then **Extensions** → `…` → **Install from VSIX…** |
 
-```bash
-git clone https://github.com/meness/slashi && cd slashi
-npm ci && npm run package          # creates slashi-0.1.0.vsix
-code --install-extension slashi-0.1.0.vsix
-```
-
-Or in VS Code: **Extensions** → `…` → **Install from VSIX…**
-
-On first launch Slashi opens a short onboarding. It sets up the shortcut, your providers and AI.
+Slashi needs VS Code 1.90 or newer. On first launch, a short onboarding sets up the shortcut, your providers and AI.
 
 <p align="center">
   <img src="media/screenshots/hero-onboarding-dark.png" alt="Slashi onboarding" width="820">
 </p>
+
+## What you get
+
+Press `Cmd /` on macOS or `Ctrl /` on Windows and Linux, then type.
+
+- **One list for everything.** 170+ named VS Code commands, every extension command and setting, your files, open tabs, symbols, problems, Git branches and themes.
+- **Commands for your project.** Slashi reads your manifests and offers `/test`, `/dev`, `/prisma-migrate` or `/compose-up` for npm, pnpm, yarn, bun, Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Playwright, Docker, Make, Python, Rust, Go, .NET, Java, Terraform and more.
+- **Files from the keyboard.** `/new`, `/mkdir`, `/rename`, `/move`, `/dup`, `/delete` (to the trash), copy paths, reveal.
+- **AI where you work.** `/ask`, `/explain`, `/fix`, `/edit`, `/tests`, `/review` and `/commit-msg`, with GitHub Copilot, Claude Code, Codex, Claude, OpenAI, Ollama or any OpenAI-compatible server. Slashi works fine without AI too.
+- **Plain English.** `/do make the font bigger and turn on word wrap` becomes a plan of real actions, which you see before it runs.
+- **Your own commands.** Build them with a wizard, share them with your team in the repo, or install action packs from the marketplace.
+- **Every theme.** Light, dark, high contrast and custom themes, with [Phosphor](https://phosphoricons.com) icons.
 
 ## 30-second tour
 
@@ -61,18 +62,18 @@ On first launch Slashi opens a short onboarding. It sets up the shortcut, your p
 | Open Slashi | `Cmd /` (macOS) · `Ctrl /` (Windows/Linux) |
 | Move | `↑` `↓` (or `Ctrl N` / `Ctrl P`) |
 | Run | `Enter` |
-| Complete the command, then type its arguments | `Tab` — e.g. `/run` → `Tab` → `npm test` |
+| Complete a command, then type its arguments | `Tab`, e.g. `/run` → `Tab` → `npm test` |
 | Actions menu (rename, delete, copy path, hide, bind a key…) | `Shift Enter` or `→` |
-| First action (e.g. open file to the side) | `Alt Enter` |
+| First action (e.g. open a file to the side) | `Alt Enter` |
 | Hand what you typed to AI | `Cmd Enter` / `Ctrl Enter` |
 | Clear, then close | `Esc` |
 | Do with AI from anywhere | `Ctrl Cmd /` (macOS) · `Ctrl Shift Alt /` |
 
-Type `/` + a **scope** and a space to search just one area:
+Type `/` plus a **scope** and a space to search one area only:
 
 `/f` files · `/p` project · `/npm` scripts · `/set` settings · `/ext` extensions · `/git` · `/term` · `/ai` · `/do` · `/tx` text · `/tab` open tabs · `/@` symbols · `/err` problems · `/theme` · `/web` · `/my` your commands · `/market`
 
-Typing `/` at the start of a line in Markdown or plain text (and the Git commit box) suggests slash commands inline, Notion-style.
+In Markdown, plain text and the Git commit box, typing `/` at the start of a line suggests slash commands inline.
 
 <table>
 <tr>
@@ -80,7 +81,7 @@ Typing `/` at the start of a line in Markdown or plain text (and the Git commit 
 <td><img src="media/screenshots/hero-light.png" alt="Project scripts in the light theme"></td>
 </tr>
 <tr>
-<td align="center"><sub>Files &amp; folders with full CRUD — <code>Shift Enter</code> for actions</sub></td>
+<td align="center"><sub>Files and folders, with <code>Shift Enter</code> for actions</sub></td>
 <td align="center"><sub>Your project’s scripts and tools, detected automatically</sub></td>
 </tr>
 <tr>
@@ -89,29 +90,29 @@ Typing `/` at the start of a line in Markdown or plain text (and the Git commit 
 </tr>
 <tr>
 <td align="center"><sub>Toggle or edit any setting in place</sub></td>
-<td align="center"><sub>Streaming AI answers with Apply / Insert / Copy</sub></td>
+<td align="center"><sub>Streaming AI answers with Apply, Insert and Copy</sub></td>
 </tr>
 </table>
 
 ## Providers
 
-Everything Slashi can do comes from **providers**. Turn any provider off, or switch off individual **features** inside it. For example, you can keep Marketplace search but hide installed extensions. Use the **Studio** (`/studio`), the picker (`/providers`) or settings.
+Everything in the list comes from a **provider**. You can turn off a whole provider, or single **features** inside one: for example, keep Marketplace search but hide installed extensions. Use the **Studio** (`/studio`), the picker (`/providers`) or settings.
 
-| Provider | Scope | Features (each can be toggled) |
+| Provider | Scope | Features (each can be turned off) |
 |---|---|---|
 | **Files & Folders** | `/f` | search · create (`/new`, `/mkdir`) · rename & move · duplicate · delete (to trash) · copy paths · reveal |
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
 | **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer) · package manager · frameworks & tools |
 | **Commands** | `/cmd` | ~170 curated VS Code commands with slash names · every extension command |
-| **Settings** | `/set` | core settings · every extension setting — booleans toggle, enums pick, numbers/strings edit |
+| **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
 | **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · commit messages · regex & shell generators · models |
-| **Natural language** | `/do` | turn a sentence into a validated plan of actions |
+| **Natural language** | `/do` | a sentence becomes a checked plan of actions |
 | **Text tools** | `/tx` | case conversion · lines · encode & hash · JSON · inserts (UUID, dates, lorem) · stats |
 | **Terminal & Tasks** | `/term` | `/run <cmd>` · VS Code tasks · terminal management |
 | **Git** | `/git` | commit/push/pull/sync/stage/undo/diff… · branch switching · stash |
 | **Themes** | `/theme` | color themes · icon themes · light/dark toggle |
-| **Web** | `/web` | Google, Stack Overflow, GitHub, MDN, npm, PyPI, crates.io, DevDocs, Can I Use, YouTube + your own engines |
+| **Web** | `/web` | Google, Stack Overflow, GitHub, MDN, npm, PyPI, crates.io, DevDocs, Can I Use, YouTube, plus your own engines |
 | **My Commands** | `/my` | your commands · team commands · installed packs · commands from other extensions |
 | **Marketplace** | `/market` | browse registries · install from URL or file |
 
@@ -119,37 +120,37 @@ Everything Slashi can do comes from **providers**. Turn any provider off, or swi
 
 ## AI
 
-Slashi works without AI. When you want it, it picks the best model it can find:
+With `slashi.ai.provider` set to `auto` (the default), Slashi uses the first of these it finds:
 
-1. **VS Code language models** — GitHub Copilot, or any extension that provides chat models. Nothing to set up.
-2. **Claude** — `/ai-key` → Anthropic. Uses the official SDK; the default model is `claude-opus-5-5`, with the effort level in `slashi.ai.anthropicEffort`.
-3. **OpenAI** — `/ai-key` → OpenAI.
-4. **Claude Code / Codex CLI** — no key needed. Slashi reuses your existing sign-in from the Claude Code extension (or `claude` on your PATH) or the `codex` CLI.
-5. **Ollama** — local and free; found automatically at `http://localhost:11434`.
-6. **Any OpenAI-compatible server** — LM Studio, Groq, OpenRouter, Together, vLLM: set `slashi.ai.provider` to `openaiCompatible` and `slashi.ai.baseUrl`.
+1. **VS Code language models**: GitHub Copilot, or any extension that provides chat models. Nothing to set up.
+2. **Claude**: `/ai-key` → Anthropic. Uses the official SDK; the default model is `claude-opus-5-5`, and `slashi.ai.anthropicEffort` sets the effort level.
+3. **OpenAI**: `/ai-key` → OpenAI.
+4. **Claude Code or Codex CLI**: no key needed. Slashi reuses your sign-in from the Claude Code extension (or `claude` on your PATH) or the `codex` CLI.
+5. **Ollama**: local and free, found at `http://localhost:11434`.
+6. **Any OpenAI-compatible server** (LM Studio, Groq, OpenRouter, Together, vLLM): set `slashi.ai.provider` to `openaiCompatible` and set `slashi.ai.baseUrl`.
 
-Switch models with `/models`. Test the connection in **Studio → AI & Models**. Add standing instructions with `slashi.ai.customInstructions`.
+Switch models with `/models`, and test the connection in **Studio → AI & Models**. Standing instructions go in `slashi.ai.customInstructions`.
 
 | Command | What it does |
 |---|---|
-| `/ask <question>` | Answer with your selection (or the current file) as context |
-| `/explain`, `/summarize`, `/review` | Explain, summarize or review the selection or file |
-| `/fix [hint]`, `/edit <instruction>`, `/doc` | Rewrite code; press **Apply** (`Cmd/Ctrl Enter`) to replace the original — undo with `Cmd/Ctrl Z` |
-| `/tests`, `/convert <target>`, `/name` | Generate tests, translate code, suggest names |
-| `/commit-msg` | Conventional commit message from staged (or unstaged) changes, written into the Source Control box |
-| `/regex <description>` | Generates a regex and inserts it |
-| `/shell <description>` | Writes a shell command; you review it before it runs |
-| `/do <task>` | **Natural language**: Slashi sends your request plus a shortlist of matching actions to the model, validates the returned plan (unknown actions are dropped), shows it, and runs it after you confirm |
+| `/ask <question>` | Answers with your selection (or the current file) as context |
+| `/explain`, `/summarize`, `/review` | Explains, summarizes or reviews the selection or file |
+| `/fix [hint]`, `/edit <instruction>`, `/doc` | Rewrites code. **Apply** (`Cmd/Ctrl Enter`) replaces the original, and `Cmd/Ctrl Z` undoes it. Code too large to send in full must be selected in parts, so Apply never cuts a file short |
+| `/tests`, `/convert <target>`, `/name` | Writes tests, translates code, suggests names |
+| `/commit-msg` | Writes a Conventional Commits message from staged (or unstaged) changes into the Source Control box |
+| `/regex <description>` | Writes a regex and inserts it |
+| `/shell <description>` | Writes a shell command, which you review before it runs |
+| `/do <task>` | Sends your request and a shortlist of matching actions to the model, drops any step that names an unknown action or setting, then shows the plan and runs it when you confirm |
 
 ## Your own commands
 
 ### 1. The wizard
 
-`/new-command` asks for a name and steps. It saves the command to your settings or to the team file, so you never touch JSON.
+`/new-command` asks for a name and steps, then saves the command to your settings or to the team file. No JSON needed.
 
 ### 2. Settings or a team file
 
-Add commands to `slashi.customCommands` (user settings) or to **`.vscode/slashi.json`**, which is shared with everyone on the repo. Autocomplete and validation come from the bundled [JSON schema](schemas/slashi.schema.json).
+Add commands to `slashi.customCommands` (user settings), or to **`.vscode/slashi.json`** to share them with everyone on the repo. The bundled [JSON schema](schemas/slashi.schema.json) gives you autocomplete and validation.
 
 ```jsonc
 // .vscode/slashi.json
@@ -187,11 +188,11 @@ Add commands to `slashi.customCommands` (user settings) or to **`.vscode/slashi.
 
 **Variables:** `${args}`, `${selection}`, `${file}`, `${fileBasename}`, `${fileBasenameNoExtension}`, `${fileDirname}`, `${fileExtname}`, `${relativeFile}`, `${workspaceFolder}`, `${lineNumber}`, `${language}`, `${date}`, `${time}`, `${datetime}`, `${uuid}`, `${clipboard}`, `${env:NAME}`, `${config:setting.key}`, `${input:var}`. Add a default with `${args:3000}`. Prefix with `q:` for shell-safe quoting, e.g. `${q:selection}`.
 
-> Team files and packs ask the first time before they run terminal commands, VS Code or slash commands, change settings or open links. In them, `${env:NAME}` and `${clipboard}` only expand in `insert` and `notify` steps, so secrets can't leave the editor. In [untrusted workspaces](https://code.visualstudio.com/docs/editor/workspace-trust), workspace-defined commands are ignored.
+> **Team files and packs ask first.** When a team or pack command would run terminal, VS Code or slash commands, change settings or open links, Slashi shows those steps and asks. **Always Allow** skips the question until the steps change. In them, `${env:NAME}`, `${config:…}` and `${clipboard}` expand only in `insert` and `notify` steps, so secrets stay in the editor. In [untrusted workspaces](https://code.visualstudio.com/docs/editor/workspace-trust), workspace-defined commands are ignored.
 
 ### 3. The action marketplace
 
-`/market` browses community **action packs**: Git Power Moves, AI Writing Tools, Focus & Present, Web Dev Toolkit, Handy Inserts and more. Every pack shows all of its steps before you install it, and terminal steps are flagged. **Build and publish your own:** see [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md). `/export-pack` turns your commands into a pack in one step, and companies can host private registries (`slashi.marketplace.registries`).
+`/market` lists community **action packs**: Git Power Moves, AI Writing Tools, Focus & Present, Web Dev Toolkit, Handy Inserts and more. Before you install a pack, Slashi shows every step in it and marks the ones that can run commands. To build and publish your own, see [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md). `/export-pack` turns your commands into a pack, and teams can host private registries with `slashi.marketplace.registries`.
 
 ### 4. From another extension
 
@@ -215,7 +216,7 @@ slashi?.registerCommand({
 | Do with AI | `Ctrl Cmd /` | `Ctrl Shift Alt /` |
 | Toggle line comment (moved by Slashi) | `Cmd Alt /` | `Ctrl Alt /` |
 
-Prefer VS Code’s default comment shortcut? Turn off `slashi.shortcut.useSlashKey`. Slashi then opens with `Cmd Shift ;` (macOS) or `Ctrl Shift /`. Everything can be rebound in **Keyboard Shortcuts** (`/shortcuts`), separately for each OS. You can also bind any slash command to its own key:
+To keep VS Code’s default comment shortcut, turn off `slashi.shortcut.useSlashKey`. Slashi then opens with `Cmd Shift ;` (macOS) or `Ctrl Shift /`. You can rebind everything in **Keyboard Shortcuts** (`/shortcuts`), separately per OS, and give any slash command its own key:
 
 ```jsonc
 // keybindings.json
@@ -224,41 +225,40 @@ Prefer VS Code’s default comment shortcut? Turn off `slashi.shortcut.useSlashK
 { "key": "cmd+alt+t", "command": "slashi.run",  "args": "/run npm test" }
 ```
 
-Scoped entry points such as `slashi.openFiles`, `slashi.openGit`, `slashi.openProject`, `slashi.openAI` and `slashi.doWithAI` can be bound too. Any result’s actions menu also has **Assign a keyboard shortcut…**.
+Scoped entry points such as `slashi.openFiles`, `slashi.openGit`, `slashi.openProject`, `slashi.openAI` and `slashi.doWithAI` can be bound too. Every result’s actions menu also has **Assign a keyboard shortcut…**.
 
 ## Settings
 
 | Setting | Default | |
 |---|---|---|
 | `slashi.popup.style` | `spotlight` | `spotlight` (custom design) or `native` (VS Code Quick Pick, follows every accessibility setting) |
-| `slashi.shortcut.useSlashKey` | `true` | `Cmd/Ctrl + /` opens Slashi; comment toggle moves to `+Alt` |
-| `slashi.providers.*` | `true` | Enable or disable each provider |
-| `slashi.disabledFeatures` | `[]` | Disable single features, e.g. `extensions.installed` |
+| `slashi.shortcut.useSlashKey` | `true` | `Cmd/Ctrl /` opens Slashi; the comment toggle moves to `Cmd/Ctrl Alt /` |
+| `slashi.providers.*` | `true` | Turn each provider on or off |
+| `slashi.disabledFeatures` | `[]` | Turn off single features, e.g. `extensions.installed` |
 | `slashi.hiddenCommands` | `[]` | Hide single results (supports a trailing `*`) |
 | `slashi.inlineTrigger.languages` | markdown, plaintext, scminput | Where `/` at line start suggests commands (`*` = everywhere) |
-| `slashi.ai.provider` / `model` / `baseUrl` | `auto` | AI backend (machine-scoped, so a workspace can’t redirect your key) |
-| `slashi.ai.confirmBeforeRun` | `true` | Confirm Do-with-AI plans (terminal steps always ask) |
+| `slashi.ai.provider` / `model` / `baseUrl` | `auto` | AI backend |
+| `slashi.ai.confirmBeforeRun` | `true` | Confirm Do-with-AI plans. Steps that can reach a shell always ask |
+| `slashi.ai.customInstructions` | `""` | Extra instructions for every AI request |
 | `slashi.customCommands` | `[]` | Your commands |
 | `slashi.marketplace.registries` | this repo | Registry index URLs (HTTPS) |
 | `slashi.files.maxIndexed` | `20000` | File index size |
 
-Search **@ext:meness.slashi** in Settings for everything else.
+The AI backend, model, URL, effort, custom instructions, plan confirmation and registry settings are machine-scoped: only your user settings can change them, never a repository’s workspace settings. Search **@ext:meness.slashi** in Settings for the rest.
 
 ## Privacy & security
 
 - **No telemetry.** Slashi collects nothing.
-- **Keys** are stored only in VS Code Secret Storage. AI connection settings are machine-scoped, so a repository can’t send your key to another server.
-- **AI requests** go only to the backend you chose. Do-with-AI plans are validated against real commands and settings, and shown before they run.
-- **Webviews** use a strict nonce-based Content Security Policy and load only bundled assets. Model output is rendered with raw HTML escaped.
-- **Untrusted workspaces:** workspace-defined commands are ignored. Team files and packs ask before running terminal commands.
+- **API keys** live only in VS Code Secret Storage. A repository can’t change your AI backend, its URL, your instructions or your confirmation setting, so it can’t send your key or code to another server.
+- **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and terminal or Slashi settings.
+- **Webviews** use a strict nonce-based Content Security Policy and load only bundled files. Raw HTML in model output is escaped, never rendered.
+- **Untrusted workspaces:** workspace-defined commands are ignored. Team files and packs ask before running anything that can reach a shell.
 
 See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ## Performance
 
-VS Code only loads extensions in its Node.js extension host, so the extension itself has to be TypeScript/JavaScript. A Rust, Go or Python sidecar would add a process round-trip on every keystroke and require a separate build per platform. Instead, Slashi is bundled by **esbuild** (written in Go) into a single file that activates in about 50 ms.
-
-Ranking uses a pre-lowercased index, a subsequence pre-filter, and computes highlights only for the visible results. Local results are ranked inside the popup itself; only large catalogues such as workspace files are ranked in the host.
+The popup ranks local results itself, so typing doesn't wait on the extension host. Only big catalogues, such as workspace files, are ranked in the host. The index is lowercased up front, a subsequence check skips non-matches early, and highlights are computed only for visible rows. esbuild bundles the extension into one file that activates in about 50 ms.
 
 `npm run bench` on a laptop-class CPU:
 
@@ -268,17 +268,17 @@ Ranking uses a pre-lowercased index, a subsequence pre-filter, and computes high
 | 5,000 | 2.9 ms | 6.8 ms |
 | 20,000 | 11 ms | 20 ms |
 
-## Develop and test locally
+## Contributing
 
-Requirements: **Node 20+** and **VS Code 1.90+**.
+Bug reports, ideas, action packs and pull requests are welcome. To work on Slashi you need **Node 20+** and **VS Code 1.90+**:
 
 ```bash
 git clone https://github.com/meness/slashi && cd slashi
 npm ci
-npm run check       # typecheck + unit tests + build + smoke test
+npm run check       # typecheck, unit tests, smoke test, marketplace validation
 ```
 
-**Try it in VS Code:** open the folder and press **F5** (*Run Slashi*). A new Extension Development Host window opens with Slashi loaded, and the onboarding appears. Edit code, run `npm run watch`, then **Developer: Reload Window** in the host window.
+Open the folder and press **F5** (*Run Slashi*) to start an Extension Development Host with your build. Run `npm run watch` to rebuild on save, then **Developer: Reload Window** in that window.
 
 | Script | |
 |---|---|
@@ -291,7 +291,7 @@ npm run check       # typecheck + unit tests + build + smoke test
 | `npm run marketplace` | Validates packs and regenerates `marketplace/index.json` |
 | `npm run package` | Builds `slashi-<version>.vsix` |
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [design plan & audit](docs/PLAN.md).
+Releases are automated: merging the release PR publishes to the VS Code Marketplace and Open VSX and attaches the `.vsix` to the GitHub release. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [design plan & audit](docs/PLAN.md).
 
 ## License
 
