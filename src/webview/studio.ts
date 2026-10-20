@@ -48,9 +48,29 @@ let testing = false;
 const post = (message: unknown) => vscode.postMessage(message);
 const sw = (on: boolean, attrs: string) => `<button class="switch" role="switch" aria-checked="${on}" ${attrs}></button>`;
 
+// Patches the live DOM toward `to` instead of replacing it, so focus survives and switch/opacity transitions play.
+function morph(from: Node, to: Node): void {
+  const a = [...from.childNodes];
+  const b = [...to.childNodes];
+  if (a.length !== b.length) return (from as Element).replaceChildren(...b); // text nodes have no children, so lengths only differ on elements
+  a.forEach((node, i) => {
+    const next = b[i];
+    if (node.nodeName !== next.nodeName) return node.parentNode!.replaceChild(next, node);
+    if (node instanceof Element && next instanceof Element) {
+      for (const { name } of [...node.attributes]) if (!next.hasAttribute(name)) node.removeAttribute(name);
+      for (const { name, value } of [...next.attributes]) if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+    } else if (node.nodeValue !== next.nodeValue) node.nodeValue = next.nodeValue;
+    morph(node, next);
+    // A field the user typed in ignores its value attribute, so sync the live value (unless they're still typing there).
+    const field = node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement || node instanceof HTMLSelectElement;
+    if (field && node !== document.activeElement) node.value = (next as typeof node).value;
+  });
+}
+
 function render(): void {
   if (!state) return;
-  document.body.innerHTML = `<div class="layout">
+  const next = document.createElement('div');
+  next.innerHTML = `<div class="layout">
     <nav aria-label="Studio sections">
       <div class="brand"><div class="brand-mark">/</div><div><strong>Slashi Studio</strong><span>Make Slashi yours</span></div></div>
       ${TABS.map((t) => `<button data-tab="${t.id}" ${t.id === tab ? 'aria-current="page"' : ''}>${icon(t.icon)} ${t.title}</button>`).join('')}
@@ -59,6 +79,7 @@ function render(): void {
     </nav>
     <main>${page()}</main>
   </div>`;
+  morph(document.body, next);
 }
 
 function page(): string {
@@ -313,12 +334,14 @@ document.addEventListener('click', (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!el || !state) return;
   const d = el.dataset;
+  // Flip switches now so the thumb slides on click; the host's state echo then matches and morph() leaves it alone.
+  if (el.getAttribute('role') === 'switch') el.setAttribute('aria-checked', String(el.getAttribute('aria-checked') !== 'true'));
   if (d.tab) {
     tab = d.tab;
     vscode.setState({ tab });
     if (d.cmd === 'test') startTest();
     else render();
-  } else if (d.providerToggle) post({ type: 'toggleProvider', id: d.providerToggle, enabled: el.getAttribute('aria-checked') !== 'true' });
+  } else if (d.providerToggle) post({ type: 'toggleProvider', id: d.providerToggle, enabled: el.getAttribute('aria-checked') === 'true' });
   else if (d.feature) {
     const [provider, feature] = d.feature.split('|');
     post({ type: 'toggleFeature', provider, feature, enabled: el.getAttribute('aria-pressed') !== 'true' });
@@ -328,7 +351,7 @@ document.addEventListener('click', (e) => {
     test = undefined;
   } else if (d.key) post({ type: 'setKey', backend: d.key });
   else if (d.clear) post({ type: 'clearKey', backend: d.clear });
-  else if (d.bool) post({ type: 'setConfig', key: d.bool, value: el.getAttribute('aria-checked') !== 'true' });
+  else if (d.bool) post({ type: 'setConfig', key: d.bool, value: el.getAttribute('aria-checked') === 'true' });
   else if (d.style) post({ type: 'setConfig', key: 'popup.style', value: d.style });
   else if (d.run) post({ type: 'command', command: d.run, args: d.arg });
   else if (d.link) post({ type: 'openLink', link: d.link });
