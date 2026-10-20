@@ -2,7 +2,7 @@
   "name": "slashi",
   "displayName": "Slashi — Slash Commands for Everything",
   "description": "One beautiful, keyboard-first popup to do 99% of your VS Code work with a slash: files, settings, extensions, git, terminal, AI and your own commands.",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "publisher": "meness",
   "license": "MIT",
   "icon": "media/icon.png",
