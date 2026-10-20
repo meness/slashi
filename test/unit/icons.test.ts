@@ -20,7 +20,7 @@ describe('Phosphor icons', () => {
     const missing: string[] = [];
     for (const file of sourceFiles('src')) {
       const text = readFileSync(file, 'utf8');
-      for (const m of text.matchAll(/\bicon:\s*'([a-z0-9-]+)'/g)) if (!catalog.has(m[1])) missing.push(`${file}: ${m[1]}`);
+      for (const m of text.matchAll(/\bicon(?::\s*|\(\s*)'([a-z0-9-]+)'/g)) if (!catalog.has(m[1])) missing.push(`${file}: ${m[1]}`);
     }
     expect(missing).toEqual([]);
   });
@@ -60,5 +60,16 @@ describe('Phosphor icons', () => {
     expect(pickIcon('Git: Push')).toBe('cloud-arrow-up');
     expect(pickIcon('Debug: Toggle Breakpoint')).toBe('bug');
     expect(pickIcon('Preferences: Color Theme')).toBe('palette');
+  });
+});
+
+describe('marketplace packs', () => {
+  it('use existing Phosphor icons', () => {
+    const missing: string[] = [];
+    for (const file of readdirSync('marketplace/packs')) {
+      const pack = JSON.parse(readFileSync(join('marketplace/packs', file), 'utf8'));
+      for (const name of [pack.icon, ...pack.commands.map((c: { icon?: string }) => c.icon)]) if (name && !catalog.has(name)) missing.push(`${file}: ${name}`);
+    }
+    expect(missing).toEqual([]);
   });
 });

@@ -9,6 +9,7 @@ interface State {
   version: string;
   platform: string;
   popupStyle: string;
+  useSlashKey: boolean;
   statusBar: boolean;
   inlineTrigger: boolean;
   history: boolean;
@@ -179,8 +180,9 @@ function shortcutsPage(): string {
   const mac = state!.platform === 'darwin' || isMac;
   const k = (...keys: string[]) => `<span class="keys">${keys.map((x) => `<kbd>${x}</kbd>`).join('')}</span>`;
   const rows: [string, string][] = [
-    ['Open Slashi', mac ? k('⌃', '/') : k('Ctrl', 'Shift', '/')],
-    ['Do with AI', mac ? k('⌃', '⌥', '/') : k('Ctrl', 'Shift', 'Alt', '/')],
+    ['Open Slashi', mac ? k('⌘', '/') : k('Ctrl', '/')],
+    ['Toggle line comment (moved)', mac ? k('⌘', '⌥', '/') : k('Ctrl', 'Alt', '/')],
+    ['Do with AI', mac ? k('⌃', '⌘', '/') : k('Ctrl', 'Shift', 'Alt', '/')],
     ['Run the highlighted result', k('↵')],
     ['Complete the slash name / enter a scope', k('Tab')],
     ['Open the actions menu', `${k('⇧', '↵')} or ${k('→')}`],
@@ -215,6 +217,7 @@ function generalPage(): string {
         <button class="provider-option" aria-pressed="${s.popupStyle === 'native'}" data-style="native"><strong>Native</strong><span>VS Code Quick Pick</span></button>
       </div>
       <div class="field">
+        <label>${s.platform === 'darwin' ? '⌘/' : 'Ctrl+/'} opens Slashi</label><div>${sw(s.useSlashKey, 'data-bool="shortcut.useSlashKey"')}</div>
         <label>Status bar button</label><div>${sw(s.statusBar, 'data-bool="statusBar.enabled"')}</div>
         <label>Inline “/” in the editor</label><div>${sw(s.inlineTrigger, 'data-bool="inlineTrigger.enabled"')}</div>
         <label>Rank by recent use</label><div>${sw(s.history, 'data-bool="history.enabled"')}</div>
@@ -223,7 +226,7 @@ function generalPage(): string {
     <div class="row-actions">
       <button class="btn ghost" data-run="slashi.clearHistory">${icon('clock-counter-clockwise')} Clear history</button>
       <button class="btn ghost" data-run="workbench.action.openSettings" data-arg="@ext:meness.slashi">${icon('gear-six')} All settings</button>
-      <button class="btn ghost" data-run="workbench.action.openWalkthrough" data-arg="meness.slashi#slashi.welcome">${icon('question')} Walkthrough</button>
+      <button class="btn ghost" data-run="slashi.welcome">${icon('rocket-launch')} Replay onboarding</button>
     </div>
   </div>`;
 }

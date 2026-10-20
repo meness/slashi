@@ -43,6 +43,9 @@ export async function hideItem(id: string): Promise<void> {
   await updateGlobal('hiddenCommands', Array.from(current).sort());
 }
 
+/** The key that opens Slashi on this platform, as shown in the UI. */
 export function shortcutLabel(): string {
-  return process.platform === 'darwin' ? '⌃/' : 'Ctrl+Shift+/';
+  const slash = get('shortcut.useSlashKey', true);
+  if (process.platform === 'darwin') return slash ? '⌘/' : '⌘⇧;';
+  return slash ? 'Ctrl+/' : 'Ctrl+Shift+/';
 }

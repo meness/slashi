@@ -1,0 +1,22 @@
+# Security Policy
+
+## Supported versions
+
+Security fixes are released for the latest minor version of Slashi.
+
+## Reporting a vulnerability
+
+Please **do not open a public issue.** Report it privately through [GitHub Security Advisories](https://github.com/meness/slashi/security/advisories/new). Include:
+
+- what an attacker could do, and under which conditions (for example a malicious workspace, action pack or model output),
+- steps to reproduce, and the Slashi and VS Code versions.
+
+You’ll get an acknowledgement within a few days. Once a fix is available, we’ll credit you (unless you prefer otherwise).
+
+## Security model
+
+- **Workspace trust:** workspace-defined commands (`slashi.customCommands` in workspace settings, `.vscode/slashi.json`) are ignored in untrusted workspaces. Team commands and packs ask before running terminal steps for the first time, and ask again whenever those steps change.
+- **AI:** provider, model and base URL are machine-scoped settings, so a repository can’t redirect requests or keys. API keys live only in VS Code Secret Storage. Do-with-AI plans are validated against known commands and settings and confirmed by the user. Terminal steps always require confirmation.
+- **Webviews:** strict nonce-based CSP, local assets only. Model output is rendered with raw HTML escaped and links restricted to `http(s)`/`mailto`.
+- **Marketplace:** registries and packs are fetched only over HTTPS (1 MB limit), validated, and fully previewed before installation.
+- **Telemetry:** none.

@@ -1,0 +1,21 @@
+name: Action pack idea
+description: Suggest a pack for the Slashi marketplace (or ask for help building one)
+labels: [marketplace]
+body:
+  - type: input
+    id: name
+    attributes:
+      label: Pack name
+  - type: textarea
+    id: commands
+    attributes:
+      label: Commands it would include
+      placeholder: "/wip — commit everything as WIP\n/sync-main — rebase on origin/main"
+    validations:
+      required: true
+  - type: checkboxes
+    id: build
+    attributes:
+      label: Building it
+      options:
+        - label: I'd like to build and submit it myself (see docs/BUILDING_ACTIONS.md)

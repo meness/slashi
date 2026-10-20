@@ -1,0 +1,17 @@
+{
+  "$schema": "../../schemas/slashi.schema.json",
+  "id": "writing-tools",
+  "name": "AI Writing Tools",
+  "version": "1.0.0",
+  "description": "Polish, shorten, translate and summarize any selected text with your AI model.",
+  "author": "Slashi",
+  "icon": "pen-nib",
+  "tags": ["ai", "writing", "docs"],
+  "commands": [
+    { "name": "polish", "title": "Polish Writing", "description": "Fix grammar and clarity, keep the meaning", "icon": "sparkle", "steps": [{ "ai": "Improve the grammar, clarity and flow of this text. Keep the meaning, tone and formatting. Text:\n${selection}", "output": "replace" }] },
+    { "name": "shorten", "title": "Make It Shorter", "icon": "arrows-in-line-horizontal", "steps": [{ "ai": "Rewrite this text to be about half as long without losing important information:\n${selection}", "output": "replace" }] },
+    { "name": "translate", "title": "Translate Selection", "args": "language, e.g. Spanish", "icon": "translate", "steps": [{ "ai": "Translate this text to ${args}. Preserve formatting and code:\n${selection}", "output": "replace" }] },
+    { "name": "tldr", "title": "TL;DR", "description": "Summarize the selection in the answer panel", "icon": "list-bullets", "steps": [{ "ai": "Give a 3-bullet TL;DR of:\n${selection}" }] },
+    { "name": "changelog-entry", "title": "Changelog Entry from Selection", "icon": "note-pencil", "steps": [{ "ai": "Write a concise Keep-a-Changelog entry (Added/Changed/Fixed) describing these changes:\n${selection}", "output": "insert" }] }
+  ]
+}

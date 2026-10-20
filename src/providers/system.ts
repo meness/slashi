@@ -21,6 +21,7 @@ export class SystemProvider implements SlashProvider {
     const cmd = (name: string, title: string, icon: string, command: string, description?: string, arg?: unknown) =>
       make({ id: `slashi:${name}`, name, title, description, icon, feature: 'default', run: () => vscode.commands.executeCommand(command, arg) });
     return [
+      cmd('welcome', 'Slashi: Welcome & Onboarding', 'rocket-launch', 'slashi.welcome', 'Replay the onboarding'),
       cmd('help', 'Slashi: Help & Getting Started', 'question', 'workbench.action.openWalkthrough', 'Interactive walkthrough', 'meness.slashi#slashi.welcome'),
       cmd('providers', 'Slashi: Enable/Disable Providers & Features', 'toggle-right', 'slashi.toggleProviders', 'Choose what Slashi searches'),
       cmd('studio', 'Slashi: Open Studio', 'sliders-horizontal', 'slashi.studio', 'Providers, AI models and custom commands in one place'),

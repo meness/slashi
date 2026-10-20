@@ -1,0 +1,15 @@
+{
+  "$schema": "../../schemas/slashi.schema.json",
+  "id": "focus-mode",
+  "name": "Focus & Present",
+  "version": "1.0.0",
+  "description": "One-key layouts: deep focus, presentation mode for demos, and back to normal.",
+  "author": "Slashi",
+  "icon": "flower-lotus",
+  "tags": ["layout", "presentation", "productivity"],
+  "commands": [
+    { "name": "focus", "title": "Deep Focus", "description": "Zen mode, no minimap, word wrap on", "icon": "flower-lotus", "steps": [{ "setting": "editor.minimap.enabled", "value": false }, { "setting": "editor.wordWrap", "value": "on" }, { "command": "workbench.action.toggleZenMode" }] },
+    { "name": "present", "title": "Presentation Mode", "description": "Big fonts for screen sharing", "icon": "presentation", "steps": [{ "setting": "editor.fontSize", "value": 20 }, { "setting": "terminal.integrated.fontSize", "value": 18 }, { "setting": "window.zoomLevel", "value": 1 }, { "setting": "editor.minimap.enabled", "value": false }] },
+    { "name": "normal", "title": "Back to Normal", "description": "Undo focus/presentation settings", "icon": "arrow-counter-clockwise", "steps": [{ "setting": "editor.fontSize", "value": 14 }, { "setting": "terminal.integrated.fontSize", "value": 14 }, { "setting": "window.zoomLevel", "value": 0 }, { "setting": "editor.minimap.enabled", "value": true }, { "setting": "editor.wordWrap", "value": "off" }] }
+  ]
+}

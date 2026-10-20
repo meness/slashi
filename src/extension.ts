@@ -26,6 +26,7 @@ import { Services } from './services/services';
 import { AnswerPanel } from './ui/answer';
 import { InlineSlashCompletions } from './ui/inline';
 import { openNative } from './ui/native';
+import { Onboarding } from './ui/onboarding';
 import { Spotlight } from './ui/spotlight';
 import { Studio } from './ui/studio';
 
@@ -60,7 +61,8 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
   const spotlight = new Spotlight(services, context.extensionUri);
   const answers = new AnswerPanel(services, context.extensionUri);
   const studio = new Studio(services, context.extensionUri);
-  context.subscriptions.push(log, services, registry, spotlight, answers, studio);
+  const onboarding = new Onboarding(services, context.extensionUri);
+  context.subscriptions.push(log, services, registry, spotlight, answers, studio, onboarding);
 
   services.showAnswer = (request) => answers.show(request);
   services.openPopup = async (query = '', style) => {
@@ -92,7 +94,11 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     );
 
   const scoped = (prefix: string) => () => services.openPopup(`/${prefix} `);
-  command('slashi.open', (query?: unknown) => services.openPopup(typeof query === 'string' ? query : ''));
+  command('slashi.open', (query?: unknown) => {
+    if (onboarding.interceptShortcut()) return;
+    return services.openPopup(typeof query === 'string' ? query : '');
+  });
+  command('slashi.welcome', () => onboarding.open());
   command('slashi.openNative', (query?: unknown) => services.openPopup(typeof query === 'string' ? query : '', 'native'));
   command('slashi.run', async (slash?: unknown) => {
     const text = typeof slash === 'string' && slash ? slash : await vscode.window.showInputBox({ prompt: 'Slash command to run', value: '/' });
@@ -202,6 +208,12 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     if (isProviderEnabled('marketplace') && isFeatureEnabled('marketplace', 'browse')) void marketplace.refresh();
   }, 2000);
   context.subscriptions.push({ dispose: () => clearTimeout(warm) });
+
+  // First run: a short, beautiful onboarding.
+  if (Onboarding.shouldShow(context) && !process.env.SLASHI_SKIP_ONBOARDING) {
+    const timer = setTimeout(() => onboarding.open(), 1200);
+    context.subscriptions.push({ dispose: () => clearTimeout(timer) });
+  }
 
   log.info(`Slashi activated (${providers.length} providers).`);
 

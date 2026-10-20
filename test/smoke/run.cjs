@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const Module = require('node:module');
 
+process.env.SLASHI_SKIP_ONBOARDING = '';
 const mock = require('./vscode-mock.cjs');
 const originalLoad = Module._load;
 Module._load = function (request, ...rest) {
@@ -174,11 +175,28 @@ const check = (name, fn) => {
     assert.equal(ext.features.find((f) => f.id === 'marketplace').enabled, true);
   });
 
+  // Onboarding opens on first run and renders real state.
+  await waitFor(() => calls.panels.find((p) => p.viewType === 'slashi.welcome'), 'onboarding panel', 3000);
+  const welcome = calls.panels.find((p) => p.viewType === 'slashi.welcome');
+  welcome.webview._receive({ type: 'ready' });
+  const onboardingState = await waitFor(() => calls.posted.find((m) => m.type === 'state' && m.state.examples), 'onboarding state');
+  welcome.webview._receive({ type: 'step', step: 'shortcut' });
+  welcome.active = true;
+  const posted = calls.posted.length;
+  await mock.commands.executeCommand('slashi.open');
+  check('onboarding opens on first run and celebrates the shortcut', () => {
+    assert.ok(onboardingState.state.examples.some((e) => e.name === 'build'));
+    assert.ok(calls.posted.slice(posted).some((m) => m.type === 'shortcutPressed'));
+  });
+  welcome.webview._receive({ type: 'finish' });
+  await waitFor(() => context.globalState.get('slashi.onboarded'), 'onboarded flag');
+
   // Artifacts used by scripts/screenshots.mjs
   const out = path.join(__dirname, 'out');
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, 'init.json'), JSON.stringify({ ...init, live: { '/f package': live.items, spotlight: global.items } }));
   fs.writeFileSync(path.join(out, 'studio.json'), JSON.stringify(state.state));
+  fs.writeFileSync(path.join(out, 'onboarding.json'), JSON.stringify(onboardingState.state));
   const errors = calls.messages.filter((m) => m[0] === 'error');
   check('logged no errors', () => assert.deepEqual(errors, []));
   console.log(`\n${passed} smoke checks passed.`);

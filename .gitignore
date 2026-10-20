@@ -1,10 +1,10 @@
-node_modules/
-dist/
-out/
+*.log
 *.vsix
+.DS_Store
 .vscode-test/
 coverage/
-.DS_Store
-*.log
+dist/
+node_modules/
+out/
 test/integration/out/
 test/smoke/out/

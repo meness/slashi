@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "name": "Slashi community actions",
+  "packs": [
+    {
+      "id": "focus-mode",
+      "name": "Focus & Present",
+      "version": "1.0.0",
+      "description": "One-key layouts: deep focus, presentation mode for demos, and back to normal.",
+      "author": "Slashi",
+      "icon": "flower-lotus",
+      "tags": [
+        "layout",
+        "presentation",
+        "productivity"
+      ],
+      "url": "packs/focus-mode.json",
+      "commands": 3,
+      "terminal": false
+    },
+    {
+      "id": "git-power",
+      "name": "Git Power Moves",
+      "version": "1.0.0",
+      "description": "Everyday git shortcuts: WIP commits, soft undo, sync with main, tidy merged branches.",
+      "author": "Slashi",
+      "icon": "git-branch",
+      "tags": [
+        "git",
+        "workflow"
+      ],
+      "url": "packs/git-power.json",
+      "commands": 6,
+      "terminal": true
+    },
+    {
+      "id": "snippets",
+      "name": "Handy Inserts",
+      "version": "1.0.0",
+      "description": "Insert TODOs with your name and date, file headers, console logs of the selection and more.",
+      "author": "Slashi",
+      "icon": "brackets-curly",
+      "tags": [
+        "snippets",
+        "editing"
+      ],
+      "url": "packs/snippets.json",
+      "commands": 4,
+      "terminal": false
+    },
+    {
+      "id": "web-dev",
+      "name": "Web Dev Toolkit",
+      "version": "1.0.0",
+      "description": "Ports, localhost, clean installs and quick HTTP checks for web developers.",
+      "author": "Slashi",
+      "icon": "browsers",
+      "tags": [
+        "web",
+        "node",
+        "npm"
+      ],
+      "url": "packs/web-dev.json",
+      "commands": 5,
+      "terminal": true
+    },
+    {
+      "id": "writing-tools",
+      "name": "AI Writing Tools",
+      "version": "1.0.0",
+      "description": "Polish, shorten, translate and summarize any selected text with your AI model.",
+      "author": "Slashi",
+      "icon": "pen-nib",
+      "tags": [
+        "ai",
+        "writing",
+        "docs"
+      ],
+      "url": "packs/writing-tools.json",
+      "commands": 5,
+      "terminal": false
+    }
+  ]
+}

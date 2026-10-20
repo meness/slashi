@@ -69,6 +69,12 @@
         "icon": "$(terminal-cmd)"
       },
       {
+        "command": "slashi.welcome",
+        "title": "Welcome & Onboarding",
+        "category": "Slashi",
+        "icon": "$(rocket)"
+      },
+      {
         "command": "slashi.openNative",
         "title": "Open (Native Quick Pick)",
         "category": "Slashi"
@@ -220,13 +226,26 @@
     "keybindings": [
       {
         "command": "slashi.open",
+        "key": "ctrl+/",
+        "mac": "cmd+/",
+        "when": "config.slashi.shortcut.useSlashKey"
+      },
+      {
+        "command": "editor.action.commentLine",
+        "key": "ctrl+alt+/",
+        "mac": "cmd+alt+/",
+        "when": "editorTextFocus && !editorReadonly && config.slashi.shortcut.useSlashKey"
+      },
+      {
+        "command": "slashi.open",
         "key": "ctrl+shift+/",
-        "mac": "ctrl+/"
+        "mac": "cmd+shift+;",
+        "when": "!config.slashi.shortcut.useSlashKey"
       },
       {
         "command": "slashi.doWithAI",
         "key": "ctrl+shift+alt+/",
-        "mac": "ctrl+alt+/"
+        "mac": "ctrl+cmd+/"
       }
     ],
     "jsonValidation": [
@@ -245,6 +264,11 @@
         "title": "General",
         "order": 0,
         "properties": {
+          "slashi.shortcut.useSlashKey": {
+            "type": "boolean",
+            "default": true,
+            "markdownDescription": "Open Slashi with `Cmd+/` (macOS) or `Ctrl+/` (Windows/Linux). **Toggle Line Comment** moves to `Cmd+Alt+/` / `Ctrl+Alt+/`. Turn off to keep VS Code's comment shortcut; Slashi then opens with `Cmd+Shift+;` / `Ctrl+Shift+/`. Any key can be rebound in Keyboard Shortcuts."
+          },
           "slashi.popup.style": {
             "type": "string",
             "enum": [
@@ -563,7 +587,236 @@
             "default": [],
             "markdownDescription": "Your own slash commands. Use `/new-command` to create one without editing JSON. Team commands can live in `.vscode/slashi.json`. See the README for all step types and variables.",
             "items": {
-              "$ref": "./schemas/slashi.schema.json#/definitions/command"
+              "type": "object",
+              "required": [
+                "name",
+                "steps"
+              ],
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "pattern": "^[a-z0-9][a-z0-9-]{0,39}$",
+                  "description": "The slash name: \"ship\" → /ship"
+                },
+                "title": {
+                  "type": "string",
+                  "description": "Shown in the popup."
+                },
+                "description": {
+                  "type": "string"
+                },
+                "icon": {
+                  "type": "string",
+                  "description": "Phosphor icon name, e.g. rocket-launch (https://phosphoricons.com)."
+                },
+                "args": {
+                  "type": "string",
+                  "description": "Placeholder for arguments typed after the name; available as ${args}."
+                },
+                "languages": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Only show in these language IDs."
+                },
+                "steps": {
+                  "type": "array",
+                  "minItems": 1,
+                  "items": {
+                    "description": "Exactly one action per step. Strings support ${args}, ${q:args} (shell-quoted), ${selection}, ${file}, ${fileBasename}, ${fileDirname}, ${relativeFile}, ${workspaceFolder}, ${lineNumber}, ${language}, ${date}, ${time}, ${datetime}, ${uuid}, ${clipboard}, ${env:NAME}, ${config:key}, ${input:var} and ${name:default}.",
+                    "oneOf": [
+                      {
+                        "type": "object",
+                        "required": [
+                          "command"
+                        ],
+                        "properties": {
+                          "command": {
+                            "type": "string",
+                            "description": "VS Code command ID."
+                          },
+                          "args": {
+                            "description": "Argument passed to the command."
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "slash"
+                        ],
+                        "properties": {
+                          "slash": {
+                            "type": "string",
+                            "description": "Another slash command, e.g. \"/format\" or \"/run npm test\"."
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "terminal"
+                        ],
+                        "properties": {
+                          "terminal": {
+                            "type": "string",
+                            "description": "Shell command."
+                          },
+                          "name": {
+                            "type": "string",
+                            "description": "Terminal name."
+                          },
+                          "cwd": {
+                            "type": "string",
+                            "description": "Working directory, relative to the workspace."
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "setting",
+                          "value"
+                        ],
+                        "properties": {
+                          "setting": {
+                            "type": "string"
+                          },
+                          "value": {},
+                          "target": {
+                            "enum": [
+                              "user",
+                              "workspace"
+                            ]
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "insert"
+                        ],
+                        "properties": {
+                          "insert": {
+                            "type": "string",
+                            "description": "Text to insert at the cursor (replaces the selection)."
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "open"
+                        ],
+                        "properties": {
+                          "open": {
+                            "type": "string",
+                            "description": "https:// URL or workspace-relative path."
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "ai"
+                        ],
+                        "properties": {
+                          "ai": {
+                            "type": "string",
+                            "description": "Prompt for the configured LLM."
+                          },
+                          "output": {
+                            "enum": [
+                              "panel",
+                              "replace",
+                              "insert"
+                            ],
+                            "default": "panel"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "notify"
+                        ],
+                        "properties": {
+                          "notify": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "input",
+                          "var"
+                        ],
+                        "properties": {
+                          "input": {
+                            "type": "string",
+                            "description": "Prompt shown to the user."
+                          },
+                          "var": {
+                            "type": "string",
+                            "description": "Variable name, used as ${input:name}."
+                          },
+                          "placeholder": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "pick",
+                          "var"
+                        ],
+                        "properties": {
+                          "pick": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "var": {
+                            "type": "string"
+                          },
+                          "placeholder": {
+                            "type": "string"
+                          }
+                        },
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "object",
+                        "required": [
+                          "wait"
+                        ],
+                        "properties": {
+                          "wait": {
+                            "type": "number",
+                            "minimum": 0,
+                            "maximum": 60000
+                          }
+                        },
+                        "additionalProperties": false
+                      }
+                    ]
+                  }
+                }
+              },
+              "additionalProperties": false
             }
           }
         }
@@ -578,7 +831,7 @@
           {
             "id": "open",
             "title": "Open Slashi",
-            "description": "Press **Ctrl+Shift+/** (macOS: **Ctrl+/**) or click **/ Slashi** in the status bar. Type `/` and a few letters.\n[Open Slashi](command:slashi.open)",
+            "description": "Press **Cmd+/** on macOS or **Ctrl+/** on Windows/Linux or click **/ Slashi** in the status bar. Type `/` and a few letters.\n[Open Slashi](command:slashi.open)",
             "media": {
               "markdown": "media/walkthrough/open.md"
             },
@@ -644,10 +897,12 @@
     "test:smoke": "npm run build && node test/smoke/run.cjs",
     "test:integration": "npm run build && tsc -p test/integration && vscode-test",
     "bench": "node scripts/bench.mjs",
-    "screenshots": "npm run build && node scripts/screenshots.mjs",
-    "check": "npm run typecheck && npm test && npm run test:smoke",
+    "screenshots": "npm run test:smoke && node scripts/screenshots.mjs",
+    "check": "npm run typecheck && npm test && npm run test:smoke && node scripts/marketplace.mjs --check",
     "package": "npm run build -- --production && vsce package --no-dependencies",
-    "vscode:prepublish": "npm run build -- --production"
+    "vscode:prepublish": "npm run build -- --production",
+    "marketplace": "node scripts/marketplace.mjs",
+    "icon": "node scripts/icon.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",

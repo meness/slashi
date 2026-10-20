@@ -94,6 +94,8 @@ export interface IndexedItem {
   keywords: string;
   category: string;
   description: string;
+  /** Every searchable field joined, for a fast subsequence pre-check. */
+  all: string;
 }
 
 export function indexItems(items: readonly ItemView[]): IndexedItem[] {
@@ -105,7 +107,7 @@ export function indexItems(items: readonly ItemView[]): IndexedItem[] {
     keywords: (item.keywords ?? []).join(' ').toLowerCase(),
     category: item.category.toLowerCase(),
     description: (item.description ?? '').toLowerCase(),
-  }));
+  })).map((e) => ({ ...e, all: `${e.name} ${e.titleLower} ${e.keywords} ${e.category} ${e.description}` }));
 }
 
 const WEIGHT = { name: 1.25, title: 1, keywords: 0.75, category: 0.45, description: 0.35 };
@@ -126,79 +128,103 @@ export interface RankOptions {
   mode?: 'all' | 'any';
 }
 
+/** True if every character of `word` appears in `text` in order. */
+function isSubsequence(word: string, text: string): boolean {
+  let from = 0;
+  for (let i = 0; i < word.length; i++) {
+    from = text.indexOf(word[i], from);
+    if (from === -1) return false;
+    from++;
+  }
+  return true;
+}
+
+interface Scored {
+  entry: IndexedItem;
+  score: number;
+  argText?: string;
+}
+
 /** Ranks indexed items against a parsed query. Items matching no word are dropped. */
 export function rank(index: readonly IndexedItem[], query: ParsedQuery, options: RankOptions): RankedView[] {
   const { limit, frecency, now = Date.now(), mode = 'all' } = options;
   const words = query.words;
-  const results: RankedView[] = [];
 
   if (!words.length) {
-    for (const entry of index) {
-      const bonus = frecencyBonus(frecency?.[entry.item.id], now) + (entry.item.boost ?? 0);
-      results.push({ ...entry.item, score: bonus });
-    }
-    return topN(results, limit);
+    const scored: Scored[] = index.map((entry) => ({ entry, score: frecencyBonus(frecency?.[entry.item.id], now) + (entry.item.boost ?? 0) }));
+    return finish(scored, words, limit);
   }
 
+  const scored: Scored[] = [];
   for (const entry of index) {
-    let total = 0;
-    let matched = 0;
-    let highlights: number[] | undefined;
-    let argText: string | undefined;
-
     // `/run npm test` — exact name match for an item that takes arguments.
     if (entry.item.args && entry.name && entry.name === query.head) {
-      total = 400;
-      argText = query.rest;
-      matched = words.length;
-      highlights = undefined;
-    } else {
-      for (let w = 0; w < words.length; w++) {
-        const word = words[w];
-        let best = 0;
-        let bestPositions: number[] | undefined;
-        // An exact or prefix name match is the strongest signal.
-        if (entry.name) {
-          if (entry.name === word) best = 220;
-          else if (entry.name.startsWith(word)) best = 140 + word.length * 4;
-          else {
-            const m = scoreWord(word, entry.name, entry.name);
-            if (m) best = m.score * WEIGHT.name;
-          }
-        }
-        const t = scoreWord(word, entry.title, entry.titleLower, true);
-        if (t && t.score * WEIGHT.title >= best) {
-          best = t.score * WEIGHT.title;
-          bestPositions = t.positions;
-        } else if (t && t.positions) {
-          bestPositions = t.positions;
-        }
-        const k = entry.keywords ? scoreWord(word, entry.keywords, entry.keywords) : undefined;
-        if (k && k.score * WEIGHT.keywords > best) best = k.score * WEIGHT.keywords;
-        const c = scoreWord(word, entry.category, entry.category);
-        if (c && c.score * WEIGHT.category > best) best = c.score * WEIGHT.category;
-        if (best === 0 && entry.description && word.length > 2) {
-          const idx = entry.description.indexOf(word);
-          if (idx !== -1) best = (40 + word.length * 2) * WEIGHT.description;
-        }
-        if (best > 0) {
-          matched++;
-          total += best;
-          if (bestPositions) highlights = highlights ? highlights.concat(bestPositions) : bestPositions;
-        } else if (mode === 'all') {
-          total = -1;
-          break;
-        }
+      scored.push({ entry, score: 400 + (entry.item.boost ?? 0), argText: query.rest });
+      continue;
+    }
+    // Cheap rejection before the real scoring.
+    if (mode === 'all' && !words.every((w) => isSubsequence(w, entry.all))) continue;
+
+    let total = 0;
+    let matched = 0;
+    for (const word of words) {
+      const best = scoreFields(entry, word);
+      if (best > 0) {
+        matched++;
+        total += best;
+      } else if (mode === 'all') {
+        total = -1;
+        break;
       }
     }
-
     if (total <= 0 || matched === 0) continue;
     total += frecencyBonus(frecency?.[entry.item.id], now) + (entry.item.boost ?? 0);
     // Shorter titles win ties: "Format Document" over "Format Document With…".
     total -= entry.title.length * 0.05;
-    results.push({ ...entry.item, score: total, highlights: dedupe(highlights), argText });
+    scored.push({ entry, score: total });
   }
-  return topN(results, limit);
+  return finish(scored, words, limit);
+}
+
+function scoreFields(entry: IndexedItem, word: string): number {
+  let best = 0;
+  // An exact or prefix name match is the strongest signal.
+  if (entry.name) {
+    if (entry.name === word) best = 220;
+    else if (entry.name.startsWith(word)) best = 140 + word.length * 4;
+    else {
+      const m = scoreWord(word, entry.name, entry.name);
+      if (m) best = m.score * WEIGHT.name;
+    }
+  }
+  const t = scoreWord(word, entry.title, entry.titleLower);
+  if (t && t.score * WEIGHT.title > best) best = t.score * WEIGHT.title;
+  if (entry.keywords) {
+    const k = scoreWord(word, entry.keywords, entry.keywords);
+    if (k && k.score * WEIGHT.keywords > best) best = k.score * WEIGHT.keywords;
+  }
+  const c = scoreWord(word, entry.category, entry.category);
+  if (c && c.score * WEIGHT.category > best) best = c.score * WEIGHT.category;
+  if (best === 0 && entry.description && word.length > 2 && entry.description.includes(word)) {
+    best = (40 + word.length * 2) * WEIGHT.description;
+  }
+  return best;
+}
+
+/** Sorts, keeps the top `limit`, and only then builds result objects and highlight positions. */
+function finish(scored: Scored[], words: string[], limit: number): RankedView[] {
+  scored.sort((a, b) => b.score - a.score || a.entry.title.localeCompare(b.entry.title));
+  const top = scored.length > limit ? scored.slice(0, limit) : scored;
+  return top.map(({ entry, score, argText }) => {
+    let highlights: number[] | undefined;
+    if (argText === undefined) {
+      for (const word of words) {
+        const m = scoreWord(word, entry.title, entry.titleLower, true);
+        if (m?.positions) highlights = highlights ? highlights.concat(m.positions) : m.positions;
+      }
+    }
+    return { ...entry.item, score, highlights: dedupe(highlights), argText };
+  });
 }
 
 function dedupe(values: number[] | undefined): number[] | undefined {

@@ -18,6 +18,7 @@ if (!existsSync(initPath)) {
 }
 const init = JSON.parse(readFileSync(initPath, 'utf8'));
 const studio = JSON.parse(readFileSync(join(tmp, 'studio.json'), 'utf8'));
+const onboarding = JSON.parse(readFileSync(join(tmp, 'onboarding.json'), 'utf8'));
 
 const THEMES = {
   dark: {
@@ -157,5 +158,114 @@ const studioHost = (state, tab) => `(m, send) => { if (m.type === 'ready') send(
 const studioState = { ...studio, ai: { ...studio.ai, provider: 'anthropic', label: 'Claude · claude-opus-5-5', keys: { anthropic: true }, models: [{ backend: 'anthropic', id: 'claude-opus-5-5', label: 'Claude Opus 5.5', detail: 'Default' }, { backend: 'anthropic', id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' }] } };
 await shoot('studio-providers-dark', page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'providers') }), { width: 1200, height: 800 });
 await shoot('studio-ai-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
+
+// Onboarding steps
+const onboardingState = {
+  ...onboarding,
+  platform: 'darwin',
+  shortcut: '⌘/',
+  stack: onboarding.stack.length ? onboarding.stack : ['npm', 'TypeScript', 'Vitest'],
+  ai: { ...onboarding.ai, label: 'GitHub Copilot · GPT', provider: 'vscode', vscode: [{ backend: 'vscode', id: 'copilot-gpt', label: 'GitHub Copilot', detail: 'copilot · gpt' }], ollama: [{ backend: 'ollama', id: 'llama3.2', label: 'llama3.2' }] },
+};
+const onboardingHost = (stepIndex, pressed = false) => `(m, send) => {
+  if (m.type !== 'ready') return;
+  send({ type: 'state', state: ${JSON.stringify(onboardingState)} });
+  setTimeout(() => {
+    for (let i = 0; i < ${stepIndex}; i++) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+    ${pressed ? "send({ type: 'shortcutPressed' });" : ''}
+  }, 30);
+}`;
+const steps = [['welcome', 0], ['shortcut', 1, true], ['providers', 2], ['ai', 3], ['done', 5]];
+for (const [name, index, pressed] of steps) {
+  await shoot(`onboarding-${name}-${name === 'providers' || name === 'done' ? 'light' : 'dark'}`, page({ theme: name === 'providers' || name === 'done' ? 'light' : 'dark', script: 'onboarding.js', styles: ['onboarding.css'], host: onboardingHost(index, pressed) }), { width: 1200, height: 800, actions: async (tab) => tab.waitForTimeout(name === 'welcome' ? 1400 : 200) });
+}
+
+// Hero images: the real webview inside a VS Code-like window on a gradient backdrop.
+function windowFrame({ theme, inner, title, tabs, sidebar = true }) {
+  const t = THEMES[theme];
+  const dark = theme === 'dark';
+  const c = dark
+    ? { chrome: '#181818', side: '#181818', border: '#2b2b2b', fg: '#cccccc', muted: '#8b8b8b', tab: '#1f1f1f', status: '#181818' }
+    : { chrome: '#f8f8f8', side: '#f8f8f8', border: '#e5e5e5', fg: '#3b3b3b', muted: '#868686', tab: '#ffffff', status: '#f8f8f8' };
+  const backdrop = dark
+    ? 'radial-gradient(1200px 700px at 15% 10%, #4c1d95 0%, transparent 60%), radial-gradient(1000px 700px at 90% 90%, #0e7490 0%, transparent 60%), #0b0a14'
+    : 'radial-gradient(1200px 700px at 15% 10%, #ddd6fe 0%, transparent 60%), radial-gradient(1000px 700px at 90% 90%, #a5f3fc 0%, transparent 60%), #f5f3ff';
+  const ph = (n) => `<i class="ph ph-${n}"></i>`;
+  return `<!doctype html><html><head><meta charset="utf-8">
+  <link rel="stylesheet" href="${asset('phosphor/regular/style.css')}">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; height: 100vh; display: grid; place-items: center; background: ${backdrop}; font-family: ${t.vars['--vscode-font-family']}; }
+    .win { width: 1400px; height: 860px; border-radius: 14px; overflow: hidden; display: grid; grid-template-rows: 36px 1fr 24px; background: ${c.chrome}; border: 1px solid ${dark ? 'rgb(255 255 255 / 0.12)' : 'rgb(0 0 0 / 0.08)'}; box-shadow: 0 50px 120px -30px rgb(0 0 0 / ${dark ? 0.8 : 0.35}), 0 0 0 1px rgb(0 0 0 / 0.05); }
+    .title { display: flex; align-items: center; gap: 8px; padding: 0 14px; color: ${c.muted}; font-size: 12px; border-bottom: 1px solid ${c.border}; }
+    .lights { display: flex; gap: 8px; } .lights span { width: 12px; height: 12px; border-radius: 50%; }
+    .title .t { flex: 1; text-align: center; margin-right: 52px; }
+    .main { display: grid; grid-template-columns: 48px ${sidebar ? '240px' : '0px'} 1fr; min-height: 0; }
+    .activity { display: flex; flex-direction: column; align-items: center; gap: 22px; padding-top: 14px; color: ${c.muted}; font-size: 22px; border-right: 1px solid ${c.border}; }
+    .activity .on { color: ${c.fg}; }
+    .side { background: ${c.side}; border-right: 1px solid ${c.border}; color: ${c.fg}; font-size: 12.5px; padding: 10px 0; overflow: hidden; }
+    .side .h { padding: 4px 18px 10px; font-size: 11px; font-weight: 700; color: ${c.muted}; letter-spacing: .06em; }
+    .side .r { display: flex; align-items: center; gap: 6px; padding: 3px 18px; white-space: nowrap; } .side .r i { color: ${c.muted}; }
+    .side .r.sel { background: ${dark ? '#37373d' : '#e4e6f1'}; }
+    .editor { display: grid; grid-template-rows: 35px 1fr; min-width: 0; background: ${t.vars['--vscode-editor-background']}; }
+    .tabs { display: flex; background: ${c.chrome}; border-bottom: 1px solid ${c.border}; }
+    .tab { display: flex; align-items: center; gap: 7px; padding: 0 14px; font-size: 12.5px; color: ${c.muted}; border-right: 1px solid ${c.border}; }
+    .tab.on { background: ${c.tab}; color: ${c.fg}; border-top: 1px solid #8b5cf6; }
+    .tab img { width: 14px; height: 14px; }
+    .content { position: relative; min-height: 0; }
+    .content iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+    .code { display: grid; grid-template-columns: 48px 1fr; align-content: start; padding-top: 10px; font: 13.5px/21px ${t.vars['--vscode-editor-font-family']}; }
+    .ln { text-align: right; padding-right: 18px; color: ${c.muted}; opacity: .6; } .code-line { white-space: pre; }
+    .status { display: flex; align-items: center; gap: 16px; padding: 0 12px; font-size: 12px; color: ${c.muted}; background: ${c.status}; border-top: 1px solid ${c.border}; }
+    .status .grow { flex: 1; } .status .slashi { color: ${c.fg}; font-weight: 600; padding: 0 8px; border-radius: 4px; background: ${dark ? 'rgb(139 92 246 / .25)' : 'rgb(139 92 246 / .15)'}; }
+  </style></head><body>
+  <div class="win">
+    <div class="title"><div class="lights"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="t">${title}</div></div>
+    <div class="main">
+      <div class="activity">${ph('files')}${ph('magnifying-glass')}${ph('git-branch')}${ph('bug')}${ph('puzzle-piece')}</div>
+      <div class="side">${sidebar ? `<div class="h">EXPLORER · SLASHI</div>${['caret-down|folder-open|src', '|file-ts|  extension.ts|sel', '|file-ts|  registry.ts', '|folder|  core', '|folder|  providers', '|folder|  webview', 'caret-right|folder|docs', 'caret-right|folder|marketplace', '|package|package.json', '|book-open|README.md'].map((r) => { const [a, i, n, sel] = r.split('|'); return `<div class="r${sel ? ' sel' : ''}">${a ? ph(a) : '<span style="width:14px"></span>'}${ph(i)}<span>${n.trim()}</span></div>`; }).join('')}` : ''}</div>
+      <div class="editor">
+        <div class="tabs">${tabs.map((tb) => `<div class="tab${tb.on ? ' on' : ''}">${tb.icon ? `<img src="${pathToFileURL(join(root, 'media', dark ? 'slash-dark.svg' : 'slash-light.svg')).href}">` : ph('file-ts')}${tb.label}</div>`).join('')}</div>
+        <div class="content">${inner}</div>
+      </div>
+    </div>
+    <div class="status">${ph('git-branch')} main <span>${ph('x-circle')} 0 ${ph('warning')} 0</span><span class="grow"></span><span>TypeScript</span><span class="slashi">/ Slashi</span></div>
+  </div></body></html>`;
+}
+
+async function hero(name, theme, innerPage, { actions, tabs, sidebar = true } = {}) {
+  const innerFile = join(tmp, `${name}-inner.html`);
+  writeFileSync(innerFile, innerPage);
+  const html = windowFrame({ theme, title: 'extension.ts — slashi', tabs, sidebar, inner: `<iframe id="f" src="${pathToFileURL(innerFile).href}"></iframe>` });
+  const file = join(tmp, `${name}.html`);
+  writeFileSync(file, html);
+  const tab = await browser.newPage({ viewport: { width: 1560, height: 1000 }, deviceScaleFactor: 2 });
+  await tab.goto(pathToFileURL(file).href);
+  await tab.waitForTimeout(300);
+  const frame = tab.frames().find((f) => f.url().includes('-inner.html'));
+  if (actions) await actions(frame);
+  await tab.waitForTimeout(500);
+  await tab.screenshot({ path: join(out, `${name}.png`) });
+  await tab.close();
+  console.log(`✓ ${name}.png`);
+}
+
+const spotlightTabs = [{ label: 'extension.ts' }, { label: 'Slashi', icon: true, on: true }];
+await hero('hero-dark', 'dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { tabs: spotlightTabs });
+await hero('hero-light', 'light', page({ theme: 'light', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { tabs: spotlightTabs, actions: typeQuery('/p ') });
+await hero('hero-files-dark', 'dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), {
+  tabs: spotlightTabs,
+  actions: async (f) => {
+    await typeQuery('/f package')(f);
+    await f.waitForTimeout(200);
+    await f.press('#q', 'Shift+Enter');
+  },
+});
+await hero('hero-answer-dark', 'dark', page({ theme: 'dark', script: 'answer.js', styles: ['answer.css'], host: answerHost }), { tabs: [{ label: 'search.ts' }, { label: 'Slashi AI', icon: true, on: true }] });
+await hero('hero-onboarding-dark', 'dark', page({ theme: 'dark', script: 'onboarding.js', styles: ['onboarding.css'], host: onboardingHost(0) }), {
+  tabs: [{ label: 'Welcome to Slashi', icon: true, on: true }],
+  sidebar: false,
+  actions: (f) => f.waitForTimeout(1400),
+});
 
 await browser.close();

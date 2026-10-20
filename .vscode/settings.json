@@ -1,0 +1,6 @@
+{
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "files.exclude": { "dist": false },
+  "search.exclude": { "dist": true, "test/smoke/out": true },
+  "json.schemas": [{ "fileMatch": ["marketplace/packs/*.json"], "url": "./schemas/slashi.schema.json" }]
+}

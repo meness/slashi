@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security vulnerability
+    url: https://github.com/meness/slashi/security/advisories/new
+    about: Please report security issues privately.
+  - name: Building actions & packs
+    url: https://github.com/meness/slashi/blob/main/docs/BUILDING_ACTIONS.md
+    about: How to create commands, team files, packs and use the extension API.

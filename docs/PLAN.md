@@ -11,7 +11,7 @@ honest audit of that plan, and the corrected plan (v2) that was implemented.
 
 ### 1.1 Experience
 
-* One shortcut (`Ctrl+Shift+/`, `Ctrl+/` on macOS) opens a centred, beautiful, theme-aware popup.
+* One shortcut opens a centred, beautiful, theme-aware popup.
 * Type `/` + a few letters → ranked results from every enabled **provider**.
 * `/<prefix> ` scopes the search to one provider (`/set `, `/ext `, `/ai `…).
 * `/<command> <args>` runs commands that take arguments (`/run npm test`, `/ask why…`).
@@ -91,10 +91,10 @@ honest audit of that plan, and the corrected plan (v2) that was implemented.
 | A4 | The executor snapshots the editor (document, view column, selections) before the popup opens and **re-reveals it with the original selections** before running any action. |
 | A5 | `ai.provider`/`ai.baseUrl` are **machine-scoped** (cannot be set by a workspace); `customCommands` and `.vscode/slashi.json` are ignored in **untrusted workspaces** (`restrictedConfigurations`); workspace-file terminal steps ask once per command. API keys live only in `SecretStorage`. Webviews use a strict nonce CSP; LLM markdown is rendered with raw HTML escaped. AI plans are validated (unknown commands/settings dropped) and **always shown for confirmation**; terminal steps always require confirmation. |
 | A6 | Default UI is the **Spotlight** webview where we fully control ranking & design; Native mode remains available (fastest, accessibility-first) and accepts VS Code's sorting. |
-| A7 | Platform-specific defaults — `Ctrl+Shift+/` (Windows/Linux) and `Ctrl+/` (macOS) — fully rebindable in **Keyboard Shortcuts** (`/shortcuts` opens it filtered to Slashi). Dedicated bindable commands open Slashi pre-scoped (Files, AI, Settings, Git, Terminal, Do-with-AI) and `slashi.open` accepts an initial query argument so any key can open any scope. |
+| A7 | **`Cmd+/` (macOS) and `Ctrl+/` (Windows/Linux)**, as requested. These keys toggle line comments by default, so Slashi moves *Toggle Line Comment* to `Cmd/Ctrl+Alt+/` (and `/comment`). The swap is controlled by `slashi.shortcut.useSlashKey` (asked during onboarding); when off, Slashi opens with `Cmd+Shift+;` / `Ctrl+Shift+/`. Everything is rebindable per OS; `/shortcuts` opens Keyboard Shortcuts filtered to Slashi; dedicated commands open pre-scoped popups; `slashi.run` binds any slash command to a key. |
 | A8 | Inline `/` trigger only fires when `/` is the **first non-blank character of a line**, only in configured languages (default Markdown + plaintext + scminput), and can be turned off. |
 | A9 | Catalogues are built lazily, cached and invalidated on `extensions.onDidChange` / configuration change, and pre-warmed after startup. Static items are posted to the webview **once per open** and ranked there; only live providers round-trip. |
-| A10 | A **Getting Started walkthrough**, a **Studio** panel (toggle providers, connect AI, test the connection, list models) and `/setup` items. Zero config needed for Copilot users — installed VS Code chat models are detected automatically. |
+| A10 | A **first-run onboarding** (welcome with a live demo, the shortcut with a try-it-now check, providers, AI auto-detection, detected stack, cheat sheet; replay with `/welcome`), a **Getting Started walkthrough**, a **Studio** panel (toggle providers, connect AI, test the connection, list models) and `/setup` items. Zero config needed for Copilot users — installed VS Code chat models are detected automatically. |
 | A11 | `engines.vscode` and `@types/vscode` pinned to **1.90** (first release with the stable Language Model API). |
 | A12 | All logic lives in pure modules with unit tests; webviews are rendered in headless Chromium with mocked VS Code theme variables (light & dark) to produce the README screenshots; the integration suite runs locally and in CI. |
 | A13 | Anthropic backend uses the official `@anthropic-ai/sdk`, default model `claude-opus-5-5`, streaming, checks `stop_reason === "refusal"`, and opts into server-side refusal fallbacks for models that support it. |

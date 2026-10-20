@@ -1,0 +1,15 @@
+**
+!dist/extension.js
+!dist/webview/*.js
+!dist/webview/*.css
+!dist/webview/phosphor/**
+!media/icon.png
+!media/slash-dark.svg
+!media/slash-light.svg
+!media/walkthrough/**
+!schemas/**
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE
+!THIRD_PARTY_NOTICES.md

@@ -6,7 +6,7 @@ import type { Services } from '../services/services';
 import { panelIcon, webviewHtml, webviewOptions } from './html';
 
 const CONFIG_KEYS = new Set([
-  'popup.style', 'popup.maxResults', 'popup.showDescriptions', 'statusBar.enabled', 'inlineTrigger.enabled', 'history.enabled',
+  'shortcut.useSlashKey', 'popup.style', 'popup.maxResults', 'popup.showDescriptions', 'statusBar.enabled', 'inlineTrigger.enabled', 'history.enabled',
   'ai.provider', 'ai.model', 'ai.baseUrl', 'ai.anthropicEffort', 'ai.confirmBeforeRun', 'ai.customInstructions', 'ai.includeFileContext',
 ]);
 
@@ -151,6 +151,7 @@ export class Studio implements vscode.Disposable {
         version: ext?.packageJSON?.version ?? 'dev',
         platform: process.platform,
         popupStyle: get('popup.style', 'spotlight'),
+        useSlashKey: get('shortcut.useSlashKey', true),
         statusBar: get('statusBar.enabled', true),
         inlineTrigger: get('inlineTrigger.enabled', true),
         history: get('history.enabled', true),

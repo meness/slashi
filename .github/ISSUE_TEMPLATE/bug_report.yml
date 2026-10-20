@@ -1,0 +1,34 @@
+name: Bug report
+description: Something in Slashi doesn't work as expected
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you type or press, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "1. Press Cmd+/\n2. Type /f readme\n3. ..."
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      placeholder: "Slashi 0.1.0, VS Code 1.95, macOS 15"
+    validations:
+      required: true
+  - type: dropdown
+    id: popup
+    attributes:
+      label: Popup style
+      options: [Spotlight, Native]
+  - type: textarea
+    id: log
+    attributes:
+      label: Log output
+      description: Run `/slashi-log` (Output → Slashi) and paste anything relevant. Remove secrets.
+      render: text

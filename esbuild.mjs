@@ -29,6 +29,7 @@ const configs = [
       spotlight: 'src/webview/spotlight.ts',
       answer: 'src/webview/answer.ts',
       studio: 'src/webview/studio.ts',
+      onboarding: 'src/webview/onboarding.ts',
     },
     outdir: 'dist/webview',
     platform: 'browser',
