@@ -18,6 +18,10 @@ CLAUDE.md and CONTRIBUTING.md hold the rules. This skill tells you where a chang
 | Webview protocol | `src/core/protocol.ts` | host (`src/ui/*`) **and** webview (`src/webview/*`) sides | typecheck (both tsconfigs) |
 | Packs / team files | `marketplace/*`, `schemas/*`, `src/core/commandSchema.ts` | `npm run marketplace` (never hand-edit `marketplace/index.json`) | `npm run check` |
 
+Every contributed command needs a `title` and `"category": "Slashi"`; hide internal ones from the palette with a `menus.commandPalette` `"when": "false"` entry.
+
+Dispose what you register: push activation-time listeners, providers and panels to `context.subscriptions`; a listener created in a method that runs more than once (per search, per panel open) must be disposed by that method's owner, not added to the extension-wide list, or it leaks one per call.
+
 When code starts using a `vscode` API the mock doesn't have, extend `test/smoke/vscode-mock.cjs`, or activation fails in the smoke test.
 
 ## Which skill to load
