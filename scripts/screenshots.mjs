@@ -63,6 +63,30 @@ const THEMES = {
       '--vscode-errorForeground': '#c72e0f',
     },
   },
+  // VS Code's Default High Contrast (dark) theme.
+  hc: {
+    body: 'vscode-high-contrast',
+    vars: {
+      '--vscode-font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", Inter, Roboto, sans-serif',
+      '--vscode-font-size': '13px',
+      '--vscode-editor-font-family': '"JetBrains Mono", "SF Mono", Menlo, Consolas, monospace',
+      '--vscode-editor-background': '#000000',
+      '--vscode-foreground': '#ffffff',
+      '--vscode-descriptionForeground': '#ffffff',
+      '--vscode-editorWidget-background': '#0c141f',
+      '--vscode-widget-border': '#6fc3df',
+      '--vscode-contrastBorder': '#6fc3df',
+      '--vscode-contrastActiveBorder': '#f38518',
+      '--vscode-focusBorder': '#f38518',
+      '--vscode-button-background': '#000000',
+      '--vscode-button-hoverBackground': '#000000',
+      '--vscode-button-foreground': '#ffffff',
+      '--vscode-input-background': '#000000',
+      '--vscode-textCodeBlock-background': '#000000',
+      '--vscode-textLink-foreground': '#21a6ff',
+      '--vscode-errorForeground': '#f48771',
+    },
+  },
 };
 
 const asset = (p) => pathToFileURL(join(root, 'dist', 'webview', p)).href;
@@ -118,7 +142,7 @@ const typeQuery = (q) => async (tab) => {
   await tab.waitForTimeout(200);
 };
 
-for (const theme of ['dark', 'light']) {
+for (const theme of ['dark', 'light', 'hc']) {
   await shoot(`spotlight-home-${theme}`, page({ theme, script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }));
 }
 await shoot('spotlight-search-dark', page({ theme: 'dark', script: 'spotlight.js', styles: ['spotlight.css'], host: spotlightHost(spotlightInit) }), { actions: typeQuery('/p ') });
@@ -150,7 +174,7 @@ It runs in both the extension host and the Spotlight webview, so typing never wa
   send({ type: 'delta', text });
   send({ type: 'done' });
 }`;
-for (const theme of ['dark', 'light']) {
+for (const theme of ['dark', 'light', 'hc']) {
   await shoot(`answer-${theme}`, page({ theme, script: 'answer.js', styles: ['answer.css'], host: answerHost }), { width: 900, height: 640 });
 }
 
@@ -158,6 +182,7 @@ const studioHost = (state, tab) => `(m, send) => { if (m.type === 'ready') send(
 const studioState = { ...studio, ai: { ...studio.ai, provider: 'anthropic', label: 'Claude · claude-opus-5-5', keys: { anthropic: true }, models: [{ backend: 'anthropic', id: 'claude-opus-5-5', label: 'Claude Opus 5.5', detail: 'Default' }, { backend: 'anthropic', id: 'claude-sonnet-5-5', label: 'Claude Sonnet 5.5' }] } };
 await shoot('studio-providers-dark', page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'providers') }), { width: 1200, height: 800 });
 await shoot('studio-ai-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
+await shoot('studio-ai-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
 
 // Onboarding steps
 const onboardingState = {
