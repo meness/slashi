@@ -1,6 +1,6 @@
 import type * as vscode from 'vscode';
 
-export type BackendId = 'vscode' | 'anthropic' | 'openai' | 'ollama' | 'openaiCompatible';
+export type BackendId = 'vscode' | 'anthropic' | 'openai' | 'ollama' | 'openaiCompatible' | 'claudeCode' | 'codex';
 
 export interface ChatMessage {
   role: 'user' | 'assistant';
@@ -39,6 +39,8 @@ export const BACKEND_LABELS: Record<BackendId, string> = {
   openai: 'OpenAI',
   ollama: 'Ollama',
   openaiCompatible: 'OpenAI-compatible',
+  claudeCode: 'Claude Code',
+  codex: 'Codex CLI',
 };
 
 /** Turns a VS Code cancellation token into an AbortSignal for fetch/SDK calls. */

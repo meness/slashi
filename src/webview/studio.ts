@@ -35,6 +35,8 @@ const BACKENDS = [
   { id: 'openai', title: 'OpenAI', note: 'OpenAI API key' },
   { id: 'ollama', title: 'Ollama', note: 'Local, free' },
   { id: 'openaiCompatible', title: 'Compatible', note: 'LM Studio, Groq, OpenRouter…' },
+  { id: 'claudeCode', title: 'Claude Code', note: 'Your Claude sign-in' },
+  { id: 'codex', title: 'Codex', note: 'Your ChatGPT sign-in' },
 ];
 
 let state: State | undefined;
@@ -283,7 +285,8 @@ document.addEventListener('change', (e) => {
   if (key === 'ai.model' && el instanceof HTMLSelectElement) {
     const option = el.selectedOptions[0];
     const backend = option?.dataset.backend;
-    if (backend && el.value) post({ type: 'selectModel', model: { backend, id: el.value, label: option.textContent ?? el.value } });
+    // CLI backends have one model with id '', so a backend alone is enough to select it.
+    if (backend) post({ type: 'selectModel', model: { backend, id: el.value, label: option.textContent ?? el.value } });
     else post({ type: 'setConfig', key, value: el.value });
     return;
   }

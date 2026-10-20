@@ -524,15 +524,19 @@
               "anthropic",
               "openai",
               "ollama",
-              "openaiCompatible"
+              "openaiCompatible",
+              "claudeCode",
+              "codex"
             ],
             "enumDescriptions": [
-              "Use an installed VS Code chat model (e.g. GitHub Copilot) if available, otherwise a local Ollama server.",
+              "Use an installed VS Code chat model (e.g. GitHub Copilot), then an API key, then a signed-in Claude Code / Codex CLI, otherwise a local Ollama server.",
               "VS Code Language Model API — models from installed extensions such as GitHub Copilot.",
               "Anthropic Claude (API key required).",
               "OpenAI (API key required).",
               "Local Ollama server (no key needed).",
-              "Any OpenAI-compatible endpoint: LM Studio, Groq, OpenRouter, Together, Mistral, vLLM…"
+              "Any OpenAI-compatible endpoint: LM Studio, Groq, OpenRouter, Together, Mistral, vLLM…",
+              "Claude Code CLI or VS Code extension — uses your Claude sign-in, no API key.",
+              "OpenAI Codex CLI — uses your ChatGPT sign-in, no API key."
             ],
             "default": "auto",
             "description": "Which LLM backend Slashi uses."

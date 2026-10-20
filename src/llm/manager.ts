@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { get, updateGlobal } from '../config';
 import { AnthropicBackend } from './anthropic';
+import { CliBackend } from './cli';
 import { OLLAMA_DEFAULT_URL, OPENAI_URL, OpenAiCompatibleBackend } from './openaiCompatible';
 import { AiNotConfiguredError, BACKEND_LABELS, type Backend, type BackendId, type ChatRequest, type ModelInfo } from './types';
 import { VsCodeLmBackend } from './vscodeLm';
@@ -30,9 +31,12 @@ export class AiManager {
       openai: new OpenAiCompatibleBackend('openai', () => OPENAI_URL, key('openai')),
       ollama: new OpenAiCompatibleBackend('ollama', () => get('ai.baseUrl', '') || OLLAMA_DEFAULT_URL, async () => undefined),
       openaiCompatible: new OpenAiCompatibleBackend('openaiCompatible', () => get('ai.baseUrl', ''), key('openaiCompatible')),
+      claudeCode: new CliBackend('claudeCode'),
+      codex: new CliBackend('codex'),
     };
     secrets.onDidChange(() => this.changed());
     vscode.lm?.onDidChangeChatModels?.(() => this.changed());
+    vscode.extensions.onDidChange(() => this.changed());
   }
 
   changed(): void {
@@ -61,7 +65,7 @@ export class AiManager {
     if (provider !== 'auto') {
       return { backend: this.backends[provider], model, label: `${BACKEND_LABELS[provider]}${model ? ` · ${model}` : ''}` };
     }
-    // auto: VS Code models (Copilot…) → Claude key → OpenAI key → local Ollama.
+    // auto: VS Code models (Copilot…) → Claude key → OpenAI key → Claude Code / Codex sign-in → local Ollama.
     const lm = await this.backends.vscode.listModels().catch(() => []);
     if (lm.length) {
       const chosen = lm.find((m) => m.id === model) ?? lm[0];
@@ -69,6 +73,9 @@ export class AiManager {
     }
     if (await this.hasKey('anthropic')) return { backend: this.backends.anthropic, model, label: `Claude${model ? ` · ${model}` : ''}` };
     if (await this.hasKey('openai')) return { backend: this.backends.openai, model, label: `OpenAI${model ? ` · ${model}` : ''}` };
+    for (const id of ['claudeCode', 'codex'] as const) {
+      if ((await this.backends[id].listModels()).length) return { backend: this.backends[id], model: '', label: BACKEND_LABELS[id] };
+    }
     const ollama = await this.backends.ollama.listModels().catch(() => []);
     if (ollama.length) {
       const chosen = ollama.find((m) => m.id === model) ?? ollama[0];

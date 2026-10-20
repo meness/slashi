@@ -137,6 +137,7 @@ export class Onboarding implements vscode.Disposable {
           keys: { anthropic: hasAnthropic, openai: hasOpenAi },
           vscode: models.filter((m) => m.backend === 'vscode'),
           ollama: models.filter((m) => m.backend === 'ollama'),
+          cli: models.filter((m) => m.backend === 'claudeCode' || m.backend === 'codex'),
           other: models.filter((m) => m.backend !== 'vscode' && m.backend !== 'ollama'),
         },
         stack: services.stack,

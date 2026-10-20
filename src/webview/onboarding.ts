@@ -9,7 +9,7 @@ interface State {
   shortcut: string;
   useSlashKey: boolean;
   providers: Provider[];
-  ai: { label: string; provider: string; model: string; keys: Record<string, boolean>; vscode: Model[]; ollama: Model[]; other: Model[] };
+  ai: { label: string; provider: string; model: string; keys: Record<string, boolean>; vscode: Model[]; ollama: Model[]; cli: Model[]; other: Model[] };
   stack: string[];
   examples: { name: string; title: string; description?: string }[];
 }
@@ -151,6 +151,7 @@ function aiStep(): string {
       <div class="ai-options">
         ${option('Automatic', ai.label ? `Using ${esc(ai.label)}` : 'Picks the best model available', 'sparkle', 'ai', ai.provider === 'auto', 'data-model="auto"')}
         ${copilot ? option(esc(copilot.label), `Installed in VS Code${copilot.detail ? ` · ${esc(copilot.detail)}` : ''}`, 'github-logo', 'extensions', ai.provider === 'vscode', `data-model='${esc(JSON.stringify(copilot))}'`) : ''}
+        ${ai.cli.map((m) => option(esc(m.label), 'Installed · uses your sign-in, no API key', 'terminal-window', 'terminal', ai.provider === m.backend, `data-model='${esc(JSON.stringify(m))}'`)).join('')}
         ${ollama ? option(`Ollama · ${esc(ollama.id)}`, 'Running locally — free and private', 'cpu', 'terminal', ai.provider === 'ollama', `data-model='${esc(JSON.stringify(ollama))}'`) : ''}
         ${option('Claude', ai.keys.anthropic ? 'Key saved' : 'Add an Anthropic API key', 'sparkle', 'naturalLanguage', ai.provider === 'anthropic', 'data-key="anthropic"')}
         ${option('OpenAI', ai.keys.openai ? 'Key saved' : 'Add an OpenAI API key', 'open-ai-logo', 'project', ai.provider === 'openai', 'data-key="openai"')}

@@ -7,6 +7,9 @@ const path = require('node:path');
 const Module = require('node:module');
 
 process.env.SLASHI_SKIP_ONBOARDING = '';
+// Hide locally installed claude/codex CLIs so "no AI configured" holds on dev machines too.
+process.env.PATH = path.dirname(process.execPath);
+process.env.HOME = fs.mkdtempSync(path.join(require('node:os').tmpdir(), 'slashi-smoke-'));
 const mock = require('./vscode-mock.cjs');
 const originalLoad = Module._load;
 Module._load = function (request, ...rest) {

@@ -30,7 +30,7 @@ Slash commands are everywhere again — chat apps, Notion, AI agents. Slashi bri
 - **Everything in one list** — 170+ VS Code commands, every extension command, every setting, your workspace files, open tabs, symbols, problems, git branches, themes and more.
 - **Knows your project** — detects npm/pnpm/yarn/bun, Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Playwright, Docker, Make, Python, Rust, Go, .NET, Java, Terraform… and gives you `/test`, `/dev`, `/prisma-migrate`, `/compose-up` instantly.
 - **Full file CRUD** — `/new`, `/mkdir`, `/rename`, `/move`, `/dup`, `/delete`, copy paths, reveal — from the keyboard.
-- **AI built in** — `/ask`, `/explain`, `/fix`, `/edit`, `/tests`, `/review`, `/commit-msg` with GitHub Copilot, Claude, OpenAI, Ollama or any OpenAI-compatible server.
+- **AI built in** — `/ask`, `/explain`, `/fix`, `/edit`, `/tests`, `/review`, `/commit-msg` with GitHub Copilot, Claude Code, Codex, Claude, OpenAI, Ollama or any OpenAI-compatible server.
 - **Plain English** — `/do make the font bigger and turn on word wrap` plans real actions and runs them after you confirm.
 - **Make it yours** — build commands with a wizard, share them with your team, or install packs from the action marketplace.
 - **Beautiful in every theme** — light, dark, high contrast and any custom theme, with [Phosphor](https://phosphoricons.com) icons for every action.
@@ -123,8 +123,9 @@ Slashi works without AI. When you want it, it picks the best model it can find:
 1. **VS Code language models** — GitHub Copilot, or any extension that provides chat models. Nothing to set up.
 2. **Claude** — `/ai-key` → Anthropic. Uses the official SDK; the default model is `claude-opus-5-5`, with the effort level in `slashi.ai.anthropicEffort`.
 3. **OpenAI** — `/ai-key` → OpenAI.
-4. **Ollama** — local and free; found automatically at `http://localhost:11434`.
-5. **Any OpenAI-compatible server** — LM Studio, Groq, OpenRouter, Together, vLLM: set `slashi.ai.provider` to `openaiCompatible` and `slashi.ai.baseUrl`.
+4. **Claude Code / Codex CLI** — no key needed. Slashi reuses your existing sign-in from the Claude Code extension (or `claude` on your PATH) or the `codex` CLI.
+5. **Ollama** — local and free; found automatically at `http://localhost:11434`.
+6. **Any OpenAI-compatible server** — LM Studio, Groq, OpenRouter, Together, vLLM: set `slashi.ai.provider` to `openaiCompatible` and `slashi.ai.baseUrl`.
 
 Switch models with `/models`. Test the connection in **Studio → AI & Models**. Add standing instructions with `slashi.ai.customInstructions`.
 
