@@ -2,6 +2,19 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.3.0](https://github.com/meness/slashi/compare/v0.2.0...v0.3.0) (2026-10-20)
+
+
+### Features
+
+* **ui:** add motion polish and clearer copy ([#15](https://github.com/meness/slashi/issues/15)) ([770f6fe](https://github.com/meness/slashi/commit/770f6fe47310298d112a8de6011ec1df211e2f1d))
+
+
+### Bug Fixes
+
+* handle unexpected setting and deno.json values ([#20](https://github.com/meness/slashi/issues/20)) ([2319233](https://github.com/meness/slashi/commit/231923354185b0e8839ac9fb1752dc84b572beb0))
+* **ui:** keep slash-name badges readable in high contrast light ([#17](https://github.com/meness/slashi/issues/17)) ([71bd320](https://github.com/meness/slashi/commit/71bd320131586f275a7aa1e339dc7397f7d87c08))
+
 ## [0.2.0](https://github.com/meness/slashi/compare/v0.1.0...v0.2.0) (2026-10-20)
 
 
