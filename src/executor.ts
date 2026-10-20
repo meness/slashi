@@ -45,7 +45,7 @@ async function runCommonAction(item: SlashItem, action: string): Promise<boolean
       return true;
     case 'slashi.hide':
       await hideItem(item.id);
-      void vscode.window.showInformationMessage(`“${item.title}” is hidden. Undo by editing “slashi.hiddenCommands”.`, 'Open Setting').then((choice) => {
+      void vscode.window.showInformationMessage(`Hid “${item.title}” from Slashi. To show it again, remove it from the Hidden Commands setting.`, 'Open Setting').then((choice) => {
         if (choice) void vscode.commands.executeCommand('workbench.action.openSettings', 'slashi.hiddenCommands');
       });
       return true;

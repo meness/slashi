@@ -67,7 +67,7 @@ function content(): string {
       return `<div class="hero">
           <div class="hero-mark" aria-hidden="true">/</div>
           <h1>Do anything in VS Code.<br><span class="grad">Just type /</span></h1>
-          <p class="lead">Files, settings, git, terminal, extensions, your project’s scripts and AI — one beautiful popup, never touch the mouse.</p>
+          <p class="lead">Files, settings, Git, terminal, extensions, scripts and AI in one keyboard-first popup.</p>
         </div>
         <div class="demo" aria-hidden="true">
           <div class="demo-input"><span class="demo-mark">/</span><span id="demo-text"></span><span class="caret"></span></div>
@@ -75,7 +75,7 @@ function content(): string {
         </div>`;
     case 'shortcut':
       return `<div class="center">
-          <h1>Your new favourite shortcut</h1>
+          <h1>Your new favorite shortcut</h1>
           <p class="lead">Press it anywhere in VS Code to open Slashi. Try it now.</p>
           <div class="keycaps${pressed ? ' pressed' : ''}">${slashKeys().map((k) => `<span class="cap">${k}</span>`).join('<span class="plus">+</span>')}</div>
           <p class="pressed-msg${pressed ? ' visible' : ''}">${icon('check-circle')} Perfect — that’s all you need to remember.</p>
@@ -87,7 +87,7 @@ function content(): string {
         </div>`;
     case 'providers':
       return `<div class="center wide">
-          <h1>Choose your superpowers</h1>
+          <h1>Choose what Slashi can do</h1>
           <p class="lead">Everything is on by default. Turn off what you don’t need — fine-tune features later in Studio.</p>
           <div class="providers">${s.providers
             .map(
@@ -115,13 +115,13 @@ function content(): string {
     case 'done':
       return `<div class="center wide">
           <h1>You’re all set ${icon('confetti')}</h1>
-          <p class="lead">A few moves that make Slashi fly:</p>
+          <p class="lead">Shortcuts worth knowing:</p>
           <div class="tips">
             ${tip(keys(...slashKeys()), 'Open Slashi from anywhere')}
             ${tip(keys('Tab'), 'Complete a command, then type its arguments')}
             ${tip(`${keys('⇧', '↵')}`, 'Actions: rename, delete, copy path, hide…')}
             ${tip(keys(mac() ? '⌘' : 'Ctrl', '↵'), 'Hand what you typed to AI')}
-            ${tip('<code>/f</code>', 'Files & folders with full CRUD')}
+            ${tip('<code>/f</code>', 'Create, rename, move and delete files')}
             ${tip('<code>/p</code>', 'Your project’s scripts & tools')}
             ${tip('<code>/do</code>', 'Describe a task in plain English')}
             ${tip('<code>/market</code>', 'Install community action packs')}

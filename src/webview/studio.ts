@@ -48,9 +48,29 @@ let testing = false;
 const post = (message: unknown) => vscode.postMessage(message);
 const sw = (on: boolean, attrs: string) => `<button class="switch" role="switch" aria-checked="${on}" ${attrs}></button>`;
 
+// Patches the live DOM toward `to` instead of replacing it, so focus survives and switch/opacity transitions play.
+function morph(from: Node, to: Node): void {
+  const a = [...from.childNodes];
+  const b = [...to.childNodes];
+  if (a.length !== b.length) return (from as Element).replaceChildren(...b); // text nodes have no children, so lengths only differ on elements
+  a.forEach((node, i) => {
+    const next = b[i];
+    if (node.nodeName !== next.nodeName) return node.parentNode!.replaceChild(next, node);
+    if (node instanceof Element && next instanceof Element) {
+      for (const { name } of [...node.attributes]) if (!next.hasAttribute(name)) node.removeAttribute(name);
+      for (const { name, value } of [...next.attributes]) if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+    } else if (node.nodeValue !== next.nodeValue) node.nodeValue = next.nodeValue;
+    morph(node, next);
+    // A field the user typed in ignores its value attribute, so sync the live value (unless they're still typing there).
+    const field = node instanceof HTMLInputElement || node instanceof HTMLTextAreaElement || node instanceof HTMLSelectElement;
+    if (field && node !== document.activeElement) node.value = (next as typeof node).value;
+  });
+}
+
 function render(): void {
   if (!state) return;
-  document.body.innerHTML = `<div class="layout">
+  const next = document.createElement('div');
+  next.innerHTML = `<div class="layout">
     <nav aria-label="Studio sections">
       <div class="brand"><div class="brand-mark">/</div><div><strong>Slashi Studio</strong><span>Make Slashi yours</span></div></div>
       ${TABS.map((t) => `<button data-tab="${t.id}" ${t.id === tab ? 'aria-current="page"' : ''}>${icon(t.icon)} ${t.title}</button>`).join('')}
@@ -59,6 +79,7 @@ function render(): void {
     </nav>
     <main>${page()}</main>
   </div>`;
+  morph(document.body, next);
 }
 
 function page(): string {
@@ -97,7 +118,7 @@ function providersPage(): string {
           ${
             p.features.length
               ? `<div class="chips">${p.features
-                  .map((f) => `<button class="chip" aria-pressed="${f.enabled}" ${p.enabled ? '' : 'disabled'} data-feature="${esc(p.id)}|${esc(f.id)}" title="${esc(f.description)}">${icon(f.enabled ? 'check' : 'minus')} ${esc(f.title)}</button>`)
+                  .map((f) => `<button class="chip" aria-pressed="${esc(String(f.enabled))}" ${p.enabled ? '' : 'disabled'} data-feature="${esc(p.id)}|${esc(f.id)}" title="${esc(f.description)}">${icon(f.enabled ? 'check' : 'minus')} ${esc(f.title)}</button>`)
                   .join('')}</div>`
               : ''
           }
@@ -123,7 +144,7 @@ function aiPage(): string {
         <span class="grow"></span>
         <button class="btn ghost" data-cmd="test" ${testing ? 'disabled' : ''}>${icon('lightning')} ${testing ? 'Testing…' : 'Test connection'}</button>
       </div>
-      ${test ? `<div class="test-result ${test.ok ? 'ok' : 'fail'}">${test.ok ? `${icon('check-circle')} ${esc(test.label ?? '')} replied in ${test.ms} ms: “${esc(test.text)}”` : `${icon('warning')} ${esc(test.text)}`}</div>` : ''}
+      ${test ? `<div class="test-result ${test.ok ? 'ok' : 'fail'}">${test.ok ? `${icon('check-circle')} ${esc(test.label ?? '')} replied in ${esc(String(test.ms))} ms: “${esc(test.text)}”` : `${icon('warning')} ${esc(test.text)}`}</div>` : ''}
     </div>
     <div class="panel">
       <h2>${icon('cpu')} Provider</h2>
@@ -141,7 +162,7 @@ function aiPage(): string {
         ${needsUrl ? `<label for="baseUrl">Server URL</label><input id="baseUrl" data-config="ai.baseUrl" value="${esc(ai.baseUrl)}" placeholder="${ai.provider === 'ollama' ? 'http://localhost:11434/v1' : 'http://localhost:1234/v1'}">` : ''}
         ${
           needsKey
-            ? `<label>API key</label><div class="row-actions"><button class="btn" data-key="${ai.provider}">${icon('key')} ${ai.keys[ai.provider] ? 'Replace key' : 'Add key'}</button>${ai.keys[ai.provider] ? `<button class="btn danger" data-clear="${ai.provider}">${icon('trash')} Remove</button>` : ''}</div>`
+            ? `<label>API key</label><div class="row-actions"><button class="btn" data-key="${esc(ai.provider)}">${icon('key')} ${ai.keys[ai.provider] ? 'Replace key' : 'Add key'}</button>${ai.keys[ai.provider] ? `<button class="btn danger" data-clear="${esc(ai.provider)}">${icon('trash')} Remove</button>` : ''}</div>`
             : ''
         }
         ${ai.provider === 'anthropic' ? `<label for="effort">Effort</label><select id="effort" data-config="ai.anthropicEffort">${['low', 'medium', 'high'].map((e) => `<option ${e === ai.effort ? 'selected' : ''}>${e}</option>`).join('')}</select>` : ''}
@@ -176,7 +197,7 @@ function commandsPage(): string {
       }
     </div>
     <div class="panel"><h2>${icon('package')} Installed packs</h2>
-      ${s.packs.length ? `<div class="list">${s.packs.map((p) => `<div class="item"><div class="text"><strong>${esc(p.name)}</strong><span>v${esc(p.version)} · ${p.commands} commands</span></div></div>`).join('')}</div>` : `<p class="muted">No packs installed. Browse the marketplace with <code>/market</code>.</p>`}
+      ${s.packs.length ? `<div class="list">${s.packs.map((p) => `<div class="item"><div class="text"><strong>${esc(p.name)}</strong><span>v${esc(p.version)} · ${esc(String(p.commands))} commands</span></div></div>`).join('')}</div>` : `<p class="muted">No packs installed. Browse the marketplace with <code>/market</code>.</p>`}
     </div>
   </div>`;
 }
@@ -257,7 +278,7 @@ function helpPage(): string {
       <div class="row-actions">
         <button class="btn" data-run="slashi.copyDiagnostics">${icon('clipboard-text')} Copy diagnostics</button>
         ${run('slashi.run', 'Show log', 'scroll', '/slashi-log')}
-        ${run('slashi.refresh', 'Refresh catalogues', 'arrows-clockwise')}
+        ${run('slashi.refresh', 'Refresh search results', 'arrows-clockwise')}
         <button class="btn ghost" data-tab="ai" data-cmd="test">${icon('plugs-connected')} Test AI connection</button>
       </div>
     </div>
@@ -313,12 +334,14 @@ document.addEventListener('click', (e) => {
   const el = (e.target as HTMLElement).closest<HTMLElement>('button');
   if (!el || !state) return;
   const d = el.dataset;
+  // Flip switches now so the thumb slides on click; the host's state echo then matches and morph() leaves it alone.
+  if (el.getAttribute('role') === 'switch') el.setAttribute('aria-checked', String(el.getAttribute('aria-checked') !== 'true'));
   if (d.tab) {
     tab = d.tab;
     vscode.setState({ tab });
     if (d.cmd === 'test') startTest();
     else render();
-  } else if (d.providerToggle) post({ type: 'toggleProvider', id: d.providerToggle, enabled: el.getAttribute('aria-checked') !== 'true' });
+  } else if (d.providerToggle) post({ type: 'toggleProvider', id: d.providerToggle, enabled: el.getAttribute('aria-checked') === 'true' });
   else if (d.feature) {
     const [provider, feature] = d.feature.split('|');
     post({ type: 'toggleFeature', provider, feature, enabled: el.getAttribute('aria-pressed') !== 'true' });
@@ -328,7 +351,7 @@ document.addEventListener('click', (e) => {
     test = undefined;
   } else if (d.key) post({ type: 'setKey', backend: d.key });
   else if (d.clear) post({ type: 'clearKey', backend: d.clear });
-  else if (d.bool) post({ type: 'setConfig', key: d.bool, value: el.getAttribute('aria-checked') !== 'true' });
+  else if (d.bool) post({ type: 'setConfig', key: d.bool, value: el.getAttribute('aria-checked') === 'true' });
   else if (d.style) post({ type: 'setConfig', key: 'popup.style', value: d.style });
   else if (d.run) post({ type: 'command', command: d.run, args: d.arg });
   else if (d.link) post({ type: 'openLink', link: d.link });

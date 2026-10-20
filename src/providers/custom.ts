@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { get, isFeatureEnabled, updateGlobal } from '../config';
+import { HELP_LINKS } from '../data/links';
 import { NAME_PATTERN, PACK_ID_PATTERN, validateCommands, type CustomCommandDef, type PackDef, type StepDef } from '../core/commandSchema';
 import { pickIcon } from '../core/icons';
 import { parseJsonc } from '../core/text';
@@ -146,7 +147,7 @@ export class CustomProvider implements SlashProvider {
     errors.forEach((e) => this.services.log.warn(e));
     if (this.warned.has(key)) return;
     this.warned.add(key);
-    void vscode.window.showWarningMessage(`Slashi: ${errors.length} problem(s) in your custom commands. ${errors[0]}`, 'Show Log').then((c) => c && this.services.log.show());
+    void vscode.window.showWarningMessage(`Slashi: ${errors.length === 1 ? '1 problem' : `${errors.length} problems`} in your custom commands. ${errors[0]}`, 'Show Log').then((c) => c && this.services.log.show());
   }
 
   private builtins(): SlashItem[] {
@@ -340,7 +341,7 @@ export async function editTeamCommands(): Promise<void> {
 export async function exportPack(): Promise<void> {
   const { commands } = validateCommands(get('customCommands', []));
   if (!commands.length) {
-    const choice = await vscode.window.showInformationMessage('You have no custom commands yet.', 'Create One');
+    const choice = await vscode.window.showInformationMessage('No custom commands to export yet.', 'Create Command');
     if (choice) await vscode.commands.executeCommand('slashi.newCommand');
     return;
   }
@@ -363,5 +364,7 @@ export async function exportPack(): Promise<void> {
   };
   const doc = await vscode.workspace.openTextDocument({ language: 'json', content: `${JSON.stringify(pack, null, 2)}\n` });
   await vscode.window.showTextDocument(doc);
-  void vscode.window.showInformationMessage(`Save it as ${id}.slashi-pack.json. Share the file, install it with “Slashi: Install Action Pack”, or publish it to the marketplace (see docs/BUILDING_ACTIONS.md).`);
+  void vscode.window
+    .showInformationMessage(`Save this as ${id}.slashi-pack.json. Share the file, or install it with “Slashi: Install Action Pack from URL or File…”.`, 'Publishing Guide')
+    .then((choice) => choice && vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS.packs)));
 }

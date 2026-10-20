@@ -34,7 +34,7 @@ export class SystemProvider implements SlashProvider {
       cmd('studio', 'Slashi: Open Studio', 'sliders-horizontal', 'slashi.studio', 'Providers, AI models and custom commands in one place'),
       cmd('shortcuts', 'Slashi: Customize Keyboard Shortcuts', 'keyboard', 'slashi.customizeShortcuts', 'Rebind Slashi or bind any slash command to a key'),
       cmd('native', 'Slashi: Open in Native Quick Pick', 'list-magnifying-glass', 'slashi.openNative'),
-      cmd('refresh', 'Slashi: Refresh Catalogues', 'arrows-clockwise', 'slashi.refresh', 'Re-scan files, project, extensions and settings'),
+      cmd('refresh', 'Slashi: Refresh Search Results', 'arrows-clockwise', 'slashi.refresh', 'Re-scan files, project, extensions and settings'),
       cmd('clear-history', 'Slashi: Clear Recent History', 'clock-counter-clockwise', 'slashi.clearHistory'),
       cmd('slashi-settings', 'Slashi: All Settings', 'gear-six', 'workbench.action.openSettings', undefined, '@ext:meness.slashi'),
       cmd('diagnostics', 'Slashi: Copy Diagnostics', 'clipboard-text', 'slashi.copyDiagnostics', 'Versions and setup for a bug report (no keys, files or code)'),

@@ -19,7 +19,7 @@ const OS_NAMES: Record<string, string> = { darwin: 'macOS', win32: 'Windows', li
 export class NaturalLanguageProvider implements SlashProvider {
   readonly id = 'naturalLanguage' as const;
   readonly title = 'Natural Language';
-  readonly description = 'Describe a task in plain English; the LLM picks the right actions and asks before running them.';
+  readonly description = 'Describe a task in plain English, and AI picks the right actions and asks before running them.';
   readonly icon = 'magic-wand';
   readonly prefix = 'do';
   readonly placeholder = 'Describe what you want to do…';
@@ -104,8 +104,8 @@ export async function doWithAi(services: Services, task: string, snapshot: Edito
   const reachesShell = plan.steps.some((s) => stepReachesShell(s, (id) => byId.get(id)?.providerId));
   if (get('ai.confirmBeforeRun', true) || reachesShell) {
     const detail = plan.steps.map((s, i) => `${i + 1}. ${describe(s)}${s.why ? `  (${s.why})` : ''}`).join('\n');
-    const choice = await vscode.window.showInformationMessage(plan.reply || 'Run this plan?', { modal: true, detail }, 'Run');
-    if (choice !== 'Run') return;
+    const choice = await vscode.window.showInformationMessage(plan.reply || 'Run this plan?', { modal: true, detail }, 'Run Plan');
+    if (choice !== 'Run Plan') return;
   }
 
   for (const step of plan.steps) {

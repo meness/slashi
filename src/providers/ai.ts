@@ -39,7 +39,7 @@ interface CodeContext {
 async function codeContext(ctx: RunContext, requireCode: boolean): Promise<CodeContext | undefined> {
   const editor = await ctx.editor();
   if (!editor) {
-    if (requireCode) void vscode.window.showWarningMessage('Open a file (and optionally select code) first.');
+    if (requireCode) void vscode.window.showWarningMessage('Open a file first. Select code to work on just that part.');
     return requireCode ? undefined : { language: '', file: '', code: '', hasSelection: false, truncated: false, diagnostics: '' };
   }
   const doc = editor.document;
@@ -68,7 +68,7 @@ function codeBlock(c: CodeContext): string {
 export class AiProvider implements SlashProvider {
   readonly id = 'ai' as const;
   readonly title = 'AI';
-  readonly description = 'Ask, explain, fix, document, test, review and edit code with your installed or configured LLM.';
+  readonly description = 'Ask, explain, fix, document, test, review and edit code with your AI model.';
   readonly icon = 'sparkle';
   readonly prefix = 'ai';
   readonly placeholder = 'Ask AI or pick an AI command…';

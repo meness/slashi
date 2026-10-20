@@ -89,7 +89,9 @@ main { flex: 1; overflow-y: auto; padding: 18px 18px 8px; scroll-behavior: smoot
   color: var(--muted);
   font-size: 11px;
   cursor: pointer;
+  transition: background 120ms var(--ease), color 120ms var(--ease), transform 120ms var(--ease);
 }
+.code .bar button:active { transform: scale(0.97); }
 .code .bar button:hover { background: color-mix(in srgb, var(--fg) 8%, transparent); color: var(--fg); }
 .code pre { margin: 0; padding: 12px 14px; overflow-x: auto; }
 .code pre code { padding: 0; background: none; font-size: 12.5px; line-height: 1.55; }
@@ -107,6 +109,10 @@ main { flex: 1; overflow-y: auto; padding: 18px 18px 8px; scroll-behavior: smoot
 }
 @keyframes blink { 50% { opacity: 0; } }
 
+/* Copy → Copied label crossfade; blur hides the two labels overlapping. */
+.swap { animation: swap 160ms var(--ease); }
+@keyframes swap { from { opacity: 0.3; filter: blur(2px); } }
+
 .error {
   padding: 10px 12px;
   border-radius: var(--radius-md);
@@ -121,8 +127,13 @@ main { flex: 1; overflow-y: auto; padding: 18px 18px 8px; scroll-behavior: smoot
   align-items: center;
   gap: 8px;
   max-width: 860px;
+  min-height: 36px; /* reserved, so swapping Stop for the actions doesn't move the thread */
   margin: 0 auto;
   padding: 8px 18px 0;
+}
+.toolbar > * {
+  transition: opacity 140ms var(--ease), transform 140ms var(--ease), background 120ms var(--ease);
+  @starting-style { opacity: 0; transform: translateY(4px); }
 }
 .toolbar .hint { color: var(--faint); font-size: 11.5px; display: inline-flex; gap: 5px; align-items: center; }
 .toolbar .grow { flex: 1; }

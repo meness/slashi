@@ -140,7 +140,7 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
       { title: 'Which provider is the key for?' },
     );
     if (!backend) return;
-    const key = await vscode.window.showInputBox({ title: `${backend.label} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in settings files.' });
+    const key = await vscode.window.showInputBox({ title: `${backend.label} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in your settings files.' });
     if (!key) return;
     await services.ai.setKey(backend.value, key);
     if (get('ai.provider', 'auto') === 'auto' && backend.value !== 'openaiCompatible') await updateGlobal('ai.provider', backend.value);
@@ -174,7 +174,7 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     registry.invalidate();
     await marketplace.refresh(true);
     await registry.warm();
-    void vscode.window.setStatusBarMessage('$(check) Slashi catalogues refreshed', 2500);
+    void vscode.window.setStatusBarMessage('$(check) Slashi search results refreshed', 2500);
   });
   command('slashi.inlineRun', async (id: string) => {
     const item = registry.find(id);
