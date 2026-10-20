@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-20T00:00:00Z",
+  "title": "Design System: Slashi",
+  "extensions": {
+    "colorMeta": {
+      "brand-violet": { "role": "primary", "displayName": "Slash Violet", "canonical": "#8b5cf6", "tonalRamp": ["#2e1065", "#4c1d95", "#5b21b6", "#6d28d9", "#7c3aed", "#8b5cf6", "#a78bfa", "#ddd6fe"] },
+      "brand-cyan": { "role": "primary", "displayName": "Slash Cyan", "canonical": "#06b6d4", "tonalRamp": ["#083344", "#164e63", "#155e75", "#0e7490", "#0891b2", "#06b6d4", "#22d3ee", "#cffafe"] },
+      "ai-rose": { "role": "secondary", "displayName": "AI Rose", "canonical": "#f472b6", "tonalRamp": ["#500724", "#831843", "#9d174d", "#be185d", "#db2777", "#ec4899", "#f472b6", "#fce7f3"] },
+      "celebrate-amber": { "role": "tertiary", "displayName": "Celebrate Amber", "canonical": "#f5a524", "tonalRamp": ["#451a03", "#78350f", "#92400e", "#b45309", "#d97706", "#f59e0b", "#f5a524", "#fef3c7"] },
+      "accent-fallback": { "role": "neutral", "displayName": "Theme Focus Accent (fallback)", "canonical": "#7c5cff" }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Onboarding headlines only." },
+      "query": { "displayName": "Query", "purpose": "The Spotlight search input." },
+      "section-label": { "displayName": "Section label", "purpose": "Sticky result-group headers, uppercase." }
+    },
+    "shadows": [
+      { "name": "overlay", "value": "0 24px 70px -12px rgb(0 0 0 / 0.55), 0 8px 24px -8px rgb(0 0 0 / 0.4)", "purpose": "Floating surfaces only: Spotlight card, actions menu, onboarding demo. Softer, violet-tinted in light themes; none in high contrast." },
+      { "name": "brand-glow", "value": "0 6px 18px -6px color-mix(in srgb, #8b5cf6 70%, transparent)", "purpose": "Under the slash mark." },
+      { "name": "focus-halo", "value": "0 0 0 3px var(--accent-soft)", "purpose": "Focused inputs and the composer." }
+    ],
+    "motion": [
+      { "name": "ease", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "All transitions and entrances." },
+      { "name": "ui", "value": "110-160ms", "purpose": "Hover, press, switch, popup pop-in." },
+      { "name": "step", "value": "360ms", "purpose": "Onboarding step entrance." }
+    ],
+    "breakpoints": [
+      { "name": "spotlight-compact", "value": "620px" },
+      { "name": "onboarding-compact", "value": "640px" },
+      { "name": "studio-stacked", "value": "720px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Theme-native primary action.",
+      "html": "<button class=\"ds-btn\">Replace key</button>",
+      "css": ".ds-btn { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border: 1px solid transparent; border-radius: 8px; background: var(--vscode-button-background, #7c5cff); color: var(--vscode-button-foreground, #fff); font-weight: 600; font-size: 12px; cursor: pointer; transition: background 120ms cubic-bezier(0.2,0.8,0.2,1), transform 120ms cubic-bezier(0.2,0.8,0.2,1); } .ds-btn:hover { background: var(--vscode-button-hoverBackground, #6a4cf0); } .ds-btn:active { transform: translateY(1px); } .ds-btn:focus-visible { outline: 2px solid var(--vscode-focusBorder, #7c5cff); outline-offset: 2px; }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Secondary action with a theme border.",
+      "html": "<button class=\"ds-btn-ghost\">Test connection</button>",
+      "css": ".ds-btn-ghost { display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 12px; border-radius: 8px; border: 1px solid color-mix(in srgb, #ccc 14%, transparent); background: transparent; color: var(--vscode-foreground, #ccc); font-weight: 600; font-size: 12px; cursor: pointer; } .ds-btn-ghost:hover { background: color-mix(in srgb, #ccc 7%, transparent); } .ds-btn-ghost:focus-visible { outline: 2px solid #7c5cff; outline-offset: 2px; }"
+    },
+    {
+      "name": "Field Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Studio form control.",
+      "html": "<input class=\"ds-input\" placeholder=\"Model id\">",
+      "css": ".ds-input { height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid color-mix(in srgb, #ccc 14%, transparent); background: var(--vscode-input-background, #2a2a2a); color: inherit; outline: none; } .ds-input:focus { border-color: var(--vscode-focusBorder, #7c5cff); box-shadow: 0 0 0 3px color-mix(in srgb, #7c5cff 16%, transparent); }"
+    },
+    {
+      "name": "Result Row",
+      "kind": "custom",
+      "refersTo": "result-row",
+      "description": "Signature Spotlight row: provider tile, title + mono slash, description, active gradient bar.",
+      "html": "<div class=\"ds-row ds-active\"><span class=\"ds-tile\">/</span><div><div class=\"ds-title\">Git: Commit <code>/commit</code></div><div class=\"ds-desc\">Commit staged changes with a message</div></div></div>",
+      "css": ".ds-row { position: relative; display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 10px; cursor: pointer; --tile: #fb7185; } .ds-row:hover, .ds-active { background: color-mix(in srgb, #7c5cff 16%, transparent); } .ds-active::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 3px; background: linear-gradient(135deg, #8b5cf6, #06b6d4); } .ds-tile { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; color: var(--tile); background: color-mix(in srgb, var(--tile) 15%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tile) 22%, transparent); font-weight: 700; } .ds-title { font-size: 13.5px; font-weight: 500; } .ds-title code { font-family: ui-monospace, monospace; font-size: 11.5px; color: #9d9d9d; margin-left: 6px; } .ds-desc { margin-top: 2px; font-size: 12px; color: #9d9d9d; }"
+    },
+    {
+      "name": "Filter Chip",
+      "kind": "chip",
+      "refersTo": "chip",
+      "description": "Studio feature toggle; pressed takes the provider tile hue.",
+      "html": "<button class=\"ds-chip\" aria-pressed=\"true\">Rename</button>",
+      "css": ".ds-chip { --tile: #f5a524; display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 9px; border-radius: 999px; border: 1px solid color-mix(in srgb, #ccc 9%, transparent); background: transparent; font-size: 11.5px; color: #9d9d9d; cursor: pointer; } .ds-chip[aria-pressed='true'] { color: var(--tile); border-color: color-mix(in srgb, var(--tile) 40%, transparent); background: color-mix(in srgb, var(--tile) 12%, transparent); } .ds-chip:focus-visible { outline: 2px solid #7c5cff; outline-offset: 1px; }"
+    },
+    {
+      "name": "Kbd Hint",
+      "kind": "custom",
+      "refersTo": "kbd",
+      "description": "Shortcut hint with a physical bottom edge.",
+      "html": "<kbd class=\"ds-kbd\">Tab</kbd>",
+      "css": ".ds-kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 18px; height: 18px; padding: 0 5px; font-size: 10.5px; font-weight: 600; line-height: 1; color: #9d9d9d; background: color-mix(in srgb, #ccc 7%, transparent); border: 1px solid color-mix(in srgb, #ccc 9%, transparent); border-bottom-width: 2px; border-radius: 5px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Native Spotlight",
+    "overview": "Slashi should feel like a part of VS Code that was always there, only better made. Every neutral, every surface, the focus accent and the button color are borrowed from the active VS Code theme, so Slashi looks at home in every theme. What belongs to Slashi alone is small and deliberate: one violet-to-cyan gradient, soft per-provider tile colors, and a Spotlight-grade overlay with real depth. Everything else is quiet, dense and keyboard-first.",
+    "keyCharacteristics": [
+      "Theme-derived neutrals; brand is one gradient plus provider tiles",
+      "Dense 13px UI that inherits the user's VS Code font and size",
+      "Flat panels, lifted overlays",
+      "Keyboard as visual language: kbd chips, mono slash commands, Enter glyph on the active row",
+      "Fully legible in high contrast (shadows and soft fills switch off, borders take over)"
+    ],
+    "rules": [
+      { "name": "The Borrowed Palette Rule", "body": "A new color must come from a --vscode-* variable, a color-mix() of existing tokens, or a new token in base.css with a body.vscode-light variant. Hex literals in component CSS are a bug. The only exception is #fff on the brand gradient.", "section": "colors" },
+      { "name": "The Tint, Don't Fill Rule", "body": "Accent and provider colors appear as 10–16% color-mix fills with a slightly stronger border, never as solid backgrounds. The single solid accent surface is the primary button, which takes the theme's own button color.", "section": "colors" },
+      { "name": "The Half-Step Rule", "body": "The UI scale moves in half-pixel steps between 10.5 and 14.5px because it sits beside the editor's own 13px chrome. Pick an existing step; do not add new sizes inside that range.", "section": "typography" },
+      { "name": "The Mono Means Syntax Rule", "body": "Mono is only for things the user could type or copy: commands, args, paths, code, model ids. Never for decoration.", "section": "typography" },
+      { "name": "The Float-Only Rule", "body": "Only floating surfaces cast --shadow. A card inside a page never does.", "section": "elevation" },
+      { "name": "The High-Contrast Rule", "body": "In vscode-high-contrast* themes, --shadow and --accent-soft are switched off and --border becomes the contrast border. The active row gets a dashed contrast outline instead of a tint. Every new state needs a visible non-color, non-shadow signal.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do take every neutral from a --vscode-* variable or a color-mix() of base.css tokens, and give every new hue a body.vscode-light variant.",
+      "Do use --brand-ink for violet text and --brand-a only for fills, carets and icons.",
+      "Do use the radius scale (--radius-xs … --radius) and keep containers rounder than their contents.",
+      "Do verify every UI change in light, dark and high-contrast with npm run screenshots.",
+      "Do use Phosphor icons only (regular for chrome, duotone for tiles); a unit test checks the names.",
+      "Do honor prefers-reduced-motion; base.css already kills animations and transitions globally.",
+      "Do keep motion short and eased with --ease (cubic-bezier(0.2, 0.8, 0.2, 1)): 110–160ms for UI, up to 360ms for onboarding step entrances."
+    ],
+    "donts": [
+      "Don't write hex literals in component CSS; add a token instead (the #fff on the brand gradient is the only exception).",
+      "Don't put --shadow on anything that doesn't float above the editor.",
+      "Don't use solid accent or provider backgrounds; tint at 10–16%.",
+      "Don't use gradient text outside the onboarding hero headline.",
+      "Don't add inline style attributes; the webview CSP forbids them.",
+      "Don't introduce a webfont; Slashi always speaks in the user's VS Code font.",
+      "Don't rely on color or shadow alone for state; high contrast removes both."
+    ]
+  }
+}
