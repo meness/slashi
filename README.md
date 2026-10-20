@@ -293,6 +293,10 @@ Open the folder and press **F5** (*Run Slashi*) to start an Extension Developmen
 
 Releases are automated: merging the release PR publishes to the VS Code Marketplace and Open VSX and attaches the `.vsix` to the GitHub release. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [design plan & audit](docs/PLAN.md).
 
+## Support Slashi
+
+Slashi is free and open source. If it saves you time, you can support its development with a crypto donation (ETH, Polygon, BTC or SOL). The addresses are in [DONATE.md](DONATE.md). Stars, reviews and bug reports help a lot too.
+
 ## License
 
 [MIT](LICENSE) © meness and Slashi contributors. Icons by [Phosphor Icons](https://phosphoricons.com) (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

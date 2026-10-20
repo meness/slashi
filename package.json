@@ -18,6 +18,9 @@
     "url": "https://github.com/meness/slashi/issues"
   },
   "homepage": "https://github.com/meness/slashi#readme",
+  "sponsor": {
+    "url": "https://github.com/meness/slashi/blob/main/DONATE.md"
+  },
   "keywords": [
     "slash",
     "command palette",
