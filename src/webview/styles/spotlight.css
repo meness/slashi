@@ -195,7 +195,7 @@ body.vscode-high-contrast-light .row.active { outline: 1px dashed var(--vscode-c
   border: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow);
-  transform-origin: bottom right; /* grows out of the ⌘K hint in the footer */
+  transform-origin: bottom right; /* grows out of the ⇧↵ Actions hint in the footer */
   animation: menu-in 120ms var(--ease);
 }
 @keyframes menu-in { from { opacity: 0; transform: translateY(4px) scale(0.97); } }
