@@ -2,6 +2,35 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.2.0](https://github.com/meness/slashi/compare/v0.1.0...v0.2.0) (2026-10-20)
+
+
+### Features
+
+* add Help & Support to Studio with diagnostics, docs, feedback and donation links ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+
+
+### Bug Fixes
+
+* **ai:** keep a replaced answer out of the next conversation ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* **ai:** refuse edits on code that was cut to fit the model ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* **git:** pick the innermost repository for the active file ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* never rewrite a team commands file Slashi can't parse ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* **security:** confirm every Do-with-AI step that can reach a shell, and keep its settings out of workspace control ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* **security:** neutralize newlines in cmd quoting and block config variables in shared steps ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+
+
+### Performance
+
+* read disabled features once per search ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+
+
+### Documentation
+
+* add a donation page and Sponsor links ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* rewrite the README for Marketplace and Open VSX users ([020248b](https://github.com/meness/slashi/commit/020248ba1b2655e9b378701cfdc377bd42405750))
+* **skills:** add command and disposable rules to slashi-tech ([#10](https://github.com/meness/slashi/issues/10)) ([71b502c](https://github.com/meness/slashi/commit/71b502c124b8cdbbb4547878880c571d6a69302a))
+
 ## [0.1.0](https://github.com/meness/slashi/releases/tag/v0.1.0) (2026-10-20)
 
 ### Added
