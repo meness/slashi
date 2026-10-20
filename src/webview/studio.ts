@@ -112,7 +112,7 @@ function aiPage(): string {
   const models = ai.models.filter((m) => ai.provider === 'auto' || m.backend === ai.provider);
   return `<div class="page">
     <h1>AI & Models</h1>
-    <p class="lead">Slashi works with GitHub Copilot and any model installed in VS Code, Claude, OpenAI, local Ollama, or any OpenAI-compatible server. Keys are kept in VS Code Secret Storage.</p>
+    <p class="lead">Slashi works with GitHub Copilot and any model installed in VS Code, your Claude Code or Codex sign-in, Claude, OpenAI, local Ollama, or any OpenAI-compatible server. API keys are kept in VS Code Secret Storage.</p>
     <div class="panel">
       <h2>${icon('plugs-connected')} Status</h2>
       <div class="status-line"><span class="status-dot${ai.label ? ' ok' : ''}"></span>
