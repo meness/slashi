@@ -207,7 +207,7 @@
       },
       {
         "command": "slashi.refresh",
-        "title": "Refresh Catalogues",
+        "title": "Refresh Search Results",
         "category": "Slashi"
       },
       {
@@ -408,12 +408,12 @@
           "slashi.providers.ai": {
             "type": "boolean",
             "default": true,
-            "description": "Installed LLMs: ask, explain, fix, document, test, review, edit, commit messages."
+            "description": "AI: ask, explain, fix, document, test, review and edit code, and write commit messages."
           },
           "slashi.providers.naturalLanguage": {
             "type": "boolean",
             "default": true,
-            "description": "Natural language: describe a task in plain English and let the configured LLM turn it into actions."
+            "description": "Natural language: describe a task in plain English and let your AI model turn it into actions."
           },
           "slashi.providers.transforms": {
             "type": "boolean",
@@ -433,7 +433,7 @@
           "slashi.providers.themes": {
             "type": "boolean",
             "default": true,
-            "description": "Themes: switch colour and icon themes."
+            "description": "Themes: switch color and icon themes."
           },
           "slashi.providers.web": {
             "type": "boolean",
@@ -547,7 +547,7 @@
               "OpenAI Codex CLI — uses your ChatGPT sign-in, no API key."
             ],
             "default": "auto",
-            "description": "Which LLM backend Slashi uses."
+            "description": "Which AI provider Slashi uses."
           },
           "slashi.ai.model": {
             "type": "string",
@@ -744,7 +744,7 @@
                         "properties": {
                           "ai": {
                             "type": "string",
-                            "description": "Prompt for the configured LLM."
+                            "description": "Prompt sent to your AI model."
                           },
                           "output": {
                             "enum": [

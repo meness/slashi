@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, updateGlobal } from '../config';
 import type { ProviderId } from '../core/protocol';
 import { HELP_LINKS, type HelpLink } from '../data/links';
-import type { BackendId, ModelInfo } from '../llm/types';
+import { BACKEND_LABELS, type BackendId, type ModelInfo } from '../llm/types';
 import type { Services } from '../services/services';
 import { panelIcon, webviewHtml, webviewOptions } from './html';
 
@@ -83,7 +83,7 @@ export class Studio implements vscode.Disposable {
         }
         break;
       case 'setKey': {
-        const key = await vscode.window.showInputBox({ title: `API key for ${m.backend}`, password: true, ignoreFocusOut: true, prompt: 'Stored securely in VS Code Secret Storage — never in settings.' });
+        const key = await vscode.window.showInputBox({ title: `${BACKEND_LABELS[m.backend]} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in your settings files.' });
         if (key) {
           await ai.setKey(m.backend, key);
           void this.loadModels();

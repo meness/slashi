@@ -278,7 +278,7 @@ function helpPage(): string {
       <div class="row-actions">
         <button class="btn" data-run="slashi.copyDiagnostics">${icon('clipboard-text')} Copy diagnostics</button>
         ${run('slashi.run', 'Show log', 'scroll', '/slashi-log')}
-        ${run('slashi.refresh', 'Refresh catalogues', 'arrows-clockwise')}
+        ${run('slashi.refresh', 'Refresh search results', 'arrows-clockwise')}
         <button class="btn ghost" data-tab="ai" data-cmd="test">${icon('plugs-connected')} Test AI connection</button>
       </div>
     </div>

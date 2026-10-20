@@ -146,7 +146,7 @@ export class AnswerPanel implements vscode.Disposable {
     if (!this.target) return this.insertAtCursor(text);
     const doc = await vscode.workspace.openTextDocument(this.target.uri);
     if (doc.version !== this.target.version) {
-      const choice = await vscode.window.showWarningMessage('The file changed since the AI started. Apply anyway?', { modal: true }, 'Apply');
+      const choice = await vscode.window.showWarningMessage('This file changed after the AI started writing. Apply the change anyway?', { modal: true, detail: 'Edits you made since then may be overwritten.' }, 'Apply Anyway');
       if (!choice) return;
     }
     const edit = new vscode.WorkspaceEdit();
@@ -157,7 +157,7 @@ export class AnswerPanel implements vscode.Disposable {
     editor.selection = new vscode.Selection(this.target.range.start, end);
     editor.revealRange(editor.selection, vscode.TextEditorRevealType.InCenterIfOutsideViewport);
     this.target = { uri: doc.uri, range: new vscode.Range(this.target.range.start, end), version: doc.version };
-    void vscode.window.setStatusBarMessage('$(check) Applied — undo with Ctrl/Cmd+Z', 4000);
+    void vscode.window.setStatusBarMessage(`$(check) Applied. Press ${process.platform === 'darwin' ? '⌘Z' : 'Ctrl+Z'} to undo.`, 4000);
   }
 
   private async insertAtCursor(text: string): Promise<void> {

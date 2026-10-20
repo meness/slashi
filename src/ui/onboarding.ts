@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { get, isProviderEnabled, shortcutLabel, updateGlobal } from '../config';
 import type { ProviderId } from '../core/protocol';
-import type { BackendId, ModelInfo } from '../llm/types';
+import { BACKEND_LABELS, type BackendId, type ModelInfo } from '../llm/types';
 import type { Services } from '../services/services';
 import { panelIcon, webviewHtml, webviewOptions } from './html';
 
@@ -88,7 +88,7 @@ export class Onboarding implements vscode.Disposable {
         await this.pushState();
         break;
       case 'setKey': {
-        const key = await vscode.window.showInputBox({ title: `${m.backend === 'anthropic' ? 'Anthropic' : 'OpenAI'} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage — never in settings files.' });
+        const key = await vscode.window.showInputBox({ title: `${BACKEND_LABELS[m.backend]} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in your settings files.' });
         if (key) {
           await services.ai.setKey(m.backend, key);
           await updateGlobal('ai.provider', m.backend);
