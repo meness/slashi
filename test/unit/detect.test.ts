@@ -126,3 +126,18 @@ describe('untrusted script names', () => {
     expect(all.filter((c) => c.includes('curl'))).toEqual([]);
   });
 });
+
+describe('deno tasks', () => {
+  it('reads Deno 2 object tasks as well as string tasks', () => {
+    const tasks = {
+      build: 'deno run -A build.ts',
+      dev: { command: 'deno run -A dev.ts', description: 'Start the dev server' },
+      lint: { command: 'deno lint' },
+    };
+    const items = detectProject([scan('', { 'deno.json': pkg({ tasks }) })]).commands;
+    const description = (task: string) => items.find((i) => i.command === `deno task ${task}`)?.description;
+    expect(description('build')).toBe('deno run -A build.ts');
+    expect(description('dev')).toBe('Start the dev server');
+    expect(description('lint')).toBe('deno lint');
+  });
+});
