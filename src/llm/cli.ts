@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as vscode from 'vscode';
+import { ClaudeStreamParser, type ClaudeStreamUpdate } from '../core/claudeStream';
 import { AiNotConfiguredError, BACKEND_LABELS, type Backend, type BackendId, type ChatRequest, type ModelInfo } from './types';
 
 type CliId = Extract<BackendId, 'claudeCode' | 'codex'>;
@@ -44,28 +45,26 @@ export class CliBackend implements Backend {
     return new Promise((resolve, reject) => {
       const child = spawn(bin, args, { cwd: os.tmpdir(), stdio: ['pipe', 'pipe', 'pipe'] });
       const cancel = token.onCancellationRequested(() => child.kill());
+      const parser = new ClaudeStreamParser();
       let full = '';
-      let buffered = '';
+      let result = '';
       let stderr = '';
       let error = '';
+      const apply = (update: ClaudeStreamUpdate) => {
+        if (update.text) {
+          full += update.text;
+          onText(update.text);
+        }
+        if (update.result) result = update.result;
+        if (update.error) error = update.error;
+      };
       child.stdout.setEncoding('utf8').on('data', (chunk: string) => {
         if (this.id === 'codex') {
           // codex prints only the final message on stdout (progress goes to stderr).
           full += chunk;
           return onText(chunk);
         }
-        buffered += chunk;
-        const lines = buffered.split('\n');
-        buffered = lines.pop() ?? '';
-        for (const line of lines) {
-          const event = parse(line);
-          const delta = event?.type === 'stream_event' && event.event?.delta?.type === 'text_delta' ? event.event.delta.text : undefined;
-          if (delta) {
-            full += delta;
-            onText(delta);
-          }
-          if (event?.type === 'result' && event.is_error) error = String(event.result ?? 'Claude Code request failed.');
-        }
+        apply(parser.push(chunk));
       });
       child.stderr.setEncoding('utf8').on('data', (chunk: string) => (stderr = (stderr + chunk).slice(-2000)));
       child.on('error', (err) => {
@@ -75,7 +74,10 @@ export class CliBackend implements Backend {
       child.on('close', (code) => {
         cancel.dispose();
         if (token.isCancellationRequested) return resolve(full);
+        apply(parser.flush());
         if (error || code) return reject(new Error(error || lastLine(stderr) || `${BACKEND_LABELS[this.id]} exited with code ${code}.`));
+        if (!full && result) apply({ text: result });
+        if (!full.trim()) return reject(new Error(`${BACKEND_LABELS[this.id]} returned no text.${lastLine(stderr) ? ` ${lastLine(stderr)}` : ''}`));
         resolve(this.id === 'codex' ? full.trim() : full);
       });
       // EPIPE when the CLI exits before reading stdin; 'close' reports the real error.
@@ -90,15 +92,6 @@ function isFile(file: string): boolean {
     return fs.statSync(file).isFile();
   } catch {
     return false;
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function parse(line: string): any {
-  try {
-    return JSON.parse(line);
-  } catch {
-    return undefined;
   }
 }
 
