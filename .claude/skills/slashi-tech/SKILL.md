@@ -39,6 +39,8 @@ When code starts using a `vscode` API the mock doesn't have, extend `test/smoke/
 
 - **`src/core` logic and every bug fix: test first.** The code is pure and Vitest is fast. A test that fails before the change proves the bug was reproduced and the fix is the reason it passes.
 - **Providers, UI and glue code: test right after.** Their tests need the `vscode` mock or screenshots, and setting those up before the code exists costs more than it catches.
+- **Prove a test can fail.** For a guard (validation, approval, parsing edge case), break the line it protects, confirm the test fails, then restore it. A test that passes against broken code is decoration.
+- **Coverage only goes up.** Thresholds live in `vitest.config.mts`. When coverage rises, raise them and run `npm run coverage` to refresh the README badge.
 
 ## Security checklist
 

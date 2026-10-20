@@ -9,7 +9,8 @@ VS Code extension (TypeScript, esbuild, Vitest). Node ≥ 20, VS Code ≥ 1.90.
 - `npm run typecheck` — extension + webview tsconfigs
 - `npm test` — Vitest unit tests (`test/unit`, covers `src/core`)
 - `npm run test:smoke` — builds, then activates the bundle against a mocked `vscode`
-- `npm run check` — everything CI runs except integration + packaging
+- `npm run coverage` — unit tests with coverage thresholds, then updates the README badge
+- `npm run check` — everything CI runs except integration + packaging (fails if coverage drops or the badge is stale)
 - `npm run marketplace` — regenerate `marketplace/index.json` after editing a pack
 
 ## Rules for Claude

@@ -9,6 +9,7 @@
 One beautiful, keyboard-first popup for files, settings, extensions, git, terminal, your project’s scripts, AI — and the commands you build yourself.
 
 [![CI](https://github.com/meness/slashi/actions/workflows/ci.yml/badge.svg)](https://github.com/meness/slashi/actions/workflows/ci.yml)
+[![Core coverage](https://img.shields.io/badge/core%20coverage-95%25-22c55e.svg)](vitest.config.mts)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.90%2B-06b6d4.svg)](https://code.visualstudio.com/)
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-22c55e.svg)](CONTRIBUTING.md)
