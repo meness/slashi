@@ -26,7 +26,7 @@ When code starts using a `vscode` API the mock doesn't have, extend `test/smoke/
 |---|---|---|
 | Any change | `ponytail` (already on) | Smallest complete diff. |
 | Finding callers, types, definitions | `LSP` tool (typescript-lsp plugin), then grep | The repo is small enough that the codebase-memory index isn't worth building. |
-| Bug | `investigate` | Root cause first, then a regression test (unit test for `src/core`, smoke check otherwise). |
+| Bug | `investigate` | Write the failing test first (unit test for `src/core`, smoke check otherwise), watch it fail, then fix the root cause. |
 | Anthropic SDK, model ids, effort, streaming (`src/llm/anthropic.ts`) | `claude-api` | Never pick model ids from memory. |
 | Before committing | `/code-review` | Correctness pass on the diff. |
 | Touches `spawn`, terminal, secrets, network, webview HTML, model output or packs | `/security-review` | Plus the checklist below. |
@@ -34,6 +34,11 @@ When code starts using a `vscode` API the mock doesn't have, extend `test/smoke/
 | Whole-repo health (now and then) | `ponytail:ponytail-audit`; `security-audit` for a full security pass | Report-only. |
 
 **Don't use here:** `clean-code` (fights ponytail and the repo's terse style), `zod` (not a dependency; validation is hand-written in `src/core/commandSchema.ts`), `bun-*`, `turborepo`, `docker-patterns`, `postgres-*`, `next-best-practices`, gstack `review`/`qa`/`health` (duplicate the built-ins above), and every `argent-*` skill (this isn't a mobile app; the global argent rule doesn't apply).
+
+## When to write the test first
+
+- **`src/core` logic and every bug fix: test first.** The code is pure and Vitest is fast. A test that fails before the change proves the bug was reproduced and the fix is the reason it passes.
+- **Providers, UI and glue code: test right after.** Their tests need the `vscode` mock or screenshots, and setting those up before the code exists costs more than it catches.
 
 ## Security checklist
 
