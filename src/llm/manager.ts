@@ -27,7 +27,11 @@ export class AiManager {
     const key = (id: BackendId) => async () => this.secrets.get(secretKey(id));
     this.backends = {
       vscode: new VsCodeLmBackend(),
-      anthropic: new AnthropicBackend(key('anthropic'), () => get<'low' | 'medium' | 'high'>('ai.anthropicEffort', 'medium')),
+      anthropic: new AnthropicBackend(key('anthropic'), () => {
+        // settings.json can hold any string; unknown values use the default instead of failing every request.
+        const effort = get('ai.anthropicEffort', 'medium');
+        return effort === 'low' || effort === 'high' ? effort : 'medium';
+      }),
       openai: new OpenAiCompatibleBackend('openai', () => OPENAI_URL, key('openai')),
       ollama: new OpenAiCompatibleBackend(
         'ollama',
@@ -49,7 +53,9 @@ export class AiManager {
   }
 
   get provider(): ProviderSetting {
-    return get<ProviderSetting>('ai.provider', 'auto');
+    const provider = get('ai.provider', 'auto');
+    // An unknown hand-edited value falls back to auto instead of resolving to a missing backend.
+    return Object.hasOwn(this.backends, provider) ? (provider as BackendId) : 'auto';
   }
 
   async hasKey(id: BackendId): Promise<boolean> {

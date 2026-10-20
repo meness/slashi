@@ -413,9 +413,15 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
   const deno = safeJson(scan.read['deno.json'] ?? scan.read['deno.jsonc']);
   if (deno) {
     ctx.techs.add('Deno');
-    const tasks = (deno.tasks && typeof deno.tasks === 'object' ? deno.tasks : {}) as Record<string, string>;
-    for (const [task, body] of Object.entries(tasks))
-      add(ctx, 'Deno', 'scripts', `deno-${task}`, `deno task: ${task}`, `deno task ${task}`, { icon: scriptIcon(task), description: body });
+    // Deno 2 tasks are either a command string or { command?, description?, dependencies? }.
+    const tasks = (deno.tasks && typeof deno.tasks === 'object' ? deno.tasks : {}) as Record<
+      string,
+      string | { command?: string; description?: string }
+    >;
+    for (const [task, body] of Object.entries(tasks)) {
+      const description = typeof body === 'string' ? body : (body?.description ?? body?.command ?? '');
+      add(ctx, 'Deno', 'scripts', `deno-${task}`, `deno task: ${task}`, `deno task ${task}`, { icon: scriptIcon(task), description });
+    }
     simple(ctx, 'Deno', [
       ['deno-test', 'test', 'deno test', 'flask'],
       ['deno-fmt', 'format', 'deno fmt', 'magic-wand'],

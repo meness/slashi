@@ -9,3 +9,6 @@ out/
 test/integration/out/
 test/smoke/out/
 .claude/settings.local.json
+
+# Local design-tool cache (impeccable)
+.impeccable/hook.cache.json
