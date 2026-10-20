@@ -8,3 +8,4 @@ node_modules/
 out/
 test/integration/out/
 test/smoke/out/
+.claude/settings.local.json
