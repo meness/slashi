@@ -68,6 +68,8 @@ interface Ctx {
 }
 
 function add(ctx: Ctx, tech: string, group: ProjectGroup, name: string, title: string, command: string, opts: { icon?: string; description?: string; args?: string } = {}): void {
+  // Script and task names from repo files end up in the shell command; skip any that could inject.
+  if (!/^[\w:.@/+-]+$/.test(name)) return;
   const fullName = ctx.prefix + name;
   ctx.out.push({
     id: `project:${ctx.scan.dir || '.'}:${tech}:${name}`,

