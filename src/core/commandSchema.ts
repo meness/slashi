@@ -224,11 +224,22 @@ export function compareVersions(a: string, b: string): number {
   return 0;
 }
 
+// Not just 'terminal': slash (/run), commands (terminal.sendSequence), settings (slashi.customCommands) and
+// vscode: URIs can all reach a shell.
+const APPROVAL_STEPS: ReadonlySet<StepType> = new Set(['terminal', 'slash', 'command', 'setting', 'open']);
+
+/** Steps a team file or pack may only run after the user approves them. */
+export function approvalSteps(def: CustomCommandDef): StepDef[] {
+  return def.steps.filter((s) => APPROVAL_STEPS.has(stepType(s)));
+}
+
 /** Human-readable one-liner per step, for install previews and confirmations. */
 export function describeStep(step: StepDef): string {
   switch (stepType(step)) {
-    case 'command':
-      return `Run VS Code command ${(step as { command: string }).command}`;
+    case 'command': {
+      const s = step as { command: string; args?: unknown };
+      return `Run VS Code command ${s.command}${s.args === undefined ? '' : ` with ${JSON.stringify(s.args)}`}`;
+    }
     case 'slash':
       return `Run ${(step as { slash: string }).slash}`;
     case 'terminal':

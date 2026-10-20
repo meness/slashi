@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { describeStep, stepType, type CustomCommandDef, type StepDef } from '../core/commandSchema';
+import { approvalSteps, describeStep, type CustomCommandDef, type StepDef } from '../core/commandSchema';
 import { expandTemplate, shellQuote, templateVariables } from '../core/template';
 import type { RunContext } from '../types';
 import { selectionText } from './editor';
@@ -58,24 +58,24 @@ function expandDeep(value: unknown, expand: (s: string) => string): unknown {
   return value;
 }
 
-/** Commands from a shared workspace file or a pack ask once before running terminal steps. */
-async function approveTerminal(ctx: RunContext, def: CustomCommandDef, source: CommandSource): Promise<boolean> {
+/** Commands from a shared workspace file or a pack ask once before running steps that can reach a shell. */
+async function approveSteps(ctx: RunContext, def: CustomCommandDef, source: CommandSource): Promise<boolean> {
   if (source === 'user' || source === 'extension') return true;
-  const terminalSteps = def.steps.filter((s) => stepType(s) === 'terminal');
-  if (!terminalSteps.length) return true;
+  const risky = approvalSteps(def);
+  if (!risky.length) return true;
   const state = source === 'team' ? ctx.services.context.workspaceState : ctx.services.context.globalState;
   const key = `slashi.approved.${source}.${def.name}`;
   const fingerprint = JSON.stringify(def.steps);
   if (state.get<string>(key) === fingerprint) return true;
-  const detail = terminalSteps.map((s) => `• ${describeStep(s)}`).join('\n');
+  const detail = risky.map((s) => `• ${describeStep(s)}`).join('\n');
   const origin = source === 'team' ? 'this workspace (.vscode/slashi.json)' : 'an installed action pack';
-  const choice = await vscode.window.showWarningMessage(`/${def.name} comes from ${origin} and will run terminal commands:`, { modal: true, detail }, 'Run', 'Always Allow');
+  const choice = await vscode.window.showWarningMessage(`/${def.name} comes from ${origin} and will:`, { modal: true, detail }, 'Run', 'Always Allow');
   if (choice === 'Always Allow') await state.update(key, fingerprint);
   return choice === 'Run' || choice === 'Always Allow';
 }
 
 export async function runCustomCommand(def: CustomCommandDef, ctx: RunContext, source: CommandSource): Promise<void> {
-  if (!(await approveTerminal(ctx, def, source))) return;
+  if (!(await approveSteps(ctx, def, source))) return;
   const editor = await ctx.editor();
   let args = ctx.args;
   if (!args && usesArgs(def)) {
