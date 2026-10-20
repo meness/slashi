@@ -53,7 +53,17 @@ docs/                 plan & audit, building actions
 
 ## Commit & PR
 
-- Small, focused PRs with a clear description. Conventional commit prefixes (`feat:`, `fix:`, `docs:`) are appreciated.
+- Small, focused PRs with a clear description.
+- Commit messages and PR titles follow [Conventional Commits](https://www.conventionalcommits.org): `type(scope): summary`, for example `feat(git): add stash provider`. A `commit-msg` hook (lefthook, installed by `npm install`) and a CI check on PR titles enforce it. PRs are squash-merged, so the title becomes the commit on `main`.
+- The type decides the next version: `fix:` and `perf:` bump the patch, `feat:` the minor, and `!` after the type (`feat!:`) or a `BREAKING CHANGE:` footer the major. While Slashi is below 1.0, breaking changes bump the minor instead. `docs`, `build`, `ci`, `test`, `refactor`, `style` and `chore` don't trigger a release.
 - CI must be green: typecheck, unit tests, smoke test, marketplace validation and packaging on Linux, macOS and Windows.
+
+## Releases
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please). Don't edit the version in `package.json` or `CHANGELOG.md` by hand.
+
+1. Every push to `main` updates an open **chore(main): release x.y.z** PR with the version bump and changelog.
+2. Merging that PR tags `vx.y.z` and creates the GitHub release. The workflow then runs the full check, attaches the `.vsix` and publishes to the VS Code Marketplace and Open VSX.
+3. To force a version, add a `Release-As: x.y.z` footer to a commit on `main`.
 
 By contributing you agree that your contributions are licensed under the [MIT License](LICENSE) and that you follow the [Code of Conduct](CODE_OF_CONDUCT.md).

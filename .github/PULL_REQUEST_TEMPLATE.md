@@ -1,6 +1,6 @@
 ## What does this change?
 
-<!-- One or two sentences. Link related issues with "Closes #123". -->
+<!-- One or two sentences. Link related issues with "Closes #123". The PR title must be a Conventional Commit (`feat(git): …`, `fix: …`); it becomes the commit message and drives the release. -->
 
 ## Type
 

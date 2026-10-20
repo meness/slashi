@@ -1,0 +1,5 @@
+# Git hooks, installed by `npm install` (the prepare script). Skip once with LEFTHOOK=0.
+commit-msg:
+  commands:
+    commitlint:
+      run: npx --no -- commitlint --edit {1}
