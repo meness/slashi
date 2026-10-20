@@ -1,5 +1,8 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": { "source.fixAll.oxc": "explicit" },
   "files.exclude": { "dist": false },
   "search.exclude": { "dist": true, "test/smoke/out": true },
   "json.schemas": [{ "fileMatch": ["marketplace/packs/*.json"], "url": "./schemas/slashi.schema.json" }]

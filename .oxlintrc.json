@@ -1,0 +1,66 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["eslint", "typescript", "unicorn", "oxc", "import", "promise", "node", "vitest"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "perf": "error"
+  },
+  "options": {
+    // Type-aware rules run on oxlint-tsgolint, which uses TypeScript 7 like the build.
+    "typeAware": true,
+    "denyWarnings": true,
+    "reportUnusedDisableDirectives": "error"
+  },
+  "env": { "es2024": true, "node": true },
+  "ignorePatterns": ["dist/**", "coverage/**", "test/smoke/out/**", ".vscode-test/**"],
+  "rules": {
+    "eqeqeq": ["error", "smart"],
+    "no-var": "error",
+    "prefer-const": "error",
+    "no-promise-executor-return": "error",
+    "import/no-cycle": "error",
+    "promise/always-return": ["error", { "ignoreLastCallback": true }],
+    "typescript/no-explicit-any": "error",
+    "typescript/consistent-type-imports": ["error", { "fixStyle": "inline-type-imports" }],
+    "typescript/no-floating-promises": "error",
+    "typescript/no-misused-promises": "error",
+    "typescript/await-thenable": "error",
+    "typescript/no-unnecessary-type-assertion": "error",
+    "typescript/return-await": ["error", "in-try-catch"],
+    "typescript/switch-exhaustiveness-check": ["error", { "considerDefaultExhaustiveForUnions": true }],
+    // An empty string means "not set" for settings and arguments, so `||` on strings is intended.
+    "typescript/prefer-nullish-coalescing": ["error", { "ignorePrimitives": { "string": true } }],
+    "vitest/expect-expect": ["error", { "assertFunctionNames": ["expect", "assert", "assert.*"] }],
+
+    // Webview code casts DOM nodes and postMessage payloads, and the host validates its own messages.
+    "typescript/no-unsafe-type-assertion": "off",
+    // Flags VS Code's webview postMessage, which has no target origin.
+    "unicorn/require-post-message-target-origin": "off",
+    // Macro steps, prompts and backend probes must run in order.
+    "no-await-in-loop": "off",
+    // Small local helpers next to their only caller are the house style.
+    "unicorn/consistent-function-scoping": "off",
+    // Every sort/reverse is on a fresh array, and toSorted/toReversed need the ES2023 lib.
+    "unicorn/no-array-sort": "off",
+    "unicorn/no-array-reverse": "off",
+    // Copy-on-update over small arrays; the clarity is worth more than the allocation.
+    "oxc/no-map-spread": "off",
+    // TypeScript already checks return types; this rule flags exhaustive switches without a default.
+    "typescript/consistent-return": "off"
+  },
+  "overrides": [
+    {
+      "files": ["src/webview/**"],
+      "env": { "browser": true, "node": false }
+    },
+    {
+      // The smoke harness patches Node's Module._load and mirrors vscode's API classes.
+      "files": ["test/smoke/**"],
+      "rules": {
+        "no-underscore-dangle": "off",
+        "typescript/no-extraneous-class": "off"
+      }
+    }
+  ]
+}

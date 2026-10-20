@@ -1,4 +1,15 @@
 # Git hooks, installed by `npm install` (the prepare script). Skip once with LEFTHOOK=0.
+pre-commit:
+  piped: true # lint fixes first, then Prettier formats the result
+  commands:
+    lint:
+      glob: '*.{ts,mts,cts,js,mjs,cjs}'
+      run: npx --no -- oxlint --fix {staged_files}
+      stage_fixed: true
+    format:
+      run: npx --no -- prettier --write --ignore-unknown {staged_files}
+      stage_fixed: true
+
 commit-msg:
   commands:
     commitlint:
