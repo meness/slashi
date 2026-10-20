@@ -74,3 +74,18 @@ describe('generators and stats', () => {
     expect(uuid).toMatch(/^[0-9a-f-]{36}$/);
   });
 });
+
+describe('TRANSFORMS wiring', () => {
+  const run = (name: string, text: string, args = '') => t.TRANSFORMS.find((x) => x.name === name)!.apply(text, args);
+
+  it.each([
+    ['sort-desc', 'a\nc\nb', 'c\nb\na'],
+    ['urlencode', 'a b&c', 'a%20b%26c'],
+    ['urldecode', 'a%20b%26c', 'a b&c'],
+    ['sha256', 'abc', 'ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad'],
+    ['md5', 'abc', '900150983cd24fb0d6963f7d28e17f72'],
+    ['join', 'a\nb', 'a b'],
+  ])('%s', (name, input, expected) => {
+    expect(run(name, input)).toBe(expected);
+  });
+});

@@ -25,3 +25,21 @@ describe('openAiDelta', () => {
     expect(openAiDelta('garbage')).toBeUndefined();
   });
 });
+
+describe('SseParser edge cases', () => {
+  it('reads fields without a colon or a leading space', () => {
+    expect(new SseParser().push('event:ping\ndata\ndata:x\n\n')).toEqual([{ event: 'ping', data: '\nx' }]);
+  });
+
+  it('drops comment-only blocks and flushes nothing when the buffer is blank', () => {
+    const p = new SseParser();
+    expect(p.push(': keep-alive\n\n')).toEqual([]);
+    p.push('  \n');
+    expect(p.flush()).toEqual([]);
+  });
+
+  it('returns undefined for null or missing content', () => {
+    expect(openAiDelta('{"choices":[{"delta":{"content":null}}]}')).toBeUndefined();
+    expect(openAiDelta('{"choices":[]}')).toBeUndefined();
+  });
+});

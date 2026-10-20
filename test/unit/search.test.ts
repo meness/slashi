@@ -117,3 +117,19 @@ describe('frecency + merge', () => {
     ]);
   });
 });
+
+describe('scoreWord boundaries', () => {
+  it('highlights the word-start occurrence, not the first mid-word one', () => {
+    expect(scoreWord('size', 'Downsize Font Size', 'downsize font size', true)!.positions).toEqual([14, 15, 16, 17]);
+  });
+
+  it('scores a mid-word match below a word-start match', () => {
+    expect(scoreWord('size', 'Downsize', 'downsize')!.score).toBeLessThan(scoreWord('size', 'Font Size', 'font size')!.score);
+  });
+});
+
+describe('scoreWord mid-word penalty', () => {
+  it('scores an earlier mid-word match above a later one', () => {
+    expect(scoreWord('ab', 'xab', 'xab')!.score).toBeGreaterThan(scoreWord('ab', 'xxxxab', 'xxxxab')!.score);
+  });
+});

@@ -53,3 +53,15 @@ describe('intent', () => {
     expect(result.dropped).toHaveLength(2);
   });
 });
+
+describe('model output edge cases', () => {
+  it('ignores braces and escaped quotes inside strings', () => {
+    expect(extractJson('{"reply": "use \\"}\\" here", "steps": []} trailing }')).toEqual({ reply: 'use "}" here', steps: [] });
+  });
+
+  it('keeps at most 10 steps from a plan', () => {
+    const steps = Array.from({ length: 12 }, (_, i) => ({ type: 'item' as const, id: `i${i}` }));
+    const plan = validatePlan({ reply: '', steps }, new Set(steps.map((s) => s.id)), new Set());
+    expect(plan.steps).toHaveLength(10);
+  });
+});
