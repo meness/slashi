@@ -35,7 +35,10 @@ export class PackStore {
   }
 
   async uninstall(id: string): Promise<void> {
-    await this.context.globalState.update(KEY, this.list().filter((p) => p.id !== id));
+    await this.context.globalState.update(
+      KEY,
+      this.list().filter((p) => p.id !== id),
+    );
     this.emitter.fire();
   }
 }

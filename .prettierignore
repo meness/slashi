@@ -1,0 +1,20 @@
+# Build output and test artifacts
+dist/
+coverage/
+.vscode-test/
+test/smoke/out/
+*.vsix
+
+# Generated: change the source and rerun the generator instead (see CLAUDE.md)
+marketplace/index.json
+package-lock.json
+
+# Owned by release-please
+CHANGELOG.md
+.release-please-manifest.json
+
+# Binary and image assets
+media/
+
+# Prose: Prettier pads Markdown tables to align columns, so a one-cell edit rewrites the whole table.
+*.md

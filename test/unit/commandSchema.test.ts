@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { approvalSteps, compareVersions, sharedVariableAllowed, describeStep, resolvePackUrl, validateCommand, validateCommands, validatePack, validateRegistry } from '../../src/core/commandSchema';
+import {
+  approvalSteps,
+  compareVersions,
+  sharedVariableAllowed,
+  describeStep,
+  resolvePackUrl,
+  validateCommand,
+  validateCommands,
+  validatePack,
+  validateRegistry,
+} from '../../src/core/commandSchema';
 
 describe('approvalSteps', () => {
   const steps = (...s: object[]) => approvalSteps({ name: 'x', steps: s as never });
@@ -16,7 +26,9 @@ describe('approvalSteps', () => {
   });
 
   it('lets in-editor steps run without asking', () => {
-    expect(steps({ insert: 'x' }, { notify: 'hi' }, { input: 'Name?', var: 'n' }, { pick: ['a'], var: 'p' }, { wait: 1 }, { ai: 'Explain' })).toEqual([]);
+    expect(
+      steps({ insert: 'x' }, { notify: 'hi' }, { input: 'Name?', var: 'n' }, { pick: ['a'], var: 'p' }, { wait: 1 }, { ai: 'Explain' }),
+    ).toEqual([]);
   });
 });
 
@@ -61,7 +73,14 @@ describe('validateCommand', () => {
 });
 
 describe('packs and registries', () => {
-  const pack = { id: 'demo', name: 'Demo', version: '1.2.0', description: 'd', author: 'me', commands: [{ name: 'hi', steps: [{ notify: 'hi' }] }] };
+  const pack = {
+    id: 'demo',
+    name: 'Demo',
+    version: '1.2.0',
+    description: 'd',
+    author: 'me',
+    commands: [{ name: 'hi', steps: [{ notify: 'hi' }] }],
+  };
 
   it('validates packs', () => {
     expect(validatePack(pack).errors).toEqual([]);
@@ -70,7 +89,10 @@ describe('packs and registries', () => {
   });
 
   it('validates registries leniently', () => {
-    const { value, errors } = validateRegistry({ version: 1, packs: [{ id: 'demo', name: 'Demo', version: '1.0.0', url: 'packs/demo.json' }, { id: 'broken' }] });
+    const { value, errors } = validateRegistry({
+      version: 1,
+      packs: [{ id: 'demo', name: 'Demo', version: '1.0.0', url: 'packs/demo.json' }, { id: 'broken' }],
+    });
     expect(value?.packs).toHaveLength(1);
     expect(errors).toHaveLength(1);
   });
@@ -122,7 +144,11 @@ describe('validator rejections', () => {
     ['blank string step', { name: 'ok', steps: [{ terminal: '  ' }] }, /terminal: must be a non-empty string/],
     ['non-string command', { name: 'ok', steps: [{ command: 1 }] }, /command: must be a non-empty string/],
     ['bad setting key', { name: 'ok', steps: [{ setting: 'a b', value: 1 }] }, /setting: must be a setting key/],
-    ['bad setting target', { name: 'ok', steps: [{ setting: 'a.b', value: 1, target: 'folder' }] }, /target: must be "user" or "workspace"/],
+    [
+      'bad setting target',
+      { name: 'ok', steps: [{ setting: 'a.b', value: 1, target: 'folder' }] },
+      /target: must be "user" or "workspace"/,
+    ],
     ['non-string input prompt', { name: 'ok', steps: [{ input: 1, var: 'v' }] }, /input: must be a prompt string/],
     ['bad input var', { name: 'ok', steps: [{ input: 'Name?', var: 'a-b' }] }, /var: must be a variable name/],
     ['empty pick', { name: 'ok', steps: [{ pick: [], var: 'v' }] }, /pick: must be a non-empty string array/],
@@ -138,7 +164,10 @@ describe('validator rejections', () => {
   });
 
   it('accepts the limits themselves', () => {
-    expect(validateCommand({ name: 'a'.repeat(40), steps: [{ wait: 0 }, { wait: 60_000 }, { setting: 'a.b', value: 1, target: 'workspace' }] }).errors).toEqual([]);
+    expect(
+      validateCommand({ name: 'a'.repeat(40), steps: [{ wait: 0 }, { wait: 60_000 }, { setting: 'a.b', value: 1, target: 'workspace' }] })
+        .errors,
+    ).toEqual([]);
     expect(validateCommand({ name: 'a'.repeat(41), steps: [{ wait: 0 }] }).errors[0]).toMatch(/name/);
   });
 
@@ -149,7 +178,14 @@ describe('validator rejections', () => {
 });
 
 describe('pack and registry rejections', () => {
-  const pack = { id: 'demo', name: 'Demo', version: '1.2.0', description: 'd', author: 'me', commands: [{ name: 'hi', steps: [{ notify: 'hi' }] }] };
+  const pack = {
+    id: 'demo',
+    name: 'Demo',
+    version: '1.2.0',
+    description: 'd',
+    author: 'me',
+    commands: [{ name: 'hi', steps: [{ notify: 'hi' }] }],
+  };
 
   it.each([
     ['non-object pack', [], /pack: must be a JSON object/],
@@ -179,7 +215,10 @@ describe('pack and registry rejections', () => {
   });
 
   it('fills safe defaults for optional registry fields', () => {
-    const entry = validateRegistry({ version: 1, packs: [{ id: 'd', name: 'D', version: '1.0.0', url: 'd.json', tags: ['a', 1], terminal: 'yes', commands: '3' }] }).value!.packs[0];
+    const entry = validateRegistry({
+      version: 1,
+      packs: [{ id: 'd', name: 'D', version: '1.0.0', url: 'd.json', tags: ['a', 1], terminal: 'yes', commands: '3' }],
+    }).value!.packs[0];
     expect(entry).toMatchObject({ description: '', author: 'unknown', icon: undefined, tags: ['a'], commands: 0, terminal: false });
   });
 });

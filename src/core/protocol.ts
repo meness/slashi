@@ -110,6 +110,4 @@ export type SpotlightToHost =
 
 /** Messages from the extension host to the Spotlight webview. */
 export type HostToSpotlight =
-  | { type: 'init'; data: SpotlightInit }
-  | { type: 'live'; seq: number; items: RankedView[] }
-  | { type: 'setQuery'; query: string };
+  { type: 'init'; data: SpotlightInit } | { type: 'live'; seq: number; items: RankedView[] } | { type: 'setQuery'; query: string };

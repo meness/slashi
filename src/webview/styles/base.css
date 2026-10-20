@@ -25,11 +25,11 @@
   --brand-ink: var(--brand-a); /* brand violet as text: darkened in light themes for contrast */
   --ai: #f472b6;
   --celebrate: #f5a524;
-  --radius-xs: 5px;  /* kbd, inline code */
-  --radius-sm: 8px;  /* buttons, inputs, nav items, menu rows */
+  --radius-xs: 5px; /* kbd, inline code */
+  --radius-sm: 8px; /* buttons, inputs, nav items, menu rows */
   --radius-md: 10px; /* list rows, tiles, code blocks, notices */
   --radius-lg: 12px; /* cards, panels, popover menus, composer */
-  --radius: 14px;    /* the floating Spotlight card */
+  --radius: 14px; /* the floating Spotlight card */
   --shadow: 0 24px 70px -12px rgb(0 0 0 / 0.55), 0 8px 24px -8px rgb(0 0 0 / 0.4);
   --ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
@@ -50,42 +50,109 @@ body.vscode-high-contrast-light {
 }
 
 /* Provider colors for icon tiles (tuned per theme kind for contrast). */
-[data-provider] { --tile: var(--brand-a); }
-[data-provider='files'] { --tile: #f5a524; }
-[data-provider='navigation'] { --tile: #38bdf8; }
-[data-provider='project'] { --tile: #34d399; }
-[data-provider='commands'] { --tile: #a78bfa; }
-[data-provider='settings'] { --tile: #94a3b8; }
-[data-provider='extensions'] { --tile: #818cf8; }
-[data-provider='ai'] { --tile: var(--ai); }
-[data-provider='naturalLanguage'] { --tile: #c084fc; }
-[data-provider='transforms'] { --tile: #2dd4bf; }
-[data-provider='terminal'] { --tile: #a3e635; }
-[data-provider='git'] { --tile: #fb7185; }
-[data-provider='themes'] { --tile: #f97316; }
-[data-provider='web'] { --tile: #60a5fa; }
-[data-provider='custom'] { --tile: #facc15; }
-[data-provider='marketplace'] { --tile: #22d3ee; }
-[data-provider='system'] { --tile: #8b5cf6; }
-body.vscode-light [data-provider='files'] { --tile: #b45309; }
-body.vscode-light [data-provider='navigation'] { --tile: #0369a1; }
-body.vscode-light [data-provider='project'] { --tile: #047857; }
-body.vscode-light [data-provider='commands'] { --tile: #6d28d9; }
-body.vscode-light [data-provider='settings'] { --tile: #475569; }
-body.vscode-light [data-provider='extensions'] { --tile: #4338ca; }
-body.vscode-light [data-provider='naturalLanguage'] { --tile: #7e22ce; }
-body.vscode-light [data-provider='transforms'] { --tile: #0f766e; }
-body.vscode-light [data-provider='terminal'] { --tile: #4d7c0f; }
-body.vscode-light [data-provider='git'] { --tile: #be123c; }
-body.vscode-light [data-provider='themes'] { --tile: #c2410c; }
-body.vscode-light [data-provider='web'] { --tile: #1d4ed8; }
-body.vscode-light [data-provider='custom'] { --tile: #a16207; }
-body.vscode-light [data-provider='marketplace'] { --tile: #0e7490; }
-body.vscode-light [data-provider='system'] { --tile: #6d28d9; }
+[data-provider] {
+  --tile: var(--brand-a);
+}
+[data-provider='files'] {
+  --tile: #f5a524;
+}
+[data-provider='navigation'] {
+  --tile: #38bdf8;
+}
+[data-provider='project'] {
+  --tile: #34d399;
+}
+[data-provider='commands'] {
+  --tile: #a78bfa;
+}
+[data-provider='settings'] {
+  --tile: #94a3b8;
+}
+[data-provider='extensions'] {
+  --tile: #818cf8;
+}
+[data-provider='ai'] {
+  --tile: var(--ai);
+}
+[data-provider='naturalLanguage'] {
+  --tile: #c084fc;
+}
+[data-provider='transforms'] {
+  --tile: #2dd4bf;
+}
+[data-provider='terminal'] {
+  --tile: #a3e635;
+}
+[data-provider='git'] {
+  --tile: #fb7185;
+}
+[data-provider='themes'] {
+  --tile: #f97316;
+}
+[data-provider='web'] {
+  --tile: #60a5fa;
+}
+[data-provider='custom'] {
+  --tile: #facc15;
+}
+[data-provider='marketplace'] {
+  --tile: #22d3ee;
+}
+[data-provider='system'] {
+  --tile: #8b5cf6;
+}
+body.vscode-light [data-provider='files'] {
+  --tile: #b45309;
+}
+body.vscode-light [data-provider='navigation'] {
+  --tile: #0369a1;
+}
+body.vscode-light [data-provider='project'] {
+  --tile: #047857;
+}
+body.vscode-light [data-provider='commands'] {
+  --tile: #6d28d9;
+}
+body.vscode-light [data-provider='settings'] {
+  --tile: #475569;
+}
+body.vscode-light [data-provider='extensions'] {
+  --tile: #4338ca;
+}
+body.vscode-light [data-provider='naturalLanguage'] {
+  --tile: #7e22ce;
+}
+body.vscode-light [data-provider='transforms'] {
+  --tile: #0f766e;
+}
+body.vscode-light [data-provider='terminal'] {
+  --tile: #4d7c0f;
+}
+body.vscode-light [data-provider='git'] {
+  --tile: #be123c;
+}
+body.vscode-light [data-provider='themes'] {
+  --tile: #c2410c;
+}
+body.vscode-light [data-provider='web'] {
+  --tile: #1d4ed8;
+}
+body.vscode-light [data-provider='custom'] {
+  --tile: #a16207;
+}
+body.vscode-light [data-provider='marketplace'] {
+  --tile: #0e7490;
+}
+body.vscode-light [data-provider='system'] {
+  --tile: #6d28d9;
+}
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -96,7 +163,13 @@ html, body {
   -webkit-font-smoothing: antialiased;
 }
 
-button, input, select, textarea { font: inherit; color: inherit; }
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
 
 kbd {
   display: inline-flex;
@@ -116,7 +189,10 @@ kbd {
   border-radius: var(--radius-xs);
 }
 
-.ph, .ph-duotone { line-height: 1; }
+.ph,
+.ph-duotone {
+  line-height: 1;
+}
 
 .tile {
   display: grid;
@@ -157,18 +233,42 @@ kbd {
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
-  transition: background 120ms var(--ease), transform 120ms var(--ease);
+  transition:
+    background 120ms var(--ease),
+    transform 120ms var(--ease);
 }
-.btn:hover { background: var(--button-hover); }
-.btn:active { transform: scale(0.97); }
-.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.btn.ghost { background: transparent; color: var(--fg); border-color: var(--border); }
-.btn.ghost:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
-.btn.danger { background: transparent; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
-.btn[disabled] { opacity: 0.5; cursor: default; }
+.btn:hover {
+  background: var(--button-hover);
+}
+.btn:active {
+  transform: scale(0.97);
+}
+.btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.btn.ghost {
+  background: transparent;
+  color: var(--fg);
+  border-color: var(--border);
+}
+.btn.ghost:hover {
+  background: color-mix(in srgb, var(--fg) 7%, transparent);
+}
+.btn.danger {
+  background: transparent;
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 40%, transparent);
+}
+.btn[disabled] {
+  opacity: 0.5;
+  cursor: default;
+}
 /* In high contrast a filled button's fill can match the page, so the border carries its shape (as VS Code's own buttons do). */
 body.vscode-high-contrast .btn:not(.ghost, .danger),
-body.vscode-high-contrast-light .btn:not(.ghost, .danger) { border-color: var(--vscode-button-border, var(--border)); }
+body.vscode-high-contrast-light .btn:not(.ghost, .danger) {
+  border-color: var(--vscode-button-border, var(--border));
+}
 
 .switch {
   position: relative;
@@ -190,20 +290,49 @@ body.vscode-high-contrast-light .btn:not(.ghost, .danger) { border-color: var(--
   height: 14px;
   border-radius: 50%;
   background: var(--fg);
-  transition: transform 160ms var(--ease), background 160ms var(--ease);
+  transition:
+    transform 160ms var(--ease),
+    background 160ms var(--ease);
 }
-.switch[aria-checked='true'] { background: var(--button); border-color: transparent; }
-.switch[aria-checked='true']::after { transform: translateX(14px); background: var(--accent-fg); }
-.switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.switch[aria-checked='true'] {
+  background: var(--button);
+  border-color: transparent;
+}
+.switch[aria-checked='true']::after {
+  transform: translateX(14px);
+  background: var(--accent-fg);
+}
+.switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
 /* HC buttons are black-on-black, so the checked track uses the accent and keeps its border. */
 body.vscode-high-contrast .switch[aria-checked='true'],
-body.vscode-high-contrast-light .switch[aria-checked='true'] { background: var(--accent); border-color: var(--border); }
+body.vscode-high-contrast-light .switch[aria-checked='true'] {
+  background: var(--accent);
+  border-color: var(--border);
+}
 
-::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: var(--vscode-scrollbarSlider-background, rgb(128 128 128 / 0.3)); border-radius: var(--radius-md); border: 3px solid transparent; background-clip: content-box; }
-::-webkit-scrollbar-thumb:hover { background-color: var(--vscode-scrollbarSlider-hoverBackground, rgb(128 128 128 / 0.5)); }
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--vscode-scrollbarSlider-background, rgb(128 128 128 / 0.3));
+  border-radius: var(--radius-md);
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--vscode-scrollbarSlider-hoverBackground, rgb(128 128 128 / 0.5));
+}
 
 /* Reduced motion keeps fades and color changes but drops movement; the spinner slows down instead of stopping (spotlight.css). */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { animation: none !important; transition-property: opacity, color, background-color, border-color !important; }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition-property: opacity, color, background-color, border-color !important;
+  }
 }

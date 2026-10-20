@@ -18,7 +18,7 @@ body:
     id: diagnostics
     attributes:
       label: Diagnostics
-      description: Run `/diagnostics` in Slashi (or **Slashi: Copy Diagnostics for a Bug Report**) and paste the result. It holds versions and setup only, never keys, file names or code.
+      description: 'Run `/diagnostics` in Slashi (or **Slashi: Copy Diagnostics for a Bug Report**) and paste the result. It holds versions and setup only, never keys, file names or code.'
       placeholder: "Slashi: 0.1.0\nEditor: Visual Studio Code 1.95.0\nOS: darwin arm64 …"
       render: text
     validations:

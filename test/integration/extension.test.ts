@@ -17,7 +17,15 @@ suite('Slashi in VS Code', () => {
 
   test('registers its commands', async () => {
     const commands = await vscode.commands.getCommands(true);
-    for (const id of ['slashi.open', 'slashi.openNative', 'slashi.run', 'slashi.welcome', 'slashi.studio', 'slashi.doWithAI', 'slashi.newCommand']) {
+    for (const id of [
+      'slashi.open',
+      'slashi.openNative',
+      'slashi.run',
+      'slashi.welcome',
+      'slashi.studio',
+      'slashi.doWithAI',
+      'slashi.newCommand',
+    ]) {
       assert.ok(commands.includes(id), `${id} is registered`);
     }
   });

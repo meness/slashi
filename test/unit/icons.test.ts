@@ -29,12 +29,70 @@ describe('Phosphor icons', () => {
     const fixture = detectProject([
       {
         dir: '',
-        files: ['package.json', 'Dockerfile', 'compose.yaml', 'Cargo.toml', 'go.mod', 'pom.xml', 'Gemfile', 'composer.json', 'artisan', 'pubspec.yaml', 'CMakeLists.txt', 'main.tf', 'Chart.yaml', '.pre-commit-config.yaml', 'manage.py', 'requirements.txt', 'Makefile', 'mix.exs', 'Package.swift', 'app.csproj', 'Taskfile.yml', 'build.gradle', 'deno.json'],
+        files: [
+          'package.json',
+          'Dockerfile',
+          'compose.yaml',
+          'Cargo.toml',
+          'go.mod',
+          'pom.xml',
+          'Gemfile',
+          'composer.json',
+          'artisan',
+          'pubspec.yaml',
+          'CMakeLists.txt',
+          'main.tf',
+          'Chart.yaml',
+          '.pre-commit-config.yaml',
+          'manage.py',
+          'requirements.txt',
+          'Makefile',
+          'mix.exs',
+          'Package.swift',
+          'app.csproj',
+          'Taskfile.yml',
+          'build.gradle',
+          'deno.json',
+        ],
         read: {
           'package.json': JSON.stringify({
-            scripts: { dev: 'x', test: 'x', lint: 'x', build: 'x', format: 'x', deploy: 'x', clean: 'x', 'db:seed': 'x', docs: 'x', other: 'x' },
+            scripts: {
+              dev: 'x',
+              test: 'x',
+              lint: 'x',
+              build: 'x',
+              format: 'x',
+              deploy: 'x',
+              clean: 'x',
+              'db:seed': 'x',
+              docs: 'x',
+              other: 'x',
+            },
             devDependencies: Object.fromEntries(
-              ['typescript', 'tsx', 'eslint', '@biomejs/biome', 'prettier', 'vitest', 'jest', '@playwright/test', 'cypress', 'next', 'vite', 'astro', 'nuxt', '@sveltejs/kit', '@angular/cli', 'expo', 'prisma', 'drizzle-kit', 'storybook', 'turbo', 'nx', '@changesets/cli'].map((d) => [d, '1']),
+              [
+                'typescript',
+                'tsx',
+                'eslint',
+                '@biomejs/biome',
+                'prettier',
+                'vitest',
+                'jest',
+                '@playwright/test',
+                'cypress',
+                'next',
+                'vite',
+                'astro',
+                'nuxt',
+                '@sveltejs/kit',
+                '@angular/cli',
+                'expo',
+                'prisma',
+                'drizzle-kit',
+                'storybook',
+                'turbo',
+                'nx',
+                '@changesets/cli',
+              ].map((d) => [d, '1']),
             ),
           }),
           'Cargo.toml': '',
@@ -52,7 +110,12 @@ describe('Phosphor icons', () => {
         },
       },
     ]);
-    const used = [...ruleIcons(), ...TRANSFORMS.map((t) => t.icon), ...fixture.commands.map((c) => c.icon), pickIcon('nothing matches here')];
+    const used = [
+      ...ruleIcons(),
+      ...TRANSFORMS.map((t) => t.icon),
+      ...fixture.commands.map((c) => c.icon),
+      pickIcon('nothing matches here'),
+    ];
     expect(used.filter((i) => !catalog.has(i))).toEqual([]);
   });
 
@@ -68,7 +131,8 @@ describe('marketplace packs', () => {
     const missing: string[] = [];
     for (const file of readdirSync('marketplace/packs')) {
       const pack = JSON.parse(readFileSync(join('marketplace/packs', file), 'utf8'));
-      for (const name of [pack.icon, ...pack.commands.map((c: { icon?: string }) => c.icon)]) if (name && !catalog.has(name)) missing.push(`${file}: ${name}`);
+      for (const name of [pack.icon, ...pack.commands.map((c: { icon?: string }) => c.icon)])
+        if (name && !catalog.has(name)) missing.push(`${file}: ${name}`);
     }
     expect(missing).toEqual([]);
   });

@@ -12,9 +12,28 @@ body:
     id: idea
     attributes:
       label: How would it work in Slashi?
-      placeholder: "/deploy staging → runs ..."
+      placeholder: '/deploy staging → runs ...'
   - type: dropdown
     id: area
     attributes:
       label: Area
-      options: [Files, Navigation, Project detection, Commands, Settings, Extensions, AI, Natural language, Text tools, Terminal, Git, Themes, Web, Custom commands, Marketplace, UI/UX, Other]
+      options:
+        [
+          Files,
+          Navigation,
+          Project detection,
+          Commands,
+          Settings,
+          Extensions,
+          AI,
+          Natural language,
+          Text tools,
+          Terminal,
+          Git,
+          Themes,
+          Web,
+          Custom commands,
+          Marketplace,
+          UI/UX,
+          Other,
+        ]

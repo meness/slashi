@@ -151,7 +151,7 @@ const CODICONS: Record<string, string> = {
   'arrow-square-out': 'link-external',
   'arrow-bend-up-right': 'arrow-right',
   'map-pin': 'location',
-  'hash': 'symbol-number',
+  hash: 'symbol-number',
   slash: 'terminal-cmd',
 };
 

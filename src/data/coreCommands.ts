@@ -13,7 +13,14 @@ export interface CoreCommand {
   boost?: number;
 }
 
-const c = (group: string, id: string, name: string | undefined, title: string, icon: string, extra: Partial<CoreCommand> = {}): CoreCommand => ({
+const c = (
+  group: string,
+  id: string,
+  name: string | undefined,
+  title: string,
+  icon: string,
+  extra: Partial<CoreCommand> = {},
+): CoreCommand => ({
   group,
   id,
   name,

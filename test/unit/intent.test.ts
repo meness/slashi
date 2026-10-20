@@ -3,12 +3,16 @@ import { buildIntentPrompt, extractJson, parseIntentResponse, stepReachesShell, 
 
 describe('intent', () => {
   it('builds a prompt listing the catalog and context', () => {
-    const { system, user } = buildIntentPrompt('make the font bigger', [{ id: 'set:editor.fontSize', title: 'Editor: Font Size', kind: 'setting', hint: 'number' }], {
-      os: 'macOS',
-      languageId: 'typescript',
-      hasSelection: false,
-      stack: ['pnpm', 'Next.js'],
-    });
+    const { system, user } = buildIntentPrompt(
+      'make the font bigger',
+      [{ id: 'set:editor.fontSize', title: 'Editor: Font Size', kind: 'setting', hint: 'number' }],
+      {
+        os: 'macOS',
+        languageId: 'typescript',
+        hasSelection: false,
+        stack: ['pnpm', 'Next.js'],
+      },
+    );
     expect(system).toContain('macOS');
     expect(system).toContain('pnpm, Next.js');
     expect(user).toContain('- set:editor.fontSize | setting | Editor: Font Size (number)');
@@ -45,7 +49,14 @@ describe('intent', () => {
 
   it('drops invented ids and settings', () => {
     const result = validatePlan(
-      { reply: '', steps: [{ type: 'item', id: 'cmd:real' }, { type: 'item', id: 'cmd:fake' }, { type: 'setting', key: 'nope', value: 1 }] },
+      {
+        reply: '',
+        steps: [
+          { type: 'item', id: 'cmd:real' },
+          { type: 'item', id: 'cmd:fake' },
+          { type: 'setting', key: 'nope', value: 1 },
+        ],
+      },
       new Set(['cmd:real']),
       new Set(['editor.fontSize']),
     );
@@ -68,7 +79,13 @@ describe('model output edge cases', () => {
 
 // "Terminal steps are always confirmed" must also hold for items and settings that reach a shell.
 describe('stepReachesShell', () => {
-  const providers: Record<string, string> = { 'term:run': 'terminal', 'project:.:npm:test@x': 'project', 'custom:team:x:ship': 'custom', 'market:browse': 'marketplace', 'cmd:editor.action.formatDocument': 'commands' };
+  const providers: Record<string, string> = {
+    'term:run': 'terminal',
+    'project:.:npm:test@x': 'project',
+    'custom:team:x:ship': 'custom',
+    'market:browse': 'marketplace',
+    'cmd:editor.action.formatDocument': 'commands',
+  };
   const reaches = (step: object) => stepReachesShell(step as never, (id) => providers[id]);
 
   it('flags terminal steps, shell-running items and settings that change what runs', () => {

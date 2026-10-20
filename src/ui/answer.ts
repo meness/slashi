@@ -46,14 +46,19 @@ export class AnswerPanel implements vscode.Disposable {
     const editor = request.editor;
     if (editor) {
       const sel = editor.selection;
-      const range = request.mode === 'edit' && sel.isEmpty ? new vscode.Range(0, 0, editor.document.lineCount, 0) : new vscode.Range(sel.start, sel.end);
+      const range =
+        request.mode === 'edit' && sel.isEmpty
+          ? new vscode.Range(0, 0, editor.document.lineCount, 0)
+          : new vscode.Range(sel.start, sel.end);
       this.target = { uri: editor.document.uri, range, version: editor.document.version };
     } else {
       this.target = undefined;
     }
     this.ensurePanel();
     await this.ready;
-    const targetLabel = this.target ? `${vscode.workspace.asRelativePath(this.target.uri)}${request.mode === 'edit' && !editor?.selection.isEmpty ? ` · lines ${this.target.range.start.line + 1}–${this.target.range.end.line + 1}` : ''}` : undefined;
+    const targetLabel = this.target
+      ? `${vscode.workspace.asRelativePath(this.target.uri)}${request.mode === 'edit' && !editor?.selection.isEmpty ? ` · lines ${this.target.range.start.line + 1}–${this.target.range.end.line + 1}` : ''}`
+      : undefined;
     this.post({ type: 'start', title: request.title, prompt: request.prompt, mode: request.mode, target: targetLabel });
     await this.generate();
   }
@@ -63,7 +68,12 @@ export class AnswerPanel implements vscode.Disposable {
       this.panel.reveal(vscode.ViewColumn.Beside, false);
       return;
     }
-    const panel = vscode.window.createWebviewPanel('slashi.answer', 'Slashi AI', { viewColumn: vscode.ViewColumn.Beside, preserveFocus: false }, { ...webviewOptions(this.extensionUri), retainContextWhenHidden: true });
+    const panel = vscode.window.createWebviewPanel(
+      'slashi.answer',
+      'Slashi AI',
+      { viewColumn: vscode.ViewColumn.Beside, preserveFocus: false },
+      { ...webviewOptions(this.extensionUri), retainContextWhenHidden: true },
+    );
     this.panel = panel;
     panel.iconPath = panelIcon(this.extensionUri);
     let resolveReady!: () => void;
@@ -125,9 +135,13 @@ export class AnswerPanel implements vscode.Disposable {
       label = await this.services.ai.label();
       if (stale()) return;
       if (label) this.post({ type: 'model', label });
-      const { text } = await this.services.ai.stream({ system: request.system, messages: this.messages }, (t) => {
-        if (!stale()) this.post({ type: 'delta', text: t });
-      }, cts.token);
+      const { text } = await this.services.ai.stream(
+        { system: request.system, messages: this.messages },
+        (t) => {
+          if (!stale()) this.post({ type: 'delta', text: t });
+        },
+        cts.token,
+      );
       if (stale()) return;
       this.messages.push({ role: 'assistant', content: text });
       this.post({ type: 'done' });
@@ -146,11 +160,21 @@ export class AnswerPanel implements vscode.Disposable {
     if (!this.target) return this.insertAtCursor(text);
     const doc = await vscode.workspace.openTextDocument(this.target.uri);
     if (doc.version !== this.target.version) {
-      const choice = await vscode.window.showWarningMessage('This file changed after the AI started writing. Apply the change anyway?', { modal: true, detail: 'Edits you made since then may be overwritten.' }, 'Apply Anyway');
+      const choice = await vscode.window.showWarningMessage(
+        'This file changed after the AI started writing. Apply the change anyway?',
+        { modal: true, detail: 'Edits you made since then may be overwritten.' },
+        'Apply Anyway',
+      );
       if (!choice) return;
     }
     const edit = new vscode.WorkspaceEdit();
-    edit.replace(doc.uri, this.request?.mode === 'insert' ? new vscode.Range(this.target.range.start, this.target.range.end) : doc.validateRange(this.target.range), text);
+    edit.replace(
+      doc.uri,
+      this.request?.mode === 'insert'
+        ? new vscode.Range(this.target.range.start, this.target.range.end)
+        : doc.validateRange(this.target.range),
+      text,
+    );
     if (!(await vscode.workspace.applyEdit(edit))) throw new Error('The edit could not be applied.');
     const editor = await vscode.window.showTextDocument(doc, { viewColumn: vscode.ViewColumn.One, preserveFocus: false });
     const end = doc.positionAt(doc.offsetAt(this.target.range.start) + text.length);
@@ -161,7 +185,9 @@ export class AnswerPanel implements vscode.Disposable {
   }
 
   private async insertAtCursor(text: string): Promise<void> {
-    const editor = vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === this.target?.uri.toString()) ?? vscode.window.visibleTextEditors[0];
+    const editor =
+      vscode.window.visibleTextEditors.find((e) => e.document.uri.toString() === this.target?.uri.toString()) ??
+      vscode.window.visibleTextEditors[0];
     if (!editor) {
       const doc = await vscode.workspace.openTextDocument({ content: text });
       await vscode.window.showTextDocument(doc);

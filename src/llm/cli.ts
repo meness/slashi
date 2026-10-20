@@ -27,19 +27,38 @@ export class CliBackend implements Backend {
   }
 
   async listModels(): Promise<ModelInfo[]> {
-    return this.binary() ? [{ backend: this.id, id: '', label: BACKEND_LABELS[this.id], detail: 'Uses your CLI sign-in · no API key' }] : [];
+    return this.binary()
+      ? [{ backend: this.id, id: '', label: BACKEND_LABELS[this.id], detail: 'Uses your CLI sign-in · no API key' }]
+      : [];
   }
 
   stream(model: string, request: ChatRequest, onText: (text: string) => void, token: vscode.CancellationToken): Promise<string> {
     const bin = this.binary();
     if (!bin) throw new AiNotConfiguredError(`${BACKEND_LABELS[this.id]} is not installed.`);
-    const transcript = request.messages.length === 1
-      ? request.messages[0].content
-      : request.messages.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n\n');
-    const args = this.id === 'claudeCode'
-      // No tools, settings, hooks or MCP: plain text completion only.
-      ? ['-p', '--output-format', 'stream-json', '--verbose', '--include-partial-messages', '--tools', '', '--setting-sources', '', '--strict-mcp-config', '--no-session-persistence', '--system-prompt', request.system, ...(model ? ['--model', model] : [])]
-      : ['exec', '--skip-git-repo-check', '--ephemeral', '-s', 'read-only', '--color', 'never', ...(model ? ['-m', model] : []), '-'];
+    const transcript =
+      request.messages.length === 1
+        ? request.messages[0].content
+        : request.messages.map((m) => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n\n');
+    const args =
+      this.id === 'claudeCode'
+        ? // No tools, settings, hooks or MCP: plain text completion only.
+          [
+            '-p',
+            '--output-format',
+            'stream-json',
+            '--verbose',
+            '--include-partial-messages',
+            '--tools',
+            '',
+            '--setting-sources',
+            '',
+            '--strict-mcp-config',
+            '--no-session-persistence',
+            '--system-prompt',
+            request.system,
+            ...(model ? ['--model', model] : []),
+          ]
+        : ['exec', '--skip-git-repo-check', '--ephemeral', '-s', 'read-only', '--color', 'never', ...(model ? ['-m', model] : []), '-'];
     const input = this.id === 'claudeCode' ? transcript : `${request.system}\n\n---\n\n${transcript}`;
 
     return new Promise((resolve, reject) => {
@@ -77,7 +96,8 @@ export class CliBackend implements Backend {
         apply(parser.flush());
         if (error || code) return reject(new Error(error || lastLine(stderr) || `${BACKEND_LABELS[this.id]} exited with code ${code}.`));
         if (!full && result) apply({ text: result });
-        if (!full.trim()) return reject(new Error(`${BACKEND_LABELS[this.id]} returned no text.${lastLine(stderr) ? ` ${lastLine(stderr)}` : ''}`));
+        if (!full.trim())
+          return reject(new Error(`${BACKEND_LABELS[this.id]} returned no text.${lastLine(stderr) ? ` ${lastLine(stderr)}` : ''}`));
         resolve(this.id === 'codex' ? full.trim() : full);
       });
       // EPIPE when the CLI exits before reading stdin; 'close' reports the real error.

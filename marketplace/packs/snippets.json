@@ -9,8 +9,19 @@
   "tags": ["snippets", "editing"],
   "commands": [
     { "name": "todo", "title": "Insert TODO", "icon": "check-square", "steps": [{ "insert": "TODO(${env:USER}, ${date}): " }] },
-    { "name": "log-selection", "title": "console.log the Selection", "icon": "terminal", "languages": ["javascript", "typescript", "javascriptreact", "typescriptreact"], "steps": [{ "command": "editor.action.insertLineAfter" }, { "insert": "console.log('${selection}', ${selection});" }] },
-    { "name": "file-header", "title": "Insert File Header", "icon": "file-text", "steps": [{ "insert": "// ${fileBasename}\n// Created ${date} by ${env:USER}\n\n" }] },
+    {
+      "name": "log-selection",
+      "title": "console.log the Selection",
+      "icon": "terminal",
+      "languages": ["javascript", "typescript", "javascriptreact", "typescriptreact"],
+      "steps": [{ "command": "editor.action.insertLineAfter" }, { "insert": "console.log('${selection}', ${selection});" }]
+    },
+    {
+      "name": "file-header",
+      "title": "Insert File Header",
+      "icon": "file-text",
+      "steps": [{ "insert": "// ${fileBasename}\n// Created ${date} by ${env:USER}\n\n" }]
+    },
     { "name": "paste-quoted", "title": "Paste as Markdown Quote", "icon": "quotes", "steps": [{ "insert": "> ${clipboard}" }] }
   ]
 }

@@ -8,11 +8,45 @@
   "icon": "git-branch",
   "tags": ["git", "workflow"],
   "commands": [
-    { "name": "wip", "title": "WIP Commit", "description": "Stage everything and commit as WIP", "icon": "floppy-disk", "steps": [{ "command": "workbench.action.files.saveAll" }, { "terminal": "git add -A && git commit -m \"wip\" --no-verify" }] },
-    { "name": "undo-commit-soft", "title": "Undo Last Commit (keep changes)", "icon": "arrow-u-up-left", "steps": [{ "terminal": "git reset --soft HEAD~1" }] },
-    { "name": "sync-main", "title": "Rebase on origin/main", "description": "Fetch and rebase the current branch onto origin/main", "icon": "arrows-clockwise", "steps": [{ "terminal": "git fetch origin && git rebase origin/main" }] },
-    { "name": "tidy-branches", "title": "Delete Merged Branches", "description": "Removes local branches already merged into main", "icon": "broom", "steps": [{ "terminal": "git branch --merged main | grep -vE '^\\*|\\bmain\\b|\\bmaster\\b' | xargs -r git branch -d" }] },
-    { "name": "amend", "title": "Amend Last Commit (no edit)", "icon": "git-commit", "steps": [{ "command": "workbench.action.files.saveAll" }, { "terminal": "git add -A && git commit --amend --no-edit" }] },
-    { "name": "new-branch-from-main", "title": "New Branch from main", "args": "branch-name", "icon": "git-branch", "steps": [{ "terminal": "git fetch origin && git switch -c ${q:args} origin/main" }] }
+    {
+      "name": "wip",
+      "title": "WIP Commit",
+      "description": "Stage everything and commit as WIP",
+      "icon": "floppy-disk",
+      "steps": [{ "command": "workbench.action.files.saveAll" }, { "terminal": "git add -A && git commit -m \"wip\" --no-verify" }]
+    },
+    {
+      "name": "undo-commit-soft",
+      "title": "Undo Last Commit (keep changes)",
+      "icon": "arrow-u-up-left",
+      "steps": [{ "terminal": "git reset --soft HEAD~1" }]
+    },
+    {
+      "name": "sync-main",
+      "title": "Rebase on origin/main",
+      "description": "Fetch and rebase the current branch onto origin/main",
+      "icon": "arrows-clockwise",
+      "steps": [{ "terminal": "git fetch origin && git rebase origin/main" }]
+    },
+    {
+      "name": "tidy-branches",
+      "title": "Delete Merged Branches",
+      "description": "Removes local branches already merged into main",
+      "icon": "broom",
+      "steps": [{ "terminal": "git branch --merged main | grep -vE '^\\*|\\bmain\\b|\\bmaster\\b' | xargs -r git branch -d" }]
+    },
+    {
+      "name": "amend",
+      "title": "Amend Last Commit (no edit)",
+      "icon": "git-commit",
+      "steps": [{ "command": "workbench.action.files.saveAll" }, { "terminal": "git add -A && git commit --amend --no-edit" }]
+    },
+    {
+      "name": "new-branch-from-main",
+      "title": "New Branch from main",
+      "args": "branch-name",
+      "icon": "git-branch",
+      "steps": [{ "terminal": "git fetch origin && git switch -c ${q:args} origin/main" }]
+    }
   ]
 }

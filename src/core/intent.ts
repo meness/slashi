@@ -31,10 +31,14 @@ export interface IntentContext {
   stack?: string[];
 }
 
-export function buildIntentPrompt(task: string, candidates: readonly IntentCandidate[], context: IntentContext): { system: string; user: string } {
+export function buildIntentPrompt(
+  task: string,
+  candidates: readonly IntentCandidate[],
+  context: IntentContext,
+): { system: string; user: string } {
   const system = [
     'You are Slashi, an assistant that operates Visual Studio Code for a developer.',
-    'Turn the developer\'s request into a short plan of concrete actions chosen ONLY from the catalog provided.',
+    "Turn the developer's request into a short plan of concrete actions chosen ONLY from the catalog provided.",
     'Respond with a single JSON object and nothing else, using this shape:',
     '{"reply": "one short sentence describing what you will do (or the answer if no action is needed)",',
     ' "steps": [',

@@ -15,7 +15,7 @@ interface ContributedCommand {
   enablement?: string;
 }
 
-const text = (v: string | { value: string } | undefined) => (typeof v === 'string' ? v : v?.value ?? '');
+const text = (v: string | { value: string } | undefined) => (typeof v === 'string' ? v : (v?.value ?? ''));
 
 /** Built-in commands (curated) and every command contributed by installed extensions. */
 export class CommandsProvider implements SlashProvider {
@@ -27,7 +27,11 @@ export class CommandsProvider implements SlashProvider {
   readonly placeholder = 'Run any VS Code or extension command…';
   readonly features = [
     { id: 'core', title: 'VS Code commands', description: '~170 curated built-in commands with slash names (/format, /split, /zen…).' },
-    { id: 'extensionCommands', title: 'Extension commands', description: 'Commands contributed by installed extensions (Git, Copilot, ESLint…).' },
+    {
+      id: 'extensionCommands',
+      title: 'Extension commands',
+      description: 'Commands contributed by installed extensions (Git, Copilot, ESLint…).',
+    },
   ];
 
   private readonly emitter = new vscode.EventEmitter<void>();

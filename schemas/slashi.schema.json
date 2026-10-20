@@ -52,17 +52,85 @@
     "step": {
       "description": "Exactly one action per step. Strings support ${args}, ${q:args} (shell-quoted), ${selection}, ${file}, ${fileBasename}, ${fileDirname}, ${relativeFile}, ${workspaceFolder}, ${lineNumber}, ${language}, ${date}, ${time}, ${datetime}, ${uuid}, ${clipboard}, ${env:NAME}, ${config:key}, ${input:var} and ${name:default}. In team files and packs, ${env:NAME} and ${clipboard} only expand in insert and notify steps.",
       "oneOf": [
-        { "type": "object", "required": ["command"], "properties": { "command": { "type": "string", "description": "VS Code command ID." }, "args": { "description": "Argument passed to the command." } }, "additionalProperties": false },
-        { "type": "object", "required": ["slash"], "properties": { "slash": { "type": "string", "description": "Another slash command, e.g. \"/format\" or \"/run npm test\"." } }, "additionalProperties": false },
-        { "type": "object", "required": ["terminal"], "properties": { "terminal": { "type": "string", "description": "Shell command." }, "name": { "type": "string", "description": "Terminal name." }, "cwd": { "type": "string", "description": "Working directory, relative to the workspace." } }, "additionalProperties": false },
-        { "type": "object", "required": ["setting", "value"], "properties": { "setting": { "type": "string" }, "value": {}, "target": { "enum": ["user", "workspace"] } }, "additionalProperties": false },
-        { "type": "object", "required": ["insert"], "properties": { "insert": { "type": "string", "description": "Text to insert at the cursor (replaces the selection)." } }, "additionalProperties": false },
-        { "type": "object", "required": ["open"], "properties": { "open": { "type": "string", "description": "https:// URL or workspace-relative path." } }, "additionalProperties": false },
-        { "type": "object", "required": ["ai"], "properties": { "ai": { "type": "string", "description": "Prompt for the configured LLM." }, "output": { "enum": ["panel", "replace", "insert"], "default": "panel" } }, "additionalProperties": false },
+        {
+          "type": "object",
+          "required": ["command"],
+          "properties": {
+            "command": { "type": "string", "description": "VS Code command ID." },
+            "args": { "description": "Argument passed to the command." }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["slash"],
+          "properties": { "slash": { "type": "string", "description": "Another slash command, e.g. \"/format\" or \"/run npm test\"." } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["terminal"],
+          "properties": {
+            "terminal": { "type": "string", "description": "Shell command." },
+            "name": { "type": "string", "description": "Terminal name." },
+            "cwd": { "type": "string", "description": "Working directory, relative to the workspace." }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["setting", "value"],
+          "properties": { "setting": { "type": "string" }, "value": {}, "target": { "enum": ["user", "workspace"] } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["insert"],
+          "properties": { "insert": { "type": "string", "description": "Text to insert at the cursor (replaces the selection)." } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["open"],
+          "properties": { "open": { "type": "string", "description": "https:// URL or workspace-relative path." } },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["ai"],
+          "properties": {
+            "ai": { "type": "string", "description": "Prompt for the configured LLM." },
+            "output": { "enum": ["panel", "replace", "insert"], "default": "panel" }
+          },
+          "additionalProperties": false
+        },
         { "type": "object", "required": ["notify"], "properties": { "notify": { "type": "string" } }, "additionalProperties": false },
-        { "type": "object", "required": ["input", "var"], "properties": { "input": { "type": "string", "description": "Prompt shown to the user." }, "var": { "type": "string", "description": "Variable name, used as ${input:name}." }, "placeholder": { "type": "string" } }, "additionalProperties": false },
-        { "type": "object", "required": ["pick", "var"], "properties": { "pick": { "type": "array", "items": { "type": "string" } }, "var": { "type": "string" }, "placeholder": { "type": "string" } }, "additionalProperties": false },
-        { "type": "object", "required": ["wait"], "properties": { "wait": { "type": "number", "minimum": 0, "maximum": 60000 } }, "additionalProperties": false }
+        {
+          "type": "object",
+          "required": ["input", "var"],
+          "properties": {
+            "input": { "type": "string", "description": "Prompt shown to the user." },
+            "var": { "type": "string", "description": "Variable name, used as ${input:name}." },
+            "placeholder": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["pick", "var"],
+          "properties": {
+            "pick": { "type": "array", "items": { "type": "string" } },
+            "var": { "type": "string" },
+            "placeholder": { "type": "string" }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["wait"],
+          "properties": { "wait": { "type": "number", "minimum": 0, "maximum": 60000 } },
+          "additionalProperties": false
+        }
       ]
     }
   }

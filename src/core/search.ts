@@ -99,15 +99,17 @@ export interface IndexedItem {
 }
 
 export function indexItems(items: readonly ItemView[]): IndexedItem[] {
-  return items.map((item) => ({
-    item,
-    name: item.name.toLowerCase(),
-    title: item.title,
-    titleLower: item.title.toLowerCase(),
-    keywords: (item.keywords ?? []).join(' ').toLowerCase(),
-    category: item.category.toLowerCase(),
-    description: (item.description ?? '').toLowerCase(),
-  })).map((e) => ({ ...e, all: `${e.name} ${e.titleLower} ${e.keywords} ${e.category} ${e.description}` }));
+  return items
+    .map((item) => ({
+      item,
+      name: item.name.toLowerCase(),
+      title: item.title,
+      titleLower: item.title.toLowerCase(),
+      keywords: (item.keywords ?? []).join(' ').toLowerCase(),
+      category: item.category.toLowerCase(),
+      description: (item.description ?? '').toLowerCase(),
+    }))
+    .map((e) => ({ ...e, all: `${e.name} ${e.titleLower} ${e.keywords} ${e.category} ${e.description}` }));
 }
 
 const WEIGHT = { name: 1.25, title: 1, keywords: 0.75, category: 0.45, description: 0.35 };
@@ -151,7 +153,10 @@ export function rank(index: readonly IndexedItem[], query: ParsedQuery, options:
   const words = query.words;
 
   if (!words.length) {
-    const scored: Scored[] = index.map((entry) => ({ entry, score: frecencyBonus(frecency?.[entry.item.id], now) + (entry.item.boost ?? 0) }));
+    const scored: Scored[] = index.map((entry) => ({
+      entry,
+      score: frecencyBonus(frecency?.[entry.item.id], now) + (entry.item.boost ?? 0),
+    }));
     return finish(scored, words, limit);
   }
 

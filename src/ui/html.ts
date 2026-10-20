@@ -2,7 +2,11 @@ import { randomBytes } from 'node:crypto';
 import * as vscode from 'vscode';
 
 /** Builds a webview document with a strict nonce-based CSP. Only bundled local assets are loaded. */
-export function webviewHtml(webview: vscode.Webview, extensionUri: vscode.Uri, options: { title: string; script: string; styles: string[]; body?: string }): string {
+export function webviewHtml(
+  webview: vscode.Webview,
+  extensionUri: vscode.Uri,
+  options: { title: string; script: string; styles: string[]; body?: string },
+): string {
   const nonce = randomBytes(16).toString('base64');
   const asset = (path: string) => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview', path));
   const csp = [

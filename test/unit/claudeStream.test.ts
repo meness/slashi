@@ -26,11 +26,20 @@ describe('ClaudeStreamParser', () => {
 
   it('ignores non-JSON lines and other event types', () => {
     const p = new ClaudeStreamParser();
-    expect(p.push('warning: something\n' + line({ type: 'system', subtype: 'init' }) + line({ type: 'stream_event', event: { delta: { type: 'input_json_delta', partial_json: '{' } } }))).toEqual({ text: '' });
+    expect(
+      p.push(
+        'warning: something\n' +
+          line({ type: 'system', subtype: 'init' }) +
+          line({ type: 'stream_event', event: { delta: { type: 'input_json_delta', partial_json: '{' } } }),
+      ),
+    ).toEqual({ text: '' });
     expect(p.flush()).toEqual({ text: '' });
   });
 
   it('uses a generic message when an error result has no text', () => {
-    expect(new ClaudeStreamParser().push(line({ type: 'result', is_error: true }))).toEqual({ text: '', error: 'Claude Code request failed.' });
+    expect(new ClaudeStreamParser().push(line({ type: 'result', is_error: true }))).toEqual({
+      text: '',
+      error: 'Claude Code request failed.',
+    });
   });
 });

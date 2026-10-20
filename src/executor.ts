@@ -12,7 +12,13 @@ export const COMMON_ACTIONS = [
   { id: 'slashi.hide', title: 'Hide from Slashi', icon: 'eye-slash' },
 ];
 
-export async function execute(services: Services, item: SlashItem, args: string, action: string | undefined, snapshot: EditorSnapshot | undefined): Promise<void> {
+export async function execute(
+  services: Services,
+  item: SlashItem,
+  args: string,
+  action: string | undefined,
+  snapshot: EditorSnapshot | undefined,
+): Promise<void> {
   if (action && (await runCommonAction(item, action))) return;
   await services.history.record(item.id);
   let restored: Promise<vscode.TextEditor | undefined> | undefined;
@@ -45,15 +51,22 @@ async function runCommonAction(item: SlashItem, action: string): Promise<boolean
       return true;
     case 'slashi.hide':
       await hideItem(item.id);
-      void vscode.window.showInformationMessage(`Hid “${item.title}” from Slashi. To show it again, remove it from the Hidden Commands setting.`, 'Open Setting').then((choice) => {
-        if (choice) void vscode.commands.executeCommand('workbench.action.openSettings', 'slashi.hiddenCommands');
-      });
+      void vscode.window
+        .showInformationMessage(
+          `Hid “${item.title}” from Slashi. To show it again, remove it from the Hidden Commands setting.`,
+          'Open Setting',
+        )
+        .then((choice) => {
+          if (choice) void vscode.commands.executeCommand('workbench.action.openSettings', 'slashi.hiddenCommands');
+        });
       return true;
     case 'slashi.keybinding': {
       const snippet = JSON.stringify({ key: 'ctrl+alt+…', command: 'slashi.run', args: invocation }, null, 2);
       await vscode.env.clipboard.writeText(snippet);
       await vscode.commands.executeCommand('workbench.action.openGlobalKeybindingsFile');
-      void vscode.window.showInformationMessage(`A keybinding for ${invocation} was copied — paste it into keybindings.json and choose your key.`);
+      void vscode.window.showInformationMessage(
+        `A keybinding for ${invocation} was copied — paste it into keybindings.json and choose your key.`,
+      );
       return true;
     }
   }
@@ -62,7 +75,11 @@ async function runCommonAction(item: SlashItem, action: string): Promise<boolean
 
 export async function reportError(services: Services, err: unknown, title: string): Promise<void> {
   if (err instanceof AiNotConfiguredError) {
-    const choice = await vscode.window.showWarningMessage(`${err.message} Connect a model to use AI commands.`, 'Set Up AI', 'Choose Model');
+    const choice = await vscode.window.showWarningMessage(
+      `${err.message} Connect a model to use AI commands.`,
+      'Set Up AI',
+      'Choose Model',
+    );
     if (choice === 'Set Up AI') await vscode.commands.executeCommand('slashi.studio', 'ai');
     if (choice === 'Choose Model') await vscode.commands.executeCommand('slashi.selectModel');
     return;

@@ -10,34 +10,90 @@ const calls = { commands: [], terminals: [], messages: [], posted: [], panels: [
 const settings = {};
 
 class EventEmitter {
-  constructor() { this.listeners = new Set(); this.event = (fn) => { this.listeners.add(fn); return new Disposable(() => this.listeners.delete(fn)); }; }
-  fire(e) { for (const fn of [...this.listeners]) fn(e); }
-  dispose() { this.listeners.clear(); }
+  constructor() {
+    this.listeners = new Set();
+    this.event = (fn) => {
+      this.listeners.add(fn);
+      return new Disposable(() => this.listeners.delete(fn));
+    };
+  }
+  fire(e) {
+    for (const fn of [...this.listeners]) fn(e);
+  }
+  dispose() {
+    this.listeners.clear();
+  }
 }
 class Disposable {
-  constructor(fn) { this.fn = fn; }
-  static from(...d) { return new Disposable(() => d.forEach((x) => x.dispose())); }
-  dispose() { this.fn?.(); }
+  constructor(fn) {
+    this.fn = fn;
+  }
+  static from(...d) {
+    return new Disposable(() => d.forEach((x) => x.dispose()));
+  }
+  dispose() {
+    this.fn?.();
+  }
 }
 const event = () => new EventEmitter().event;
 
 class Uri {
-  constructor(scheme, p) { this.scheme = scheme; this.path = p; this.fsPath = p; }
-  static file(p) { return new Uri('file', path.resolve(p)); }
-  static parse(s) { return s.startsWith('file://') ? Uri.file(decodeURIComponent(s.slice(7))) : Object.assign(new Uri(s.split(':')[0], s), { fsPath: s }); }
-  static joinPath(base, ...parts) { return new Uri(base.scheme, path.join(base.path, ...parts)); }
-  toString() { return this.scheme === 'file' ? `file://${this.path}` : this.path; }
-  with(change = {}) { return new Uri(change.scheme ?? this.scheme, change.path ?? this.path); }
+  constructor(scheme, p) {
+    this.scheme = scheme;
+    this.path = p;
+    this.fsPath = p;
+  }
+  static file(p) {
+    return new Uri('file', path.resolve(p));
+  }
+  static parse(s) {
+    return s.startsWith('file://') ? Uri.file(decodeURIComponent(s.slice(7))) : Object.assign(new Uri(s.split(':')[0], s), { fsPath: s });
+  }
+  static joinPath(base, ...parts) {
+    return new Uri(base.scheme, path.join(base.path, ...parts));
+  }
+  toString() {
+    return this.scheme === 'file' ? `file://${this.path}` : this.path;
+  }
+  with(change = {}) {
+    return new Uri(change.scheme ?? this.scheme, change.path ?? this.path);
+  }
 }
 
-class Position { constructor(line, character) { this.line = line; this.character = character; } isEqual(o) { return o.line === this.line && o.character === this.character; } }
-class Range {
-  constructor(a, b, c, d) { if (typeof a === 'number') { this.start = new Position(a, b); this.end = new Position(c, d); } else { this.start = a; this.end = b; } }
-  get isEmpty() { return this.start.isEqual(this.end); }
-  intersection() { return this; }
-  isEqual(o) { return this.start.isEqual(o.start) && this.end.isEqual(o.end); }
+class Position {
+  constructor(line, character) {
+    this.line = line;
+    this.character = character;
+  }
+  isEqual(o) {
+    return o.line === this.line && o.character === this.character;
+  }
 }
-class Selection extends Range { get active() { return this.end; } }
+class Range {
+  constructor(a, b, c, d) {
+    if (typeof a === 'number') {
+      this.start = new Position(a, b);
+      this.end = new Position(c, d);
+    } else {
+      this.start = a;
+      this.end = b;
+    }
+  }
+  get isEmpty() {
+    return this.start.isEqual(this.end);
+  }
+  intersection() {
+    return this;
+  }
+  isEqual(o) {
+    return this.start.isEqual(o.start) && this.end.isEqual(o.end);
+  }
+}
+class Selection extends Range {
+  get active() {
+    return this.end;
+  }
+}
 
 function defaults() {
   const out = {};
@@ -55,7 +111,10 @@ function configuration(section) {
       if (k in defaultSettings) return defaultSettings[k];
       return fallback;
     },
-    async update(key, value) { settings[full(key)] = value; configEmitter.fire({ affectsConfiguration: (s) => full(key).startsWith(s) }); },
+    async update(key, value) {
+      settings[full(key)] = value;
+      configEmitter.fire({ affectsConfiguration: (s) => full(key).startsWith(s) });
+    },
     inspect: () => undefined,
   };
 }
@@ -78,7 +137,10 @@ function makeWebview() {
     cspSource: 'vscode-resource:',
     asWebviewUri: (u) => u,
     onDidReceiveMessage: emitter.event,
-    postMessage: async (m) => { calls.posted.push(m); return true; },
+    postMessage: async (m) => {
+      calls.posted.push(m);
+      return true;
+    },
     _receive: (m) => emitter.fire(m),
   };
 }
@@ -94,16 +156,67 @@ const registered = new Map();
 
 const vscode = {
   version: '1.95.0',
-  EventEmitter, Disposable, Uri, Position, Range, Selection,
-  ThemeIcon: class { constructor(id) { this.id = id; } },
-  MarkdownString: class { constructor(v) { this.value = v; } },
-  RelativePattern: class { constructor(base, pattern) { this.base = base; this.pattern = pattern; } },
-  CancellationTokenSource: class { constructor() { this.token = { isCancellationRequested: false, onCancellationRequested: event() }; } cancel() { this.token.isCancellationRequested = true; } dispose() {} },
+  EventEmitter,
+  Disposable,
+  Uri,
+  Position,
+  Range,
+  Selection,
+  ThemeIcon: class {
+    constructor(id) {
+      this.id = id;
+    }
+  },
+  MarkdownString: class {
+    constructor(v) {
+      this.value = v;
+    }
+  },
+  RelativePattern: class {
+    constructor(base, pattern) {
+      this.base = base;
+      this.pattern = pattern;
+    }
+  },
+  CancellationTokenSource: class {
+    constructor() {
+      this.token = { isCancellationRequested: false, onCancellationRequested: event() };
+    }
+    cancel() {
+      this.token.isCancellationRequested = true;
+    }
+    dispose() {}
+  },
   CancellationError: class extends Error {},
-  WorkspaceEdit: class { constructor() { this.ops = []; } createFile(u) { this.ops.push(['create', u]); } renameFile(a, b) { this.ops.push(['rename', a, b]); } replace(u, r, t) { this.ops.push(['replace', u, r, t]); } deleteFile(u) { this.ops.push(['delete', u]); } },
-  CompletionItem: class { constructor(label, kind) { this.label = label; this.kind = kind; } },
+  WorkspaceEdit: class {
+    constructor() {
+      this.ops = [];
+    }
+    createFile(u) {
+      this.ops.push(['create', u]);
+    }
+    renameFile(a, b) {
+      this.ops.push(['rename', a, b]);
+    }
+    replace(u, r, t) {
+      this.ops.push(['replace', u, r, t]);
+    }
+    deleteFile(u) {
+      this.ops.push(['delete', u]);
+    }
+  },
+  CompletionItem: class {
+    constructor(label, kind) {
+      this.label = label;
+      this.kind = kind;
+    }
+  },
   CompletionItemKind: { Function: 2, Event: 22 },
-  SnippetString: class { constructor(v) { this.value = v; } },
+  SnippetString: class {
+    constructor(v) {
+      this.value = v;
+    }
+  },
   TabInputText: class {},
   TabInputTextDiff: class {},
   LanguageModelChatMessage: { User: (c) => ({ role: 'user', c }), Assistant: (c) => ({ role: 'assistant', c }) },
@@ -120,8 +233,16 @@ const vscode = {
   env: {
     shell: '/bin/bash',
     appName: 'Visual Studio Code',
-    clipboard: { readText: async () => '', writeText: async (t) => { calls.clipboard = t; } },
-    openExternal: async (u) => { calls.opened = u.toString(); return true; },
+    clipboard: {
+      readText: async () => '',
+      writeText: async (t) => {
+        calls.clipboard = t;
+      },
+    },
+    openExternal: async (u) => {
+      calls.opened = u.toString();
+      return true;
+    },
   },
   window: {
     activeTextEditor: undefined,
@@ -129,8 +250,23 @@ const vscode = {
     tabGroups: { all: [], close: async () => true },
     onDidChangeActiveTextEditor: event(),
     onDidCloseTerminal: event(),
-    createOutputChannel: () => ({ info() {}, warn: (...a) => calls.messages.push(['warn', ...a]), error: (...a) => calls.messages.push(['error', ...a]), debug() {}, show() {}, dispose() {} }),
-    createStatusBarItem: () => ({ show() { this.visible = true; }, hide() { this.visible = false; }, dispose() {} }),
+    createOutputChannel: () => ({
+      info() {},
+      warn: (...a) => calls.messages.push(['warn', ...a]),
+      error: (...a) => calls.messages.push(['error', ...a]),
+      debug() {},
+      show() {},
+      dispose() {},
+    }),
+    createStatusBarItem: () => ({
+      show() {
+        this.visible = true;
+      },
+      hide() {
+        this.visible = false;
+      },
+      dispose() {},
+    }),
     createTerminal: (opts) => {
       const t = { name: opts.name, exitStatus: undefined, show() {}, sendText: (text) => calls.terminals.push({ cwd: opts.cwd, text }) };
       return t;
@@ -138,28 +274,66 @@ const vscode = {
     createWebviewPanel: (viewType, title) => {
       const disposeEmitter = new EventEmitter();
       const panel = {
-        viewType, title, active: true,
+        viewType,
+        title,
+        active: true,
         webview: makeWebview(),
         onDidDispose: disposeEmitter.event,
         onDidChangeViewState: event(),
         reveal() {},
-        dispose() { if (!this.disposed) { this.disposed = true; disposeEmitter.fire(); } },
+        dispose() {
+          if (!this.disposed) {
+            this.disposed = true;
+            disposeEmitter.fire();
+          }
+        },
       };
       calls.panels.push(panel);
       return panel;
     },
-    showInformationMessage: async (...a) => { calls.messages.push(['info', ...a]); return undefined; },
-    showWarningMessage: async (...a) => { calls.messages.push(['warning', ...a]); return undefined; },
-    showErrorMessage: async (...a) => { calls.messages.push(['error', ...a]); return undefined; },
-    setStatusBarMessage: (m) => { calls.messages.push(['status', m]); return new Disposable(); },
+    showInformationMessage: async (...a) => {
+      calls.messages.push(['info', ...a]);
+      return undefined;
+    },
+    showWarningMessage: async (...a) => {
+      calls.messages.push(['warning', ...a]);
+      return undefined;
+    },
+    showErrorMessage: async (...a) => {
+      calls.messages.push(['error', ...a]);
+      return undefined;
+    },
+    setStatusBarMessage: (m) => {
+      calls.messages.push(['status', m]);
+      return new Disposable();
+    },
     showInputBox: async () => undefined,
     showQuickPick: async () => undefined,
     withProgress: async (_o, task) => task({ report() {} }, new vscode.CancellationTokenSource().token),
     showTextDocument: async (doc) => {
       calls.shown = doc;
-      return { document: doc, selections: [], selection: new Selection(0, 0, 0, 0), edit: async (cb) => { cb({ insert: (_p, text) => { doc.inserted = text; } }); return true; } };
+      return {
+        document: doc,
+        selections: [],
+        selection: new Selection(0, 0, 0, 0),
+        edit: async (cb) => {
+          cb({
+            insert: (_p, text) => {
+              doc.inserted = text;
+            },
+          });
+          return true;
+        },
+      };
     },
-    createQuickPick: () => ({ show() {}, dispose() {}, onDidChangeValue: event(), onDidAccept: event(), onDidHide: event(), onDidTriggerItemButton: event() }),
+    createQuickPick: () => ({
+      show() {},
+      dispose() {},
+      onDidChangeValue: event(),
+      onDidAccept: event(),
+      onDidHide: event(),
+      onDidTriggerItemButton: event(),
+    }),
   },
   workspace: {
     workspaceFolders: [{ uri: Uri.file(root), name: path.basename(root), index: 0 }],
@@ -170,7 +344,11 @@ const vscode = {
     onDidGrantWorkspaceTrust: event(),
     createFileSystemWatcher: () => ({ onDidCreate: event(), onDidDelete: event(), onDidChange: event(), dispose() {} }),
     getWorkspaceFolder: () => vscode.workspace.workspaceFolders[0],
-    asRelativePath: (u) => path.relative(root, typeof u === 'string' ? u : u.fsPath).split(path.sep).join('/'),
+    asRelativePath: (u) =>
+      path
+        .relative(root, typeof u === 'string' ? u : u.fsPath)
+        .split(path.sep)
+        .join('/'),
     findFiles: async (glob, _exclude, max = 20000) => {
       const out = [];
       walk(root, out, max);
@@ -185,7 +363,10 @@ const vscode = {
       readFile: async (u) => fs.readFileSync(u.fsPath),
       stat: async (u) => fs.statSync(u.fsPath),
       createDirectory: async () => {},
-      writeFile: async (u, bytes) => { (calls.written ??= []).push(u.fsPath); (calls.writtenText ??= {})[u.fsPath] = Buffer.from(bytes ?? []).toString('utf8'); },
+      writeFile: async (u, bytes) => {
+        (calls.written ??= []).push(u.fsPath);
+        (calls.writtenText ??= {})[u.fsPath] = Buffer.from(bytes ?? []).toString('utf8');
+      },
       copy: async () => {},
       delete: async () => {},
     },
@@ -198,7 +379,10 @@ const vscode = {
     getExtension: (id) => (id === self.id ? self : undefined),
   },
   commands: {
-    registerCommand: (id, fn) => { registered.set(id, fn); return new Disposable(() => registered.delete(id)); },
+    registerCommand: (id, fn) => {
+      registered.set(id, fn);
+      return new Disposable(() => registered.delete(id));
+    },
     executeCommand: async (id, ...args) => {
       calls.commands.push([id, ...args]);
       if (registered.has(id)) return registered.get(id)(...args);
@@ -208,7 +392,10 @@ const vscode = {
     getCommands: async () => [...registered.keys()],
   },
   languages: {
-    registerCompletionItemProvider: (_s, provider) => { calls.completion = provider; return new Disposable(); },
+    registerCompletionItemProvider: (_s, provider) => {
+      calls.completion = provider;
+      return new Disposable();
+    },
     getDiagnostics: (u) => (u ? [] : []),
   },
   lm: { selectChatModels: async () => [], onDidChangeChatModels: event() },

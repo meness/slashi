@@ -43,10 +43,17 @@ export class Onboarding implements vscode.Disposable {
       this.panel.reveal();
       return;
     }
-    const panel = vscode.window.createWebviewPanel('slashi.welcome', 'Welcome to Slashi', vscode.ViewColumn.Active, { ...webviewOptions(this.extensionUri), retainContextWhenHidden: true });
+    const panel = vscode.window.createWebviewPanel('slashi.welcome', 'Welcome to Slashi', vscode.ViewColumn.Active, {
+      ...webviewOptions(this.extensionUri),
+      retainContextWhenHidden: true,
+    });
     this.panel = panel;
     panel.iconPath = panelIcon(this.extensionUri);
-    panel.webview.html = webviewHtml(panel.webview, this.extensionUri, { title: 'Welcome to Slashi', script: 'onboarding.js', styles: ['onboarding.css'] });
+    panel.webview.html = webviewHtml(panel.webview, this.extensionUri, {
+      title: 'Welcome to Slashi',
+      script: 'onboarding.js',
+      styles: ['onboarding.css'],
+    });
     panel.onDidDispose(() => {
       this.panel = undefined;
       void this.services.context.globalState.update(DONE_KEY, true);
@@ -88,7 +95,12 @@ export class Onboarding implements vscode.Disposable {
         await this.pushState();
         break;
       case 'setKey': {
-        const key = await vscode.window.showInputBox({ title: `${BACKEND_LABELS[m.backend]} API key`, password: true, ignoreFocusOut: true, prompt: 'Stored in VS Code Secret Storage, never in your settings files.' });
+        const key = await vscode.window.showInputBox({
+          title: `${BACKEND_LABELS[m.backend]} API key`,
+          password: true,
+          ignoreFocusOut: true,
+          prompt: 'Stored in VS Code Secret Storage, never in your settings files.',
+        });
         if (key) {
           await services.ai.setKey(m.backend, key);
           await updateGlobal('ai.provider', m.backend);
@@ -121,7 +133,14 @@ export class Onboarding implements vscode.Disposable {
     const providers = services.registry
       .all()
       .filter((p) => p.id !== 'system')
-      .map((p) => ({ id: p.id, title: p.title, description: p.description, icon: p.icon, prefix: p.prefix, enabled: isProviderEnabled(p.id) }));
+      .map((p) => ({
+        id: p.id,
+        title: p.title,
+        description: p.description,
+        icon: p.icon,
+        prefix: p.prefix,
+        enabled: isProviderEnabled(p.id),
+      }));
     const scripts = local.filter((i) => i.providerId === 'project' && i.feature === 'scripts').slice(0, 4);
     void this.panel.webview.postMessage({
       type: 'state',

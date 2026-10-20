@@ -10,14 +10,66 @@ import { ensureArgs, itemFactory } from './util';
 const make = itemFactory('files', 'Files');
 
 const EXT_ICONS: Record<string, string> = {
-  ts: 'file-ts', mts: 'file-ts', cts: 'file-ts', tsx: 'file-tsx', js: 'file-js', mjs: 'file-js', cjs: 'file-js', jsx: 'file-jsx',
-  py: 'file-py', rs: 'file-rs', md: 'file-md', mdx: 'file-md', css: 'file-css', scss: 'file-css', less: 'file-css', html: 'file-html',
-  vue: 'file-vue', sql: 'file-sql', svg: 'file-svg', png: 'file-png', jpg: 'file-jpg', jpeg: 'file-jpg', gif: 'file-image', webp: 'file-image',
-  c: 'file-c', h: 'file-c', cpp: 'file-cpp', hpp: 'file-cpp', cc: 'file-cpp', cs: 'file-c-sharp', csv: 'file-csv', pdf: 'file-pdf',
-  zip: 'file-zip', gz: 'file-zip', txt: 'file-txt', json: 'brackets-curly', jsonc: 'brackets-curly', yml: 'file-code', yaml: 'file-code',
-  toml: 'file-ini', ini: 'file-ini', env: 'lock-key', lock: 'file-lock', go: 'file-code', java: 'file-code', kt: 'file-code', rb: 'file-code',
-  php: 'file-code', swift: 'file-code', sh: 'terminal-window', ps1: 'terminal-window', doc: 'file-doc', docx: 'file-doc', xls: 'file-xls',
-  xlsx: 'file-xls', ppt: 'file-ppt', mp4: 'file-video', mov: 'file-video', mp3: 'file-audio', wav: 'file-audio',
+  ts: 'file-ts',
+  mts: 'file-ts',
+  cts: 'file-ts',
+  tsx: 'file-tsx',
+  js: 'file-js',
+  mjs: 'file-js',
+  cjs: 'file-js',
+  jsx: 'file-jsx',
+  py: 'file-py',
+  rs: 'file-rs',
+  md: 'file-md',
+  mdx: 'file-md',
+  css: 'file-css',
+  scss: 'file-css',
+  less: 'file-css',
+  html: 'file-html',
+  vue: 'file-vue',
+  sql: 'file-sql',
+  svg: 'file-svg',
+  png: 'file-png',
+  jpg: 'file-jpg',
+  jpeg: 'file-jpg',
+  gif: 'file-image',
+  webp: 'file-image',
+  c: 'file-c',
+  h: 'file-c',
+  cpp: 'file-cpp',
+  hpp: 'file-cpp',
+  cc: 'file-cpp',
+  cs: 'file-c-sharp',
+  csv: 'file-csv',
+  pdf: 'file-pdf',
+  zip: 'file-zip',
+  gz: 'file-zip',
+  txt: 'file-txt',
+  json: 'brackets-curly',
+  jsonc: 'brackets-curly',
+  yml: 'file-code',
+  yaml: 'file-code',
+  toml: 'file-ini',
+  ini: 'file-ini',
+  env: 'lock-key',
+  lock: 'file-lock',
+  go: 'file-code',
+  java: 'file-code',
+  kt: 'file-code',
+  rb: 'file-code',
+  php: 'file-code',
+  swift: 'file-code',
+  sh: 'terminal-window',
+  ps1: 'terminal-window',
+  doc: 'file-doc',
+  docx: 'file-doc',
+  xls: 'file-xls',
+  xlsx: 'file-xls',
+  ppt: 'file-ppt',
+  mp4: 'file-video',
+  mov: 'file-video',
+  mp3: 'file-audio',
+  wav: 'file-audio',
 };
 
 function fileIcon(name: string): string {
@@ -191,7 +243,9 @@ export class FilesProvider implements SlashProvider {
         await vscode.commands.executeCommand('list.expand');
         return;
       case 'newFile': {
-        const name = await ensureArgs(ctx.args, 'File name (use / for sub-folders)', { title: `New file in ${vscode.workspace.asRelativePath(uri)}` });
+        const name = await ensureArgs(ctx.args, 'File name (use / for sub-folders)', {
+          title: `New file in ${vscode.workspace.asRelativePath(uri)}`,
+        });
         if (name) await createPath(vscode.Uri.joinPath(uri, name), false);
         return;
       }
@@ -204,7 +258,10 @@ export class FilesProvider implements SlashProvider {
         vscode.window.createTerminal({ cwd: uri.fsPath, name: path.basename(uri.fsPath) }).show();
         return;
       case 'findIn':
-        await vscode.commands.executeCommand('workbench.action.findInFiles', { filesToInclude: vscode.workspace.asRelativePath(uri), query: ctx.args || undefined });
+        await vscode.commands.executeCommand('workbench.action.findInFiles', {
+          filesToInclude: vscode.workspace.asRelativePath(uri),
+          query: ctx.args || undefined,
+        });
         return;
       default:
         await this.commonAction(uri, ctx);
@@ -257,59 +314,123 @@ export class FilesProvider implements SlashProvider {
     };
     return [
       make({
-        id: 'files:new', name: 'new', title: 'New File', description: 'Create a file (paths create folders; ./ is relative to the current file)',
-        icon: 'file-plus', feature: 'create', args: { placeholder: 'path/to/file.ts' }, boost: 8, keywords: ['create', 'touch', 'add file'],
+        id: 'files:new',
+        name: 'new',
+        title: 'New File',
+        description: 'Create a file (paths create folders; ./ is relative to the current file)',
+        icon: 'file-plus',
+        feature: 'create',
+        args: { placeholder: 'path/to/file.ts' },
+        boost: 8,
+        keywords: ['create', 'touch', 'add file'],
         run: async (ctx) => {
-          const input = await ensureArgs(ctx.args, 'New file path (relative to the workspace, ./ for the current folder)', { value: relativeBase() });
+          const input = await ensureArgs(ctx.args, 'New file path (relative to the workspace, ./ for the current folder)', {
+            value: relativeBase(),
+          });
           if (input) await createPath(resolveInput(input), input.endsWith('/'));
         },
       }),
       make({
-        id: 'files:mkdir', name: 'mkdir', title: 'New Folder', description: 'Create a folder (with parents)',
-        icon: 'folder-plus', feature: 'create', args: { placeholder: 'path/to/folder' }, keywords: ['create directory'],
+        id: 'files:mkdir',
+        name: 'mkdir',
+        title: 'New Folder',
+        description: 'Create a folder (with parents)',
+        icon: 'folder-plus',
+        feature: 'create',
+        args: { placeholder: 'path/to/folder' },
+        keywords: ['create directory'],
         run: async (ctx) => {
           const input = await ensureArgs(ctx.args, 'New folder path', { value: relativeBase() });
           if (input) await createPath(resolveInput(input), true);
         },
       }),
       make({
-        id: 'files:rename', name: 'rename', title: 'Rename Current File', description: 'Rename the active file (imports are updated by language extensions)',
-        icon: 'pencil-simple-line', feature: 'rename', args: { placeholder: 'new-name.ts' }, boost: 4, needsEditor: true,
+        id: 'files:rename',
+        name: 'rename',
+        title: 'Rename Current File',
+        description: 'Rename the active file (imports are updated by language extensions)',
+        icon: 'pencil-simple-line',
+        feature: 'rename',
+        args: { placeholder: 'new-name.ts' },
+        boost: 4,
+        needsEditor: true,
         run: async (ctx) => rename(await current(ctx), ctx.args),
       }),
       make({
-        id: 'files:move', name: 'move', title: 'Move Current File', description: 'Move the active file to another folder',
-        icon: 'arrows-out-cardinal', feature: 'rename', args: { placeholder: 'destination folder' }, needsEditor: true,
+        id: 'files:move',
+        name: 'move',
+        title: 'Move Current File',
+        description: 'Move the active file to another folder',
+        icon: 'arrows-out-cardinal',
+        feature: 'rename',
+        args: { placeholder: 'destination folder' },
+        needsEditor: true,
         run: async (ctx) => move(await current(ctx), ctx.args, this),
       }),
       make({
-        id: 'files:dup', name: 'dup', title: 'Duplicate Current File', description: 'Copy the active file next to itself',
-        icon: 'copy-simple', feature: 'duplicate', args: { placeholder: 'new name (optional)' }, needsEditor: true,
+        id: 'files:dup',
+        name: 'dup',
+        title: 'Duplicate Current File',
+        description: 'Copy the active file next to itself',
+        icon: 'copy-simple',
+        feature: 'duplicate',
+        args: { placeholder: 'new name (optional)' },
+        needsEditor: true,
         run: async (ctx) => duplicate(await current(ctx), ctx.args),
       }),
       make({
-        id: 'files:delete', name: 'delete', title: 'Delete Current File', description: 'Move the active file to the trash',
-        icon: 'trash', feature: 'delete', needsEditor: true,
+        id: 'files:delete',
+        name: 'delete',
+        title: 'Delete Current File',
+        description: 'Move the active file to the trash',
+        icon: 'trash',
+        feature: 'delete',
+        needsEditor: true,
         run: async (ctx) => remove(await current(ctx)),
       }),
       make({
-        id: 'files:copy-path', name: 'copy-path', title: 'Copy Path of Current File', icon: 'copy', feature: 'clipboard', needsEditor: true,
+        id: 'files:copy-path',
+        name: 'copy-path',
+        title: 'Copy Path of Current File',
+        icon: 'copy',
+        feature: 'clipboard',
+        needsEditor: true,
         run: async (ctx) => copy((await current(ctx)).fsPath),
       }),
       make({
-        id: 'files:copy-rel', name: 'copy-rel', title: 'Copy Relative Path of Current File', icon: 'copy', feature: 'clipboard', needsEditor: true,
+        id: 'files:copy-rel',
+        name: 'copy-rel',
+        title: 'Copy Relative Path of Current File',
+        icon: 'copy',
+        feature: 'clipboard',
+        needsEditor: true,
         run: async (ctx) => copy(vscode.workspace.asRelativePath(await current(ctx), false)),
       }),
       make({
-        id: 'files:copy-name', name: 'copy-name', title: 'Copy File Name', icon: 'copy', feature: 'clipboard', needsEditor: true,
+        id: 'files:copy-name',
+        name: 'copy-name',
+        title: 'Copy File Name',
+        icon: 'copy',
+        feature: 'clipboard',
+        needsEditor: true,
         run: async (ctx) => copy(path.basename((await current(ctx)).fsPath)),
       }),
       make({
-        id: 'files:reveal', name: 'reveal', title: 'Reveal Current File in Explorer', icon: 'tree-view', feature: 'reveal', needsEditor: true,
+        id: 'files:reveal',
+        name: 'reveal',
+        title: 'Reveal Current File in Explorer',
+        icon: 'tree-view',
+        feature: 'reveal',
+        needsEditor: true,
         run: async (ctx) => vscode.commands.executeCommand('revealInExplorer', await current(ctx)),
       }),
       make({
-        id: 'files:reveal-os', name: 'reveal-os', title: 'Reveal Current File in OS', icon: 'arrow-square-out', feature: 'reveal', needsEditor: true,
+        id: 'files:reveal-os',
+        name: 'reveal-os',
+        title: 'Reveal Current File in OS',
+        icon: 'arrow-square-out',
+        feature: 'reveal',
+        needsEditor: true,
         run: async (ctx) => vscode.commands.executeCommand('revealFileInOS', await current(ctx)),
       }),
     ];
@@ -405,13 +526,21 @@ async function duplicate(uri: vscode.Uri, args: string): Promise<void> {
 async function remove(uri: vscode.Uri): Promise<void> {
   const rel = vscode.workspace.asRelativePath(uri, false);
   if (get('files.confirmDelete', true)) {
-    const choice = await vscode.window.showWarningMessage(`Delete “${rel}”?`, { modal: true, detail: 'It will be moved to the trash when possible.' }, 'Delete');
+    const choice = await vscode.window.showWarningMessage(
+      `Delete “${rel}”?`,
+      { modal: true, detail: 'It will be moved to the trash when possible.' },
+      'Delete',
+    );
     if (choice !== 'Delete') return;
   }
   try {
     await vscode.workspace.fs.delete(uri, { recursive: true, useTrash: true });
   } catch {
-    const choice = await vscode.window.showWarningMessage(`The trash isn't available here. Permanently delete “${rel}”?`, { modal: true }, 'Delete Permanently');
+    const choice = await vscode.window.showWarningMessage(
+      `The trash isn't available here. Permanently delete “${rel}”?`,
+      { modal: true },
+      'Delete Permanently',
+    );
     if (choice !== 'Delete Permanently') return;
     await vscode.workspace.fs.delete(uri, { recursive: true, useTrash: false });
   }

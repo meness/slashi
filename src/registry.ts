@@ -26,7 +26,11 @@ export class Registry implements vscode.Disposable {
   constructor(private readonly log: vscode.LogOutputChannel) {
     this.disposables.push(
       vscode.workspace.onDidChangeConfiguration((e) => {
-        if (e.affectsConfiguration('slashi.providers') || e.affectsConfiguration('slashi.disabledFeatures') || e.affectsConfiguration('slashi.hiddenCommands')) {
+        if (
+          e.affectsConfiguration('slashi.providers') ||
+          e.affectsConfiguration('slashi.disabledFeatures') ||
+          e.affectsConfiguration('slashi.hiddenCommands')
+        ) {
           this.onDidChangeEmitter.fire();
         }
       }),
@@ -68,10 +72,11 @@ export class Registry implements vscode.Disposable {
 
   /** Rebuilds volatile providers (tabs, symbols…) — call right before showing the popup. */
   refreshVolatile(): void {
-    for (const p of this.providers.values()) if (p.volatile) {
-      this.cache.delete(p.id);
-      this.pending.delete(p.id);
-    }
+    for (const p of this.providers.values())
+      if (p.volatile) {
+        this.cache.delete(p.id);
+        this.pending.delete(p.id);
+      }
   }
 
   private load(provider: SlashProvider): Promise<CacheEntry> {
@@ -93,10 +98,11 @@ export class Registry implements vscode.Disposable {
         // Only the newest load prunes, so a superseded load that finishes late can't drop the newer items.
         const fresh = current ? new Set(items.map((i) => i.id)) : undefined;
         if (fresh) {
-          for (const id of ids) if (!fresh.has(id)) {
-            this.byId.delete(id);
-            ids.delete(id);
-          }
+          for (const id of ids)
+            if (!fresh.has(id)) {
+              this.byId.delete(id);
+              ids.delete(id);
+            }
         }
         for (const item of items) {
           item.providerId = provider.id;
@@ -150,7 +156,10 @@ export class Registry implements vscode.Disposable {
       const index = entry.remoteIndex.filter((e) => visible(e.item as SlashItem) && (!scope?.feature || e.item.feature === scope.feature));
       results.push(...rank(index, query, { limit, frecency }));
     }
-    return results.sort((a, b) => b.score - a.score).slice(0, limit).map(toRankedView);
+    return results
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(toRankedView);
   }
 
   find(id: string): SlashItem | undefined {
@@ -192,7 +201,8 @@ export class Registry implements vscode.Disposable {
 
 /** Strips functions so items can be posted to a webview. */
 export function toView(item: SlashItem): ItemView {
-  const { id, name, title, description, badge, icon, providerId, feature, category, keywords, args, actions, boost, kind, scopePrefix } = item;
+  const { id, name, title, description, badge, icon, providerId, feature, category, keywords, args, actions, boost, kind, scopePrefix } =
+    item;
   return { id, name, title, description, badge, icon, providerId, feature, category, keywords, args, actions, boost, kind, scopePrefix };
 }
 

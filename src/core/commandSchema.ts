@@ -97,14 +97,16 @@ export function validateStep(raw: unknown, where: string): Validation<StepDef> {
     case 'setting':
       if (!isString(s.setting) || !/^[\w.-]+$/.test(s.setting)) errors.push(`${where}.setting: must be a setting key`);
       if (!('value' in s)) errors.push(`${where}.value: is required`);
-      if (s.target !== undefined && s.target !== 'user' && s.target !== 'workspace') errors.push(`${where}.target: must be "user" or "workspace"`);
+      if (s.target !== undefined && s.target !== 'user' && s.target !== 'workspace')
+        errors.push(`${where}.target: must be "user" or "workspace"`);
       break;
     case 'input':
       if (!isString(s.input)) errors.push(`${where}.input: must be a prompt string`);
       if (!isString(s.var) || !/^\w+$/.test(s.var)) errors.push(`${where}.var: must be a variable name`);
       break;
     case 'pick':
-      if (!Array.isArray(s.pick) || !s.pick.length || !s.pick.every(isString)) errors.push(`${where}.pick: must be a non-empty string array`);
+      if (!Array.isArray(s.pick) || !s.pick.length || !s.pick.every(isString))
+        errors.push(`${where}.pick: must be a non-empty string array`);
       if (!isString(s.var) || !/^\w+$/.test(s.var)) errors.push(`${where}.var: must be a variable name`);
       break;
     case 'wait':
@@ -200,7 +202,9 @@ export function validateRegistry(raw: unknown): Validation<RegistryIndex> {
       });
     });
   }
-  return errors.length && !packs.length ? { errors } : { value: { version: 1, name: isString(r.name) ? r.name : undefined, packs }, errors };
+  return errors.length && !packs.length
+    ? { errors }
+    : { value: { version: 1, name: isString(r.name) ? r.name : undefined, packs }, errors };
 }
 
 /** Resolves a pack URL relative to its registry index URL. Only HTTPS is allowed (file: only inside a local registry). */

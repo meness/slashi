@@ -179,7 +179,8 @@ document.addEventListener('click', (e) => {
   if (target.hasAttribute('data-copy') || target.id === 'copy') copied(target);
   if (target.hasAttribute('data-copy')) vscode.postMessage({ type: 'copy', text: block('data-copy').code });
   else if (target.hasAttribute('data-insert')) vscode.postMessage({ type: 'insert', text: block('data-insert').code });
-  else if (target.hasAttribute('data-file')) vscode.postMessage({ type: 'newFile', text: block('data-file').code, language: block('data-file').lang });
+  else if (target.hasAttribute('data-file'))
+    vscode.postMessage({ type: 'newFile', text: block('data-file').code, language: block('data-file').lang });
   else if (target.id === 'apply') vscode.postMessage({ type: 'apply', text: lastAnswer });
   else if (target.id === 'copy') vscode.postMessage({ type: 'copy', text: lastAnswer });
   else if (target.id === 'newfile') vscode.postMessage({ type: 'newFile', text: mode === 'answer' ? lastAnswer : stripFences(lastAnswer) });
@@ -199,10 +200,12 @@ function copied(button: HTMLElement): void {
   };
   swap(`${icon('check')} Copied`);
   window.clearTimeout(Number(button.dataset.timer));
-  button.dataset.timer = String(window.setTimeout(() => {
-    swap(label);
-    delete button.dataset.label;
-  }, 1200));
+  button.dataset.timer = String(
+    window.setTimeout(() => {
+      swap(label);
+      delete button.dataset.label;
+    }, 1200),
+  );
 }
 
 function send(): void {

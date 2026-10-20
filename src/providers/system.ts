@@ -22,24 +22,82 @@ export class SystemProvider implements SlashProvider {
 
   items(): SlashItem[] {
     const cmd = (name: string, title: string, icon: string, command: string, description?: string, arg?: unknown) =>
-      make({ id: `slashi:${name}`, name, title, description, icon, feature: 'default', run: () => vscode.commands.executeCommand(command, arg) });
+      make({
+        id: `slashi:${name}`,
+        name,
+        title,
+        description,
+        icon,
+        feature: 'default',
+        run: () => vscode.commands.executeCommand(command, arg),
+      });
     // Names avoid common package-script names (docs, changelog), which would compete for the same slash name.
     const link = (name: string, title: string, icon: string, key: HelpLink, description?: string) =>
-      make({ id: `slashi:${name}`, name, title, description, icon, feature: 'default', run: () => vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS[key])) });
+      make({
+        id: `slashi:${name}`,
+        name,
+        title,
+        description,
+        icon,
+        feature: 'default',
+        run: () => vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS[key])),
+      });
     return [
       cmd('welcome', 'Slashi: Welcome & Onboarding', 'rocket-launch', 'slashi.welcome', 'Replay the onboarding'),
-      cmd('help', 'Slashi: Getting Started Walkthrough', 'question', 'workbench.action.openWalkthrough', 'Interactive walkthrough', 'meness.slashi#slashi.welcome'),
-      cmd('help-center', 'Slashi: Help & Support', 'lifebuoy', 'slashi.studio', 'Docs, troubleshooting, feedback and ways to support Slashi', 'help'),
-      cmd('providers', 'Slashi: Enable/Disable Providers & Features', 'toggle-right', 'slashi.toggleProviders', 'Choose what Slashi searches'),
+      cmd(
+        'help',
+        'Slashi: Getting Started Walkthrough',
+        'question',
+        'workbench.action.openWalkthrough',
+        'Interactive walkthrough',
+        'meness.slashi#slashi.welcome',
+      ),
+      cmd(
+        'help-center',
+        'Slashi: Help & Support',
+        'lifebuoy',
+        'slashi.studio',
+        'Docs, troubleshooting, feedback and ways to support Slashi',
+        'help',
+      ),
+      cmd(
+        'providers',
+        'Slashi: Enable/Disable Providers & Features',
+        'toggle-right',
+        'slashi.toggleProviders',
+        'Choose what Slashi searches',
+      ),
       cmd('studio', 'Slashi: Open Studio', 'sliders-horizontal', 'slashi.studio', 'Providers, AI models and custom commands in one place'),
-      cmd('shortcuts', 'Slashi: Customize Keyboard Shortcuts', 'keyboard', 'slashi.customizeShortcuts', 'Rebind Slashi or bind any slash command to a key'),
+      cmd(
+        'shortcuts',
+        'Slashi: Customize Keyboard Shortcuts',
+        'keyboard',
+        'slashi.customizeShortcuts',
+        'Rebind Slashi or bind any slash command to a key',
+      ),
       cmd('native', 'Slashi: Open in Native Quick Pick', 'list-magnifying-glass', 'slashi.openNative'),
-      cmd('refresh', 'Slashi: Refresh Search Results', 'arrows-clockwise', 'slashi.refresh', 'Re-scan files, project, extensions and settings'),
+      cmd(
+        'refresh',
+        'Slashi: Refresh Search Results',
+        'arrows-clockwise',
+        'slashi.refresh',
+        'Re-scan files, project, extensions and settings',
+      ),
       cmd('clear-history', 'Slashi: Clear Recent History', 'clock-counter-clockwise', 'slashi.clearHistory'),
       cmd('slashi-settings', 'Slashi: All Settings', 'gear-six', 'workbench.action.openSettings', undefined, '@ext:meness.slashi'),
-      cmd('diagnostics', 'Slashi: Copy Diagnostics', 'clipboard-text', 'slashi.copyDiagnostics', 'Versions and setup for a bug report (no keys, files or code)'),
+      cmd(
+        'diagnostics',
+        'Slashi: Copy Diagnostics',
+        'clipboard-text',
+        'slashi.copyDiagnostics',
+        'Versions and setup for a bug report (no keys, files or code)',
+      ),
       make({
-        id: 'slashi:log', name: 'slashi-log', title: 'Slashi: Show Log', icon: 'scroll', feature: 'default',
+        id: 'slashi:log',
+        name: 'slashi-log',
+        title: 'Slashi: Show Log',
+        icon: 'scroll',
+        feature: 'default',
         run: () => this.services.log.show(),
       }),
       link('feedback', 'Slashi: Report an Issue or Idea', 'chat-teardrop-text', 'issues'),
@@ -54,7 +112,10 @@ export class SystemProvider implements SlashProvider {
 /** Versions and setup for bug reports. Never includes keys, URLs, file names, paths or code. */
 export async function diagnostics(services: Services): Promise<string> {
   const version = vscode.extensions.getExtension('meness.slashi')?.packageJSON?.version ?? 'dev';
-  const off = services.registry.all().filter((p) => !isProviderEnabled(p.id)).map((p) => p.id);
+  const off = services.registry
+    .all()
+    .filter((p) => !isProviderEnabled(p.id))
+    .map((p) => p.id);
   const features = get<string[]>('disabledFeatures', []);
   return [
     `Slashi: ${version}`,

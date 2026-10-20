@@ -41,10 +41,17 @@ function toMeta(key: string, prop: ContributedProperty): SettingMeta {
   const type = Array.isArray(prop.type) ? prop.type[0] : prop.type;
   const description = plainMarkdown(prop.markdownDescription ?? prop.description ?? '');
   if (Array.isArray(prop.enum) && prop.enum.every((v) => typeof v === 'string')) {
-    return { key, type: 'enum', description, enum: prop.enum as string[], enumDescriptions: (prop.markdownEnumDescriptions ?? prop.enumDescriptions)?.map(plainMarkdown) };
+    return {
+      key,
+      type: 'enum',
+      description,
+      enum: prop.enum as string[],
+      enumDescriptions: (prop.markdownEnumDescriptions ?? prop.enumDescriptions)?.map(plainMarkdown),
+    };
   }
   const known = ['boolean', 'number', 'string', 'array', 'object'] as const;
-  const mapped = type === 'integer' ? 'number' : (known as readonly string[]).includes(type ?? '') ? (type as SettingMeta['type']) : 'object';
+  const mapped =
+    type === 'integer' ? 'number' : (known as readonly string[]).includes(type ?? '') ? (type as SettingMeta['type']) : 'object';
   return { key, type: mapped, description };
 }
 
@@ -58,7 +65,11 @@ export class SettingsProvider implements SlashProvider {
   readonly placeholder = 'Search settings — Enter toggles or edits…';
   readonly features = [
     { id: 'core', title: 'VS Code settings', description: 'Popular core settings (font, format on save, auto save, minimap…).' },
-    { id: 'extensionSettings', title: 'Extension settings', description: 'Every setting contributed by installed extensions, including built-ins like Git and TypeScript.' },
+    {
+      id: 'extensionSettings',
+      title: 'Extension settings',
+      description: 'Every setting contributed by installed extensions, including built-ins like Git and TypeScript.',
+    },
   ];
 
   private readonly emitter = new vscode.EventEmitter<void>();
@@ -78,10 +89,41 @@ export class SettingsProvider implements SlashProvider {
     const metas = collectSettings(isFeatureEnabled('settings', 'core'), isFeatureEnabled('settings', 'extensionSettings'));
     const config = vscode.workspace.getConfiguration();
     const items: SlashItem[] = [
-      make({ id: 'settings:ui', name: 'settings', title: 'Open Settings', description: 'Settings editor', icon: 'gear-six', feature: 'core', boost: 4, args: { placeholder: 'search (optional)' }, run: (ctx) => vscode.commands.executeCommand('workbench.action.openSettings', ctx.args || undefined) }),
-      make({ id: 'settings:json', name: 'settings-json', title: 'Open User Settings (JSON)', icon: 'brackets-curly', feature: 'core', run: () => vscode.commands.executeCommand('workbench.action.openSettingsJson') }),
-      make({ id: 'settings:workspace', name: 'workspace-settings', title: 'Open Workspace Settings', icon: 'folder-simple-user', feature: 'core', run: () => vscode.commands.executeCommand('workbench.action.openWorkspaceSettings') }),
-      make({ id: 'settings:profiles', name: 'profiles', title: 'Switch Profile…', icon: 'user-switch', feature: 'core', run: () => vscode.commands.executeCommand('workbench.profiles.actions.switchProfile') }),
+      make({
+        id: 'settings:ui',
+        name: 'settings',
+        title: 'Open Settings',
+        description: 'Settings editor',
+        icon: 'gear-six',
+        feature: 'core',
+        boost: 4,
+        args: { placeholder: 'search (optional)' },
+        run: (ctx) => vscode.commands.executeCommand('workbench.action.openSettings', ctx.args || undefined),
+      }),
+      make({
+        id: 'settings:json',
+        name: 'settings-json',
+        title: 'Open User Settings (JSON)',
+        icon: 'brackets-curly',
+        feature: 'core',
+        run: () => vscode.commands.executeCommand('workbench.action.openSettingsJson'),
+      }),
+      make({
+        id: 'settings:workspace',
+        name: 'workspace-settings',
+        title: 'Open Workspace Settings',
+        icon: 'folder-simple-user',
+        feature: 'core',
+        run: () => vscode.commands.executeCommand('workbench.action.openWorkspaceSettings'),
+      }),
+      make({
+        id: 'settings:profiles',
+        name: 'profiles',
+        title: 'Switch Profile…',
+        icon: 'user-switch',
+        feature: 'core',
+        run: () => vscode.commands.executeCommand('workbench.profiles.actions.switchProfile'),
+      }),
     ];
     for (const meta of metas) {
       const value = config.get(meta.key);
@@ -145,7 +187,14 @@ async function editSetting(meta: SettingMeta, ctx: RunContext): Promise<void> {
     if (!picked) return;
     next = picked.value;
   } else if (meta.type === 'number' || meta.type === 'string') {
-    const input = ctx.args || (await vscode.window.showInputBox({ title: settingTitle(meta.key), prompt: meta.description, value: current === undefined ? '' : String(current), ignoreFocusOut: true }));
+    const input =
+      ctx.args ||
+      (await vscode.window.showInputBox({
+        title: settingTitle(meta.key),
+        prompt: meta.description,
+        value: current === undefined ? '' : String(current),
+        ignoreFocusOut: true,
+      }));
     if (input === undefined) return;
     if (meta.type === 'number') {
       const num = Number(input);

@@ -34,12 +34,24 @@ export class ExtensionsProvider implements SlashProvider {
     if (isFeatureEnabled('extensions', 'marketplace')) {
       items.push(
         make({
-          id: 'ext:search', name: 'ext-search', title: 'Search the Marketplace', description: 'Find new extensions', icon: 'storefront', feature: 'marketplace', boost: 3,
-          args: { placeholder: 'e.g. python, docker, theme' }, keywords: ['marketplace', 'find extension'],
+          id: 'ext:search',
+          name: 'ext-search',
+          title: 'Search the Marketplace',
+          description: 'Find new extensions',
+          icon: 'storefront',
+          feature: 'marketplace',
+          boost: 3,
+          args: { placeholder: 'e.g. python, docker, theme' },
+          keywords: ['marketplace', 'find extension'],
           run: (ctx) => vscode.commands.executeCommand('workbench.extensions.search', ctx.args || ''),
         }),
         make({
-          id: 'ext:install', name: 'install', title: 'Install Extension by ID', description: 'publisher.extension', icon: 'download-simple', feature: 'marketplace',
+          id: 'ext:install',
+          name: 'install',
+          title: 'Install Extension by ID',
+          description: 'publisher.extension',
+          icon: 'download-simple',
+          feature: 'marketplace',
           args: { placeholder: 'publisher.extension, e.g. esbenp.prettier-vscode' },
           run: async (ctx) => {
             const id = await ensureArgs(ctx.args, 'Extension ID (publisher.name)');
@@ -48,16 +60,58 @@ export class ExtensionsProvider implements SlashProvider {
             void vscode.window.showInformationMessage(`Installing ${id}…`);
           },
         }),
-        make({ id: 'ext:recommended', name: 'recommended', title: 'Show Recommended Extensions', icon: 'thumbs-up', feature: 'marketplace', run: () => vscode.commands.executeCommand('workbench.extensions.action.showRecommendedExtensions') }),
-        make({ id: 'ext:popular', name: 'popular', title: 'Show Popular Extensions', icon: 'fire', feature: 'marketplace', run: () => vscode.commands.executeCommand('workbench.extensions.action.showPopularExtensions') }),
+        make({
+          id: 'ext:recommended',
+          name: 'recommended',
+          title: 'Show Recommended Extensions',
+          icon: 'thumbs-up',
+          feature: 'marketplace',
+          run: () => vscode.commands.executeCommand('workbench.extensions.action.showRecommendedExtensions'),
+        }),
+        make({
+          id: 'ext:popular',
+          name: 'popular',
+          title: 'Show Popular Extensions',
+          icon: 'fire',
+          feature: 'marketplace',
+          run: () => vscode.commands.executeCommand('workbench.extensions.action.showPopularExtensions'),
+        }),
       );
     }
     if (isFeatureEnabled('extensions', 'management')) {
       items.push(
-        make({ id: 'ext:outdated', name: 'outdated', title: 'Show Outdated Extensions', icon: 'arrow-circle-up', feature: 'management', run: () => vscode.commands.executeCommand('workbench.extensions.action.listOutdatedExtensions') }),
-        make({ id: 'ext:update-all', name: 'update-all', title: 'Update All Extensions', icon: 'arrows-clockwise', feature: 'management', run: () => vscode.commands.executeCommand('workbench.extensions.action.updateAllExtensions') }),
-        make({ id: 'ext:check-updates', name: 'check-updates', title: 'Check for Extension Updates', icon: 'arrow-circle-up', feature: 'management', run: () => vscode.commands.executeCommand('workbench.extensions.action.checkForUpdates') }),
-        make({ id: 'ext:installed', name: 'installed', title: 'Show Installed Extensions', icon: 'puzzle-piece', feature: 'management', run: () => vscode.commands.executeCommand('workbench.extensions.action.showInstalledExtensions') }),
+        make({
+          id: 'ext:outdated',
+          name: 'outdated',
+          title: 'Show Outdated Extensions',
+          icon: 'arrow-circle-up',
+          feature: 'management',
+          run: () => vscode.commands.executeCommand('workbench.extensions.action.listOutdatedExtensions'),
+        }),
+        make({
+          id: 'ext:update-all',
+          name: 'update-all',
+          title: 'Update All Extensions',
+          icon: 'arrows-clockwise',
+          feature: 'management',
+          run: () => vscode.commands.executeCommand('workbench.extensions.action.updateAllExtensions'),
+        }),
+        make({
+          id: 'ext:check-updates',
+          name: 'check-updates',
+          title: 'Check for Extension Updates',
+          icon: 'arrow-circle-up',
+          feature: 'management',
+          run: () => vscode.commands.executeCommand('workbench.extensions.action.checkForUpdates'),
+        }),
+        make({
+          id: 'ext:installed',
+          name: 'installed',
+          title: 'Show Installed Extensions',
+          icon: 'puzzle-piece',
+          feature: 'management',
+          run: () => vscode.commands.executeCommand('workbench.extensions.action.showInstalledExtensions'),
+        }),
       );
     }
     if (isFeatureEnabled('extensions', 'installed')) {
@@ -65,7 +119,9 @@ export class ExtensionsProvider implements SlashProvider {
         const pkg = ext.packageJSON ?? {};
         if (pkg.isBuiltin === true || ext.id.startsWith('vscode.')) continue;
         const name = String(pkg.displayName ?? pkg.name ?? ext.id);
-        const commands: { command: string; title: string | { value: string } }[] = Array.isArray(pkg.contributes?.commands) ? pkg.contributes.commands : [];
+        const commands: { command: string; title: string | { value: string } }[] = Array.isArray(pkg.contributes?.commands)
+          ? pkg.contributes.commands
+          : [];
         const manage = isFeatureEnabled('extensions', 'management');
         items.push(
           make({
@@ -94,7 +150,12 @@ export class ExtensionsProvider implements SlashProvider {
   }
 }
 
-async function extensionAction(ext: vscode.Extension<unknown>, name: string, commands: { command: string; title: string | { value: string } }[], ctx: RunContext): Promise<void> {
+async function extensionAction(
+  ext: vscode.Extension<unknown>,
+  name: string,
+  commands: { command: string; title: string | { value: string } }[],
+  ctx: RunContext,
+): Promise<void> {
   switch (ctx.action) {
     case undefined:
     case 'details':

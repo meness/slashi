@@ -10,7 +10,11 @@ export function itemFactory(providerId: ProviderId, category: string) {
 }
 
 /** Asks for arguments when an item that needs them was run without any. */
-export async function ensureArgs(args: string, prompt: string, options: { value?: string; title?: string } = {}): Promise<string | undefined> {
+export async function ensureArgs(
+  args: string,
+  prompt: string,
+  options: { value?: string; title?: string } = {},
+): Promise<string | undefined> {
   if (args) return args;
   const value = await vscode.window.showInputBox({ prompt, value: options.value, title: options.title, ignoreFocusOut: true });
   return value?.trim() || undefined;
