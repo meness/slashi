@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { get, isFeatureEnabled } from '../config';
-import { compareVersions, describeStep, resolvePackUrl, stepType, validatePack, validateRegistry, type PackDef, type RegistryEntry } from '../core/commandSchema';
+import { approvalSteps, compareVersions, describeStep, resolvePackUrl, validatePack, validateRegistry, type PackDef, type RegistryEntry } from '../core/commandSchema';
 import type { Services } from '../services/services';
 import type { RunContext, SlashItem, SlashProvider } from '../types';
 import { itemFactory } from './util';
@@ -182,15 +182,16 @@ export async function installFromUrl(services: Services, url: string): Promise<v
   const { value: pack, errors } = validatePack(raw);
   if (!pack) throw new Error(`Invalid action pack: ${errors.slice(0, 3).join('; ')}`);
   const lines = pack.commands.map((c) => {
-    const steps = c.steps.map((s) => `${stepType(s) === 'terminal' ? '⚠ ' : '   '}${describeStep(s)}`).join('\n');
+    const risky = approvalSteps(c);
+    const steps = c.steps.map((s) => `${risky.includes(s) ? '⚠ ' : '   '}${describeStep(s)}`).join('\n');
     return `/${c.name} — ${c.title ?? ''}\n${steps}`;
   });
-  const hasTerminal = pack.commands.some((c) => c.steps.some((s) => stepType(s) === 'terminal'));
+  const asks = pack.commands.some((c) => approvalSteps(c).length);
   const existing = services.packs.get(pack.id);
   const verb = existing ? `Update ${pack.name} ${existing.version} → ${pack.version}` : `Install ${pack.name} v${pack.version}`;
   const choice = await vscode.window.showInformationMessage(
     `${verb} by ${pack.author}?`,
-    { modal: true, detail: `${pack.description}\n\n${lines.join('\n\n')}${hasTerminal ? '\n\n⚠ This pack runs terminal commands. You will be asked before each one runs the first time.' : ''}` },
+    { modal: true, detail: `${pack.description}\n\n${lines.join('\n\n')}${asks ? '\n\n⚠ Steps marked ⚠ can run commands, change settings or open links. Each command asks you before it runs the first time.' : ''}` },
     existing ? 'Update' : 'Install',
   );
   if (!choice) return;

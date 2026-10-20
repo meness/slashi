@@ -233,6 +233,16 @@ export function approvalSteps(def: CustomCommandDef): StepDef[] {
   return def.steps.filter((s) => APPROVAL_STEPS.has(stepType(s)));
 }
 
+/**
+ * Whether a team file or pack step may expand `${name}`. `${env:…}` and `${clipboard}` can hold secrets the
+ * approval prompt doesn't show, so they only expand in steps that stay in the editor.
+ */
+export function sharedVariableAllowed(step: StepDef, name: string): boolean {
+  if (!name.startsWith('env:') && name !== 'clipboard') return true;
+  const kind = stepType(step);
+  return kind === 'insert' || kind === 'notify';
+}
+
 /** Human-readable one-liner per step, for install previews and confirmations. */
 export function describeStep(step: StepDef): string {
   switch (stepType(step)) {

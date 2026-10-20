@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import * as path from 'node:path';
 import * as vscode from 'vscode';
-import { approvalSteps, describeStep, type CustomCommandDef, type StepDef } from '../core/commandSchema';
+import { approvalSteps, describeStep, sharedVariableAllowed, type CustomCommandDef, type StepDef } from '../core/commandSchema';
 import { expandTemplate, shellQuote, templateVariables } from '../core/template';
 import type { RunContext } from '../types';
 import { selectionText } from './editor';
@@ -85,9 +85,11 @@ export async function runCustomCommand(def: CustomCommandDef, ctx: RunContext, s
   }
   const vars: Record<string, string> = {};
   const shell = shellKind();
+  const shared = source === 'team' || source === 'pack';
   try {
     for (const step of def.steps) {
-      const resolve = await variableResolver(editor, args, vars);
+      const all = await variableResolver(editor, args, vars);
+      const resolve = shared ? (name: string) => (sharedVariableAllowed(step, name) ? all(name) : undefined) : all;
       const expand = (s: string) => expandTemplate(s, resolve, (v) => shellQuote(v, shell));
       await runStep(step, ctx, expand, vars, editor);
     }

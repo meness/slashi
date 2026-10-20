@@ -50,7 +50,7 @@
       "additionalProperties": false
     },
     "step": {
-      "description": "Exactly one action per step. Strings support ${args}, ${q:args} (shell-quoted), ${selection}, ${file}, ${fileBasename}, ${fileDirname}, ${relativeFile}, ${workspaceFolder}, ${lineNumber}, ${language}, ${date}, ${time}, ${datetime}, ${uuid}, ${clipboard}, ${env:NAME}, ${config:key}, ${input:var} and ${name:default}.",
+      "description": "Exactly one action per step. Strings support ${args}, ${q:args} (shell-quoted), ${selection}, ${file}, ${fileBasename}, ${fileDirname}, ${relativeFile}, ${workspaceFolder}, ${lineNumber}, ${language}, ${date}, ${time}, ${datetime}, ${uuid}, ${clipboard}, ${env:NAME}, ${config:key}, ${input:var} and ${name:default}. In team files and packs, ${env:NAME} and ${clipboard} only expand in insert and notify steps.",
       "oneOf": [
         { "type": "object", "required": ["command"], "properties": { "command": { "type": "string", "description": "VS Code command ID." }, "args": { "description": "Argument passed to the command." } }, "additionalProperties": false },
         { "type": "object", "required": ["slash"], "properties": { "slash": { "type": "string", "description": "Another slash command, e.g. \"/format\" or \"/run npm test\"." } }, "additionalProperties": false },

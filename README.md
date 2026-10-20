@@ -187,7 +187,7 @@ Add commands to `slashi.customCommands` (user settings) or to **`.vscode/slashi.
 
 **Variables:** `${args}`, `${selection}`, `${file}`, `${fileBasename}`, `${fileBasenameNoExtension}`, `${fileDirname}`, `${fileExtname}`, `${relativeFile}`, `${workspaceFolder}`, `${lineNumber}`, `${language}`, `${date}`, `${time}`, `${datetime}`, `${uuid}`, `${clipboard}`, `${env:NAME}`, `${config:setting.key}`, `${input:var}`. Add a default with `${args:3000}`. Prefix with `q:` for shell-safe quoting, e.g. `${q:selection}`.
 
-> Team files and packs ask before they run terminal commands for the first time. In [untrusted workspaces](https://code.visualstudio.com/docs/editor/workspace-trust), workspace-defined commands are ignored.
+> Team files and packs ask the first time before they run terminal commands, VS Code or slash commands, change settings or open links. In them, `${env:NAME}` and `${clipboard}` only expand in `insert` and `notify` steps, so secrets can't leave the editor. In [untrusted workspaces](https://code.visualstudio.com/docs/editor/workspace-trust), workspace-defined commands are ignored.
 
 ### 3. The action marketplace
 
