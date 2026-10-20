@@ -14,6 +14,8 @@ VS Code extension (TypeScript, esbuild, Vitest). Node ≥ 20, VS Code ≥ 1.90.
 
 ## Rules for Claude
 
+- Load the `slashi-tech` skill for code changes and `slashi-ui` for anything visible; they list which other skills to use. This is not a mobile app, so the global argent rule doesn't apply here.
+
 - Never hand-edit generated files: `dist/`, `marketplace/index.json`, `package-lock.json`, `*.vsix`. Change the source and run the generator (`npm run build`, `npm run marketplace`, `npm install`).
 - `src/core` must not import `vscode` (a hook enforces this).
 - Before any webview/UI change, read [DESIGN.md](DESIGN.md): tokens live in `src/webview/styles/base.css`, no hex literals in component CSS.
