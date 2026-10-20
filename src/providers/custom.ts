@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { get, isFeatureEnabled, updateGlobal } from '../config';
 import { NAME_PATTERN, PACK_ID_PATTERN, validateCommands, type CustomCommandDef, type PackDef, type StepDef } from '../core/commandSchema';
 import { pickIcon } from '../core/icons';
+import { parseJsonc } from '../core/text';
 import { runCustomCommand, usesArgs, type CommandSource } from '../services/macro';
 import type { Services } from '../services/services';
 import type { SlashItem, SlashProvider } from '../types';
@@ -107,7 +108,7 @@ export class CustomProvider implements SlashProvider {
           continue;
         }
         try {
-          const json = JSON.parse(text.replace(/^\s*\/\/.*$/gm, ''));
+          const json = parseJsonc(text) as { commands?: unknown } | unknown[];
           const { commands, errors } = validateCommands(Array.isArray(json) ? json : json.commands, `${folder.name}/${TEAM_FILE}`);
           this.warn(uri.toString(), errors);
           commands.forEach((c) => add(c, 'team', folder.name, 'team'));
@@ -288,12 +289,22 @@ async function teamFileUri(): Promise<vscode.Uri> {
 }
 
 async function readTeamFile(uri: vscode.Uri): Promise<{ $schema?: string; commands: CustomCommandDef[] }> {
+  let text: string;
   try {
-    const json = JSON.parse(new TextDecoder().decode(await vscode.workspace.fs.readFile(uri)));
-    return Array.isArray(json) ? { commands: json } : { ...json, commands: json.commands ?? [] };
+    text = new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
   } catch {
     return { $schema: SCHEMA_URL, commands: [] };
   }
+  // A file we can't parse is never rewritten: that would drop every command in it.
+  let json: { commands?: CustomCommandDef[] } | CustomCommandDef[];
+  try {
+    json = parseJsonc(text) as typeof json;
+  } catch (err) {
+    throw new Error(`Fix ${TEAM_FILE} first: ${(err as Error).message}`);
+  }
+  if (Array.isArray(json)) return { commands: json };
+  if (!json || typeof json !== 'object' || (json.commands !== undefined && !Array.isArray(json.commands))) throw new Error(`${TEAM_FILE} must be an array or an object with a "commands" array.`);
+  return { ...json, commands: json.commands ?? [] };
 }
 
 const SCHEMA_URL = 'https://raw.githubusercontent.com/meness/slashi/main/schemas/slashi.schema.json';

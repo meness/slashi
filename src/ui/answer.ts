@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { stripFences } from '../core/text';
 import type { ChatMessage } from '../llm/types';
 import { reportError } from '../executor';
 import type { AnswerRequest, Services } from '../services/services';
@@ -22,12 +23,6 @@ type FromWebview =
   | { type: 'stop' }
   | { type: 'close' };
 
-/** Removes a single wrapping Markdown code fence from model output meant to be code. */
-export function stripFences(text: string): string {
-  const m = /^\s*```[\w+-]*\s*\n([\s\S]*?)\n?```\s*$/.exec(text);
-  return m ? m[1] : text.trim();
-}
-
 /** Streams AI answers into a side panel with Apply / Insert / Copy / New File actions and follow-up questions. */
 export class AnswerPanel implements vscode.Disposable {
   private panel?: vscode.WebviewPanel;
@@ -45,6 +40,7 @@ export class AnswerPanel implements vscode.Disposable {
 
   async show(request: AnswerRequest): Promise<void> {
     this.cts?.cancel();
+    this.cts = undefined;
     this.request = request;
     this.messages = [{ role: 'user', content: request.user }];
     const editor = request.editor;
@@ -122,14 +118,21 @@ export class AnswerPanel implements vscode.Disposable {
     const request = this.request!;
     this.cts?.cancel();
     const cts = (this.cts = new vscode.CancellationTokenSource());
+    // A newer request replaced this one: drop its text and messages so they don't land in the new conversation.
+    const stale = () => this.cts !== cts;
     let label = '';
     try {
       label = await this.services.ai.label();
+      if (stale()) return;
       if (label) this.post({ type: 'model', label });
-      const { text } = await this.services.ai.stream({ system: request.system, messages: this.messages }, (t) => this.post({ type: 'delta', text: t }), cts.token);
+      const { text } = await this.services.ai.stream({ system: request.system, messages: this.messages }, (t) => {
+        if (!stale()) this.post({ type: 'delta', text: t });
+      }, cts.token);
+      if (stale()) return;
       this.messages.push({ role: 'assistant', content: text });
       this.post({ type: 'done' });
     } catch (err) {
+      if (stale()) return;
       if (cts.token.isCancellationRequested) {
         this.post({ type: 'done' });
         return;

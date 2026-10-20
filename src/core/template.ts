@@ -5,7 +5,8 @@ export type VariableResolver = (name: string) => string | undefined;
 /** Quotes a value for POSIX shells and PowerShell alike (single quotes, doubled/escaped). */
 export function shellQuote(value: string, shell: 'posix' | 'powershell' | 'cmd' = 'posix'): string {
   if (shell === 'powershell') return `'${value.replace(/'/g, "''")}'`;
-  if (shell === 'cmd') return `"${value.replace(/"/g, '""')}"`;
+  // A newline would end the cmd command even inside quotes.
+  if (shell === 'cmd') return `"${value.replace(/"/g, '""').replace(/[\r\n]/g, ' ')}"`;
   if (/^[A-Za-z0-9_@%+=:,./-]+$/.test(value)) return value;
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }

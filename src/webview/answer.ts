@@ -1,6 +1,7 @@
 // AI answer panel: streams Markdown, renders it safely, and offers Apply/Insert/Copy actions.
 
 import { Marked } from 'marked';
+import { stripFences } from '../core/text';
 import { $, esc, icon, MOD, vscode } from './common';
 
 type Mode = 'answer' | 'edit' | 'insert';
@@ -62,7 +63,8 @@ const main = $('#main');
 const toolbar = $('#toolbar');
 const follow = $('#follow') as HTMLTextAreaElement;
 let mode: Mode = 'answer';
-let current: { el: HTMLElement; text: string } | undefined;
+/** The streaming bubble; `start` is where its code blocks begin in `codeBlocks`. */
+let current: { el: HTMLElement; text: string; start: number } | undefined;
 let streaming = false;
 let lastAnswer = '';
 let frame = 0;
@@ -79,13 +81,15 @@ function bubbleAi(): void {
   wrap.className = 'bubble-ai';
   wrap.innerHTML = `<div class="tile avatar" data-provider="ai">${icon('sparkle', 'duotone')}</div><div class="content cursor"></div>`;
   thread.appendChild(wrap);
-  current = { el: wrap.querySelector('.content') as HTMLElement, text: '' };
+  current = { el: wrap.querySelector('.content') as HTMLElement, text: '', start: codeBlocks.length };
 }
 
 function renderCurrent(): void {
   frame = 0;
   if (!current) return;
   const nearBottom = main.scrollHeight - main.scrollTop - main.clientHeight < 80;
+  // Each render re-parses the whole answer: replace this bubble's blocks instead of appending them again.
+  codeBlocks.length = current.start;
   current.el.innerHTML = marked.parse(current.text) as string;
   if (nearBottom) main.scrollTop = main.scrollHeight;
 }
@@ -177,7 +181,7 @@ document.addEventListener('click', (e) => {
   else if (target.hasAttribute('data-file')) vscode.postMessage({ type: 'newFile', text: block('data-file').code, language: block('data-file').lang });
   else if (target.id === 'apply') vscode.postMessage({ type: 'apply', text: lastAnswer });
   else if (target.id === 'copy') vscode.postMessage({ type: 'copy', text: lastAnswer });
-  else if (target.id === 'newfile') vscode.postMessage({ type: 'newFile', text: mode === 'answer' ? lastAnswer : lastAnswer.replace(/^\s*```[\w+-]*\n|```\s*$/g, '') });
+  else if (target.id === 'newfile') vscode.postMessage({ type: 'newFile', text: mode === 'answer' ? lastAnswer : stripFences(lastAnswer) });
   else if (target.id === 'stop') vscode.postMessage({ type: 'stop' });
   else if (target.id === 'send') send();
 });

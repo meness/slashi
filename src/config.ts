@@ -13,7 +13,13 @@ export function isProviderEnabled(id: ProviderId): boolean {
 }
 
 export function isFeatureEnabled(provider: ProviderId, feature: string): boolean {
-  return !get<string[]>('disabledFeatures', []).includes(`${provider}.${feature}`);
+  return enabledFeatures()(provider, feature);
+}
+
+/** Reads `slashi.disabledFeatures` once, for checking many items (a settings read per item is slow). */
+export function enabledFeatures(): (provider: ProviderId, feature: string) => boolean {
+  const disabled = new Set(get<string[]>('disabledFeatures', []));
+  return (provider, feature) => !disabled.has(`${provider}.${feature}`);
 }
 
 /** Matches ids against `slashi.hiddenCommands`, supporting a trailing `*`. */

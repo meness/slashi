@@ -126,3 +126,15 @@ export function validatePlan(plan: IntentPlan, knownItemIds: ReadonlySet<string>
   }
   return { reply: plan.reply, steps: steps.slice(0, 10), dropped };
 }
+
+const SHELL_PROVIDERS = new Set(['terminal', 'project', 'custom', 'marketplace']);
+
+/**
+ * Whether a plan step can reach a shell, so it must be confirmed even when plans run unconfirmed: terminal steps,
+ * items that run shell commands or macros, and settings that define commands or what a terminal runs.
+ */
+export function stepReachesShell(step: PlanStep, providerOf: (id: string) => string | undefined): boolean {
+  if (step.type === 'terminal') return true;
+  if (step.type === 'setting') return step.key.startsWith('slashi.') || step.key.startsWith('terminal.integrated.');
+  return SHELL_PROVIDERS.has(providerOf(step.id) ?? '');
+}

@@ -234,11 +234,11 @@ export function approvalSteps(def: CustomCommandDef): StepDef[] {
 }
 
 /**
- * Whether a team file or pack step may expand `${name}`. `${env:…}` and `${clipboard}` can hold secrets the
- * approval prompt doesn't show, so they only expand in steps that stay in the editor.
+ * Whether a team file or pack step may expand `${name}`. `${env:…}`, `${config:…}` and `${clipboard}` can hold
+ * secrets the approval prompt doesn't show, so they only expand in steps that stay in the editor.
  */
 export function sharedVariableAllowed(step: StepDef, name: string): boolean {
-  if (!name.startsWith('env:') && name !== 'clipboard') return true;
+  if (!name.startsWith('env:') && !name.startsWith('config:') && name !== 'clipboard') return true;
   const kind = stepType(step);
   return kind === 'insert' || kind === 'notify';
 }

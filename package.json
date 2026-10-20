@@ -567,12 +567,14 @@
           "slashi.ai.confirmBeforeRun": {
             "type": "boolean",
             "default": true,
-            "description": "Show the plan produced by Do-with-AI and ask before running it. Terminal steps are always confirmed."
+            "scope": "machine",
+            "description": "Show the plan produced by Do-with-AI and ask before running it. Steps that can run shell commands (terminal, scripts, custom commands, terminal and Slashi settings) are always confirmed."
           },
           "slashi.ai.customInstructions": {
             "type": "string",
             "default": "",
             "editPresentation": "multilineText",
+            "scope": "machine",
             "description": "Extra instructions added to every AI request (e.g. coding style, preferred language)."
           },
           "slashi.ai.includeFileContext": {

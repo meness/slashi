@@ -28,4 +28,9 @@ describe('shellQuote', () => {
     expect(shellQuote("a'b", 'powershell')).toBe("'a''b'");
     expect(shellQuote('a"b', 'cmd')).toBe('"a""b"');
   });
+
+  it('never lets a newline end the command in cmd', () => {
+    expect(shellQuote('x\r\ncalc', 'cmd')).toBe('"x  calc"');
+    expect(shellQuote('a\nb', 'cmd')).not.toMatch(/[\r\n]/);
+  });
 });
