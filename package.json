@@ -1,0 +1,671 @@
+{
+  "name": "slashi",
+  "displayName": "Slashi — Slash Commands for Everything",
+  "description": "One beautiful, keyboard-first popup to do 99% of your VS Code work with a slash: files, settings, extensions, git, terminal, AI and your own commands.",
+  "version": "0.1.0",
+  "publisher": "meness",
+  "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#14111f",
+    "theme": "dark"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/meness/slashi.git"
+  },
+  "bugs": {
+    "url": "https://github.com/meness/slashi/issues"
+  },
+  "homepage": "https://github.com/meness/slashi#readme",
+  "keywords": [
+    "slash",
+    "command palette",
+    "launcher",
+    "spotlight",
+    "raycast",
+    "productivity",
+    "keyboard",
+    "ai",
+    "llm",
+    "copilot",
+    "ollama",
+    "claude",
+    "macros"
+  ],
+  "categories": [
+    "Other",
+    "AI",
+    "Keymaps",
+    "Snippets"
+  ],
+  "engines": {
+    "vscode": "^1.90.0",
+    "node": ">=20"
+  },
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "In untrusted workspaces Slashi ignores workspace-defined custom commands (settings and .vscode/slashi.json).",
+      "restrictedConfigurations": [
+        "slashi.customCommands"
+      ]
+    },
+    "virtualWorkspaces": {
+      "supported": "limited",
+      "description": "Terminal, tasks and package-script features are unavailable in virtual workspaces."
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "slashi.open",
+        "title": "Open",
+        "category": "Slashi",
+        "icon": "$(terminal-cmd)"
+      },
+      {
+        "command": "slashi.openNative",
+        "title": "Open (Native Quick Pick)",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.run",
+        "title": "Run a Slash Command…",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openFiles",
+        "title": "Files & Folders",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openSettings",
+        "title": "Search Settings",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openExtensions",
+        "title": "Search Extensions",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openAI",
+        "title": "AI Commands",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openGit",
+        "title": "Git Commands",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openProject",
+        "title": "Project Commands (Scripts & Tools)",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openTerminal",
+        "title": "Terminal & Tasks",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openCustom",
+        "title": "My Commands",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.openMarketplace",
+        "title": "Browse Action Marketplace",
+        "category": "Slashi",
+        "icon": "$(extensions)"
+      },
+      {
+        "command": "slashi.installPack",
+        "title": "Install Action Pack from URL or File…",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.exportPack",
+        "title": "Export My Commands as an Action Pack",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.doWithAI",
+        "title": "Do With AI…",
+        "category": "Slashi",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "slashi.ask",
+        "title": "Ask AI…",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.studio",
+        "title": "Open Studio (Providers, AI & Commands)",
+        "category": "Slashi",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "slashi.toggleProviders",
+        "title": "Enable/Disable Providers",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.selectModel",
+        "title": "Select AI Model",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.setApiKey",
+        "title": "Set AI API Key",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.clearApiKey",
+        "title": "Clear AI API Key",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.newCommand",
+        "title": "Create Custom Command",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.editTeamCommands",
+        "title": "Edit Team Commands (.vscode/slashi.json)",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.customizeShortcuts",
+        "title": "Customize Keyboard Shortcuts",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.clearHistory",
+        "title": "Clear Recent History",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.refresh",
+        "title": "Refresh Catalogues",
+        "category": "Slashi"
+      },
+      {
+        "command": "slashi.inlineRun",
+        "title": "Run Inline Slash Command",
+        "category": "Slashi"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "slashi.inlineRun",
+          "when": "false"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "slashi.open",
+          "group": "navigation@99",
+          "when": "config.slashi.editorTitleButton"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "slashi.open",
+        "key": "ctrl+shift+/",
+        "mac": "ctrl+/"
+      },
+      {
+        "command": "slashi.doWithAI",
+        "key": "ctrl+shift+alt+/",
+        "mac": "ctrl+alt+/"
+      }
+    ],
+    "jsonValidation": [
+      {
+        "fileMatch": [
+          ".vscode/slashi.json",
+          "slashi.json",
+          "*.slashi-pack.json",
+          "marketplace/packs/*.json"
+        ],
+        "url": "./schemas/slashi.schema.json"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "General",
+        "order": 0,
+        "properties": {
+          "slashi.popup.style": {
+            "type": "string",
+            "enum": [
+              "spotlight",
+              "native"
+            ],
+            "enumDescriptions": [
+              "Beautiful centred Spotlight popup (custom design, live previews, action menus).",
+              "VS Code's native Quick Pick (fastest, follows every accessibility setting)."
+            ],
+            "default": "spotlight",
+            "description": "Which popup Slashi opens."
+          },
+          "slashi.popup.maxResults": {
+            "type": "number",
+            "default": 60,
+            "minimum": 10,
+            "maximum": 500,
+            "description": "Maximum number of results shown in the popup."
+          },
+          "slashi.popup.showDescriptions": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show a description line under each result."
+          },
+          "slashi.statusBar.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the Slashi button in the status bar."
+          },
+          "slashi.editorTitleButton": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show a Slashi button in the editor title bar."
+          },
+          "slashi.inlineTrigger.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Typing `/` as the first character of a line suggests slash commands right in the editor."
+          },
+          "slashi.inlineTrigger.languages": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "markdown",
+              "plaintext",
+              "scminput"
+            ],
+            "description": "Language IDs in which the inline `/` trigger is active. Use `*` for all languages."
+          },
+          "slashi.history.enabled": {
+            "type": "boolean",
+            "default": true,
+            "description": "Remember what you run to rank frequent and recent commands first."
+          },
+          "slashi.files.maxIndexed": {
+            "type": "number",
+            "default": 20000,
+            "minimum": 1000,
+            "description": "Maximum number of workspace files and folders indexed by the Files provider."
+          },
+          "slashi.files.confirmDelete": {
+            "type": "boolean",
+            "default": true,
+            "description": "Ask before deleting files or folders (they are moved to the trash when possible)."
+          },
+          "slashi.terminal.reuse": {
+            "type": "boolean",
+            "default": true,
+            "description": "Reuse a single `Slashi` terminal for `/run` instead of creating a new one each time."
+          },
+          "slashi.web.engines": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "default": {},
+            "markdownDescription": "Extra web search engines. Key = slash name, value = URL with `%s` for the query. Example: `{ \"rust\": \"https://docs.rs/releases/search?query=%s\" }`."
+          },
+          "slashi.marketplace.registries": {
+            "type": "array",
+            "scope": "machine",
+            "items": {
+              "type": "string"
+            },
+            "default": [
+              "https://raw.githubusercontent.com/meness/slashi/main/marketplace/index.json"
+            ],
+            "markdownDescription": "Registry index URLs (HTTPS) that `/market` browses. Add your company's private registry here."
+          }
+        }
+      },
+      {
+        "title": "Providers",
+        "order": 1,
+        "properties": {
+          "slashi.providers.files": {
+            "type": "boolean",
+            "default": true,
+            "description": "Files & Folders: search, create, open, rename, move, duplicate, delete, copy path, reveal."
+          },
+          "slashi.providers.navigation": {
+            "type": "boolean",
+            "default": true,
+            "description": "Navigation: open tabs, symbols in file, problems, go to line."
+          },
+          "slashi.providers.project": {
+            "type": "boolean",
+            "default": true,
+            "description": "Project: auto-detects your stack (npm/pnpm/yarn/bun, scripts, frameworks, Docker, Make, Python, Rust, Go, .NET, Java…) and adds matching slash commands."
+          },
+          "slashi.providers.commands": {
+            "type": "boolean",
+            "default": true,
+            "description": "Commands: VS Code commands and commands contributed by installed extensions."
+          },
+          "slashi.providers.settings": {
+            "type": "boolean",
+            "default": true,
+            "description": "VS Code Settings: search, toggle and edit any setting."
+          },
+          "slashi.providers.extensions": {
+            "type": "boolean",
+            "default": true,
+            "description": "VS Code Extensions: browse installed extensions, run their commands, search and install."
+          },
+          "slashi.providers.ai": {
+            "type": "boolean",
+            "default": true,
+            "description": "Installed LLMs: ask, explain, fix, document, test, review, edit, commit messages."
+          },
+          "slashi.providers.naturalLanguage": {
+            "type": "boolean",
+            "default": true,
+            "description": "Natural language: describe a task in plain English and let the configured LLM turn it into actions."
+          },
+          "slashi.providers.transforms": {
+            "type": "boolean",
+            "default": true,
+            "description": "Text tools: case conversion, sorting, JSON, Base64, URL, UUID, hashes and more."
+          },
+          "slashi.providers.terminal": {
+            "type": "boolean",
+            "default": true,
+            "description": "Terminal: run shell commands, package scripts and VS Code tasks."
+          },
+          "slashi.providers.git": {
+            "type": "boolean",
+            "default": true,
+            "description": "Git: commit, push, pull, branches, stash and AI commit messages."
+          },
+          "slashi.providers.themes": {
+            "type": "boolean",
+            "default": true,
+            "description": "Themes: switch colour and icon themes."
+          },
+          "slashi.providers.web": {
+            "type": "boolean",
+            "default": true,
+            "description": "Web: search Google, Stack Overflow, GitHub, MDN, npm and your own engines."
+          },
+          "slashi.providers.custom": {
+            "type": "boolean",
+            "default": true,
+            "description": "My Commands: your own and your team's custom commands."
+          },
+          "slashi.providers.marketplace": {
+            "type": "boolean",
+            "default": true,
+            "description": "Marketplace: browse, install and update community Slashi action packs."
+          },
+          "slashi.disabledFeatures": {
+            "type": "array",
+            "uniqueItems": true,
+            "default": [],
+            "items": {
+              "type": "string",
+              "enum": [
+                "files.search",
+                "files.create",
+                "files.rename",
+                "files.duplicate",
+                "files.delete",
+                "files.clipboard",
+                "files.reveal",
+                "navigation.tabs",
+                "navigation.symbols",
+                "navigation.problems",
+                "navigation.goToLine",
+                "project.scripts",
+                "project.packageManager",
+                "project.tools",
+                "commands.core",
+                "commands.extensionCommands",
+                "settings.core",
+                "settings.extensionSettings",
+                "extensions.installed",
+                "extensions.marketplace",
+                "extensions.management",
+                "ai.ask",
+                "ai.code",
+                "ai.commitMessage",
+                "ai.generate",
+                "ai.models",
+                "transforms.case",
+                "transforms.lines",
+                "transforms.encode",
+                "transforms.json",
+                "transforms.generate",
+                "transforms.stats",
+                "terminal.run",
+                "terminal.tasks",
+                "terminal.manage",
+                "git.core",
+                "git.branches",
+                "git.stash",
+                "themes.color",
+                "themes.icon",
+                "themes.toggle",
+                "web.builtin",
+                "web.custom",
+                "custom.user",
+                "custom.team",
+                "custom.extensions",
+                "custom.packs"
+              ]
+            },
+            "markdownDescription": "Turn off individual features inside a provider while keeping the rest, e.g. `extensions.installed` keeps marketplace search but hides installed extensions. Easier: use **Slashi: Enable/Disable Providers** or the Studio."
+          },
+          "slashi.hiddenCommands": {
+            "type": "array",
+            "uniqueItems": true,
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "markdownDescription": "Hide individual results by ID (shown in the actions menu → *Hide from Slashi*). Supports a trailing `*` wildcard, e.g. `cmd:workbench.action.debug.*`."
+          }
+        }
+      },
+      {
+        "title": "AI",
+        "order": 2,
+        "properties": {
+          "slashi.ai.provider": {
+            "type": "string",
+            "scope": "machine",
+            "enum": [
+              "auto",
+              "vscode",
+              "anthropic",
+              "openai",
+              "ollama",
+              "openaiCompatible"
+            ],
+            "enumDescriptions": [
+              "Use an installed VS Code chat model (e.g. GitHub Copilot) if available, otherwise a local Ollama server.",
+              "VS Code Language Model API — models from installed extensions such as GitHub Copilot.",
+              "Anthropic Claude (API key required).",
+              "OpenAI (API key required).",
+              "Local Ollama server (no key needed).",
+              "Any OpenAI-compatible endpoint: LM Studio, Groq, OpenRouter, Together, Mistral, vLLM…"
+            ],
+            "default": "auto",
+            "description": "Which LLM backend Slashi uses."
+          },
+          "slashi.ai.model": {
+            "type": "string",
+            "scope": "machine",
+            "default": "",
+            "markdownDescription": "Model ID. Leave empty for the backend default (`claude-opus-5-5` for Anthropic, `gpt-4o-mini` for OpenAI, the first installed model for VS Code / Ollama). Use `/models` to pick from installed models."
+          },
+          "slashi.ai.baseUrl": {
+            "type": "string",
+            "scope": "machine",
+            "default": "",
+            "markdownDescription": "Base URL for `ollama` (default `http://localhost:11434/v1`) and `openaiCompatible` backends, e.g. `http://localhost:1234/v1` for LM Studio."
+          },
+          "slashi.ai.anthropicEffort": {
+            "type": "string",
+            "scope": "machine",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "medium",
+            "description": "Anthropic effort level: lower is faster and cheaper, higher is more thorough."
+          },
+          "slashi.ai.confirmBeforeRun": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the plan produced by Do-with-AI and ask before running it. Terminal steps are always confirmed."
+          },
+          "slashi.ai.customInstructions": {
+            "type": "string",
+            "default": "",
+            "editPresentation": "multilineText",
+            "description": "Extra instructions added to every AI request (e.g. coding style, preferred language)."
+          },
+          "slashi.ai.includeFileContext": {
+            "type": "boolean",
+            "default": true,
+            "description": "When nothing is selected, include the active file as context for AI commands."
+          }
+        }
+      },
+      {
+        "title": "Custom Commands",
+        "order": 3,
+        "properties": {
+          "slashi.customCommands": {
+            "type": "array",
+            "default": [],
+            "markdownDescription": "Your own slash commands. Use `/new-command` to create one without editing JSON. Team commands can live in `.vscode/slashi.json`. See the README for all step types and variables.",
+            "items": {
+              "$ref": "./schemas/slashi.schema.json#/definitions/command"
+            }
+          }
+        }
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "slashi.welcome",
+        "title": "Get started with Slashi",
+        "description": "Do 99% of your VS Code work from one slash popup — no mouse needed.",
+        "steps": [
+          {
+            "id": "open",
+            "title": "Open Slashi",
+            "description": "Press **Ctrl+Shift+/** (macOS: **Ctrl+/**) or click **/ Slashi** in the status bar. Type `/` and a few letters.\n[Open Slashi](command:slashi.open)",
+            "media": {
+              "markdown": "media/walkthrough/open.md"
+            },
+            "completionEvents": [
+              "onCommand:slashi.open"
+            ]
+          },
+          {
+            "id": "providers",
+            "title": "Choose your providers",
+            "description": "Turn providers on or off — files, settings, extensions, AI, git, terminal and more.\n[Choose Providers](command:slashi.toggleProviders)",
+            "media": {
+              "markdown": "media/walkthrough/providers.md"
+            },
+            "completionEvents": [
+              "onCommand:slashi.toggleProviders"
+            ]
+          },
+          {
+            "id": "ai",
+            "title": "Connect an AI model (optional)",
+            "description": "Copilot users are ready already. Or connect Claude, OpenAI, Ollama or any OpenAI-compatible server.\n[Open Studio](command:slashi.studio)",
+            "media": {
+              "markdown": "media/walkthrough/ai.md"
+            },
+            "completionEvents": [
+              "onCommand:slashi.studio",
+              "onCommand:slashi.selectModel"
+            ]
+          },
+          {
+            "id": "custom",
+            "title": "Create your own command",
+            "description": "Chain commands, terminal scripts, settings and AI prompts into one slash command.\n[Create Command](command:slashi.newCommand)",
+            "media": {
+              "markdown": "media/walkthrough/custom.md"
+            },
+            "completionEvents": [
+              "onCommand:slashi.newCommand"
+            ]
+          },
+          {
+            "id": "shortcuts",
+            "title": "Make the shortcut yours",
+            "description": "Rebind Slashi or bind any slash command to its own key.\n[Customize Shortcuts](command:slashi.customizeShortcuts)",
+            "media": {
+              "markdown": "media/walkthrough/shortcuts.md"
+            },
+            "completionEvents": [
+              "onCommand:slashi.customizeShortcuts"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc -p . --noEmit && tsc -p src/webview --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:smoke": "npm run build && node test/smoke/run.cjs",
+    "test:integration": "npm run build && tsc -p test/integration && vscode-test",
+    "bench": "node scripts/bench.mjs",
+    "screenshots": "npm run build && node scripts/screenshots.mjs",
+    "check": "npm run typecheck && npm test && npm run test:smoke",
+    "package": "npm run build -- --production && vsce package --no-dependencies",
+    "vscode:prepublish": "npm run build -- --production"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.135.0",
+    "marked": "^18.1.1"
+  },
+  "devDependencies": {
+    "@phosphor-icons/core": "^2.1.1",
+    "@phosphor-icons/web": "^2.1.2",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.18.0",
+    "@types/vscode": "1.90.0",
+    "@vscode/test-cli": "^0.0.15",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "mocha": "^11.7.0",
+    "playwright-core": "1.56.1",
+    "typescript": "^5.9.3",
+    "vitest": "^5.0.5"
+  }
+}
