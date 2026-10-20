@@ -21,7 +21,7 @@ describe('parseJsonc', () => {
 
   it('keeps // inside strings and throws on invalid JSON', () => {
     expect(parseJsonc('{"url": "https://x.dev"}')).toEqual({ url: 'https://x.dev' });
-    expect(() => parseJsonc('{"commands": [1,]}')).toThrow();
+    expect(() => parseJsonc('{"commands": [1,]}')).toThrow(SyntaxError);
   });
 });
 

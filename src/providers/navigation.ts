@@ -166,7 +166,9 @@ export class NavigationProvider implements SlashProvider {
           doc.uri,
         ),
       ).catch(() => undefined),
-      new Promise<undefined>((r) => setTimeout(() => r(undefined), 600)),
+      new Promise<undefined>((r) => {
+        setTimeout(() => r(undefined), 600);
+      }),
     ]);
     if (!result?.length) return [];
     const items: SlashItem[] = [];

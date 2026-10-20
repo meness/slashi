@@ -83,6 +83,8 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     return true;
   };
 
+  // VS Code passes command arguments untyped; each handler declares the shape it accepts.
+  // oxlint-disable-next-line typescript/no-explicit-any
   const command = (id: string, fn: (...args: any[]) => unknown) =>
     context.subscriptions.push(
       vscode.commands.registerCommand(id, async (...args: unknown[]) => {
@@ -259,7 +261,7 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
 async function toggleProviders(registry: Registry): Promise<void> {
   type Item = vscode.QuickPickItem & { provider: string; feature?: string };
   const items: Item[] = [];
-  for (const p of registry.all().filter((p) => p.id !== 'system')) {
+  for (const p of registry.all().filter((provider) => provider.id !== 'system')) {
     items.push({ label: p.title, kind: vscode.QuickPickItemKind.Separator, provider: p.id });
     items.push({
       label: `$(circle-large-filled) ${p.title}`,

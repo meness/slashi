@@ -167,15 +167,15 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
     'minus-circle',
     'package names',
   );
-  P('update', 'update packages', `${pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn up' : `${pm} update`}`, 'arrow-circle-up');
-  P('outdated', 'list outdated', `${pm === 'yarn' ? 'yarn outdated' : `${pm} outdated`}`, 'list-magnifying-glass');
-  if (pm !== 'bun') P('audit', 'security audit', `${pm === 'yarn' ? 'yarn npm audit' : `${pm} audit`}`, 'shield-check');
+  P('update', 'update packages', pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn up' : `${pm} update`, 'arrow-circle-up');
+  P('outdated', 'list outdated', pm === 'yarn' ? 'yarn outdated' : `${pm} outdated`, 'list-magnifying-glass');
+  if (pm !== 'bun') P('audit', 'security audit', pm === 'yarn' ? 'yarn npm audit' : `${pm} audit`, 'shield-check');
   if (pm !== 'bun')
     P('why', 'why is a package installed', `${pm === 'npm' ? 'npm explain' : `${pm} why`} \${args}`, 'question', 'package name');
   P(
     'list',
     'list top-level dependencies',
-    `${pm === 'yarn' ? 'yarn info --name-only' : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`}`,
+    pm === 'yarn' ? 'yarn info --name-only' : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`,
     'list-bullets',
   );
   P('dlx', 'run a package binary (dlx/npx)', `${DLX[pm]} \${args}`, 'rocket-launch', 'command, e.g. create-vite@latest');
@@ -415,10 +415,7 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
     ctx.techs.add('Deno');
     const tasks = (deno.tasks && typeof deno.tasks === 'object' ? deno.tasks : {}) as Record<string, string>;
     for (const [task, body] of Object.entries(tasks))
-      add(ctx, 'Deno', 'scripts', `deno-${task}`, `deno task: ${task}`, `deno task ${task}`, {
-        icon: scriptIcon(task),
-        description: String(body),
-      });
+      add(ctx, 'Deno', 'scripts', `deno-${task}`, `deno task: ${task}`, `deno task ${task}`, { icon: scriptIcon(task), description: body });
     simple(ctx, 'Deno', [
       ['deno-test', 'test', 'deno test', 'flask'],
       ['deno-fmt', 'format', 'deno fmt', 'magic-wand'],
@@ -574,7 +571,7 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
       ['mix-deps', 'deps.get', 'mix deps.get', 'download-simple'],
       ['mix-test', 'test', 'mix test', 'flask'],
       ['mix-format', 'format', 'mix format', 'magic-wand'],
-      ...(scan.read['mix.exs']!.includes(':phoenix')
+      ...(scan.read['mix.exs'].includes(':phoenix')
         ? [['phx-server', 'Phoenix server', 'mix phx.server', 'rocket-launch'] as [string, string, string, string]]
         : []),
     ]);

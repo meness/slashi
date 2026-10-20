@@ -36,9 +36,7 @@ export async function restoreEditor(snapshot: EditorSnapshot | undefined): Promi
       });
     });
   }
-  if (!editor) {
-    editor = await vscode.window.showTextDocument(snapshot.document, { viewColumn: snapshot.viewColumn, preserveFocus: false });
-  }
+  editor ??= await vscode.window.showTextDocument(snapshot.document, { viewColumn: snapshot.viewColumn, preserveFocus: false });
   const same =
     editor.selections.length === snapshot.selections.length && editor.selections.every((s, i) => s.isEqual(snapshot.selections[i]));
   if (!same) editor.selections = [...snapshot.selections];

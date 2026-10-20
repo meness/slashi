@@ -1,4 +1,4 @@
-import * as vscode from 'vscode';
+import type * as vscode from 'vscode';
 import { AiManager } from '../llm/manager';
 import type { Registry } from '../registry';
 import type { EditorSnapshot } from './editor';

@@ -168,7 +168,9 @@ async function runStep(
     if (value === undefined) throw new Cancelled();
     vars[step.var] = value;
   } else if ('wait' in step) {
-    await new Promise((r) => setTimeout(r, step.wait));
+    await new Promise((r) => {
+      setTimeout(r, step.wait);
+    });
   }
 }
 

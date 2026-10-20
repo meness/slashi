@@ -55,8 +55,10 @@ suite('Slashi in VS Code', () => {
   });
 
   test('the Spotlight opens and toggles closed', async () => {
-    await vscode.commands.executeCommand('slashi.open');
-    await new Promise((r) => setTimeout(r, 500));
-    await vscode.commands.executeCommand('slashi.open');
+    await assert.doesNotReject(Promise.resolve(vscode.commands.executeCommand('slashi.open')));
+    await new Promise((r) => {
+      setTimeout(r, 500);
+    });
+    await assert.doesNotReject(Promise.resolve(vscode.commands.executeCommand('slashi.open')));
   });
 });

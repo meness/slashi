@@ -40,7 +40,9 @@ const waitFor = async (predicate, label, timeout = 5000) => {
     const value = predicate();
     if (value) return value;
     if (Date.now() - start > timeout) throw new Error(`Timed out waiting for ${label}`);
-    await new Promise((r) => setTimeout(r, 20));
+    await new Promise((r) => {
+      setTimeout(r, 20);
+    });
   }
 };
 
@@ -311,7 +313,7 @@ const check = (name, fn) => {
   let prompts = 0;
   let approval;
   mock.window.showWarningMessage = async (message, ...rest) => {
-    if (/^\/ship comes from/.test(message)) {
+    if (message.startsWith('/ship comes from')) {
       prompts++;
       return approval;
     }
@@ -395,7 +397,9 @@ const check = (name, fn) => {
 
   // A second question while the first still streams: the old stream must not leak into the new conversation.
   let releaseFirst;
-  const firstHeld = new Promise((r) => (releaseFirst = r));
+  const firstHeld = new Promise((r) => {
+    releaseFirst = r;
+  });
   reply = (n) => (n === 3 ? ['old-', firstHeld.then(() => 'tail')] : ['new']); // request 3 is “/ask one”
   const firstAsk = api.run('/ask one');
   const answerPanel = await waitFor(() => calls.panels.find((p) => p.viewType === 'slashi.answer'), 'answer panel');

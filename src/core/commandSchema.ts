@@ -92,7 +92,7 @@ export function validateStep(raw: unknown, where: string): Validation<StepDef> {
     case 'open':
     case 'ai':
     case 'notify':
-      if (!isString(s[kind]) || !(s[kind] as string).trim()) errors.push(`${where}.${kind}: must be a non-empty string`);
+      if (!isString(s[kind]) || !s[kind].trim()) errors.push(`${where}.${kind}: must be a non-empty string`);
       break;
     case 'setting':
       if (!isString(s.setting) || !/^[\w.-]+$/.test(s.setting)) errors.push(`${where}.setting: must be a setting key`);
@@ -165,7 +165,7 @@ export function validatePack(raw: unknown): Validation<PackDef> {
   const errors: string[] = [];
   if (!isString(p.id) || !PACK_ID_PATTERN.test(p.id)) errors.push('id: use 2–50 lower-case letters, digits or dashes');
   for (const key of ['name', 'version', 'description', 'author'] as const) {
-    if (!isString(p[key]) || !(p[key] as string).trim()) errors.push(`${key}: is required`);
+    if (!isString(p[key]) || !p[key].trim()) errors.push(`${key}: is required`);
   }
   if (isString(p.version) && !/^\d+\.\d+\.\d+(?:[-+][\w.]+)?$/.test(p.version)) errors.push('version: must be semver, e.g. 1.0.0');
   if (p.tags !== undefined && (!Array.isArray(p.tags) || !p.tags.every(isString))) errors.push('tags: must be a string array');

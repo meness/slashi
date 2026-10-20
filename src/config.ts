@@ -3,6 +3,11 @@ import type { ProviderId } from './core/protocol';
 
 export const section = () => vscode.workspace.getConfiguration('slashi');
 
+// The primitive overloads widen the fallback, so get('x', '') is a string, not the literal type ''.
+export function get(key: string, fallback: string): string;
+export function get(key: string, fallback: number): number;
+export function get(key: string, fallback: boolean): boolean;
+export function get<T>(key: string, fallback: T): T;
 export function get<T>(key: string, fallback: T): T {
   return section().get<T>(key, fallback);
 }

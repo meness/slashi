@@ -42,7 +42,7 @@ describe('line tools', () => {
 describe('encoding', () => {
   it('round-trips base64 and validates input', () => {
     expect(t.base64Decode(t.base64Encode('héllo ✓'))).toBe('héllo ✓');
-    expect(() => t.base64Decode('not base64!')).toThrow();
+    expect(() => t.base64Decode('not base64!')).toThrow('Selection is not valid Base64.');
   });
   it('formats, minifies and sorts JSON', () => {
     expect(t.jsonPretty('{"b":1,"a":[1]}')).toBe('{\n  "b": 1,\n  "a": [\n    1\n  ]\n}');

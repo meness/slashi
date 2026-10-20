@@ -124,8 +124,8 @@ window.addEventListener('message', (event: MessageEvent<HostMessage>) => {
       thread.innerHTML = '';
       codeBlocks.length = 0;
       lastAnswer = '';
-      ($('#title') as HTMLElement).textContent = m.title;
-      ($('#target') as HTMLElement).textContent = m.target ?? '';
+      $('#title').textContent = m.title;
+      $('#target').textContent = m.target ?? '';
       bubbleUser(m.prompt);
       bubbleAi();
       streaming = true;

@@ -78,7 +78,7 @@ function render(): void {
       </footer>
     </div>`;
   if (step === 'welcome') startDemo();
-  (document.getElementById('next') as HTMLElement | null)?.focus();
+  document.getElementById('next')?.focus();
 }
 
 function content(): string {
@@ -144,7 +144,7 @@ function content(): string {
           <div class="tips">
             ${tip(keys(...slashKeys()), 'Open Slashi from anywhere')}
             ${tip(keys('Tab'), 'Complete a command, then type its arguments')}
-            ${tip(`${keys('⇧', '↵')}`, 'Actions: rename, delete, copy path, hide…')}
+            ${tip(keys('⇧', '↵'), 'Actions: rename, delete, copy path, hide…')}
             ${tip(keys(mac() ? '⌘' : 'Ctrl', '↵'), 'Hand what you typed to AI')}
             ${tip('<code>/f</code>', 'Create, rename, move and delete files')}
             ${tip('<code>/p</code>', 'Your project’s scripts & tools')}

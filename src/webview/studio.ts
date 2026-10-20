@@ -85,8 +85,8 @@ function morph(from: Node, to: Node): void {
     const next = b[i];
     if (node.nodeName !== next.nodeName) return node.parentNode!.replaceChild(next, node);
     if (node instanceof Element && next instanceof Element) {
-      for (const { name } of [...node.attributes]) if (!next.hasAttribute(name)) node.removeAttribute(name);
-      for (const { name, value } of [...next.attributes]) if (node.getAttribute(name) !== value) node.setAttribute(name, value);
+      for (const { name } of Array.from(node.attributes)) if (!next.hasAttribute(name)) node.removeAttribute(name);
+      for (const { name, value } of Array.from(next.attributes)) if (node.getAttribute(name) !== value) node.setAttribute(name, value);
     } else if (node.nodeValue !== next.nodeValue) node.nodeValue = next.nodeValue;
     morph(node, next);
     // A field the user typed in ignores its value attribute, so sync the live value (unless they're still typing there).

@@ -291,6 +291,8 @@ export class FilesProvider implements SlashProvider {
       case 'revealOs':
         await vscode.commands.executeCommand('revealFileInOS', uri);
         return;
+      default:
+        return;
     }
   }
 

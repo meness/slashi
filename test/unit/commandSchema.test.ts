@@ -99,8 +99,8 @@ describe('packs and registries', () => {
 
   it('resolves relative pack URLs and refuses plain HTTP', () => {
     expect(resolvePackUrl('https://x.dev/market/index.json', 'packs/a.json')).toBe('https://x.dev/market/packs/a.json');
-    expect(() => resolvePackUrl('https://x.dev/index.json', 'http://evil.dev/a.json')).toThrow();
-    expect(() => resolvePackUrl('https://x.dev/index.json', 'file:///etc/passwd')).toThrow();
+    expect(() => resolvePackUrl('https://x.dev/index.json', 'http://evil.dev/a.json')).toThrow('Refusing pack URL with protocol http:');
+    expect(() => resolvePackUrl('https://x.dev/index.json', 'file:///etc/passwd')).toThrow('Refusing pack URL with protocol file:');
     expect(resolvePackUrl('file:///repo/marketplace/index.json', 'packs/a.json')).toBe('file:///repo/marketplace/packs/a.json');
   });
 

@@ -80,8 +80,8 @@ function isBoundary(text: string, i: number): boolean {
 }
 
 function range(start: number, length: number): number[] {
-  const out = new Array<number>(length);
-  for (let i = 0; i < length; i++) out[i] = start + i;
+  const out: number[] = [];
+  for (let i = 0; i < length; i++) out.push(start + i);
   return out;
 }
 

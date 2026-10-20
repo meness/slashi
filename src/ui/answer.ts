@@ -77,7 +77,9 @@ export class AnswerPanel implements vscode.Disposable {
     this.panel = panel;
     panel.iconPath = panelIcon(this.extensionUri);
     let resolveReady!: () => void;
-    this.ready = new Promise((r) => (resolveReady = r));
+    this.ready = new Promise((r) => {
+      resolveReady = r;
+    });
     panel.webview.html = webviewHtml(panel.webview, this.extensionUri, { title: 'Slashi AI', script: 'answer.js', styles: ['answer.css'] });
     panel.onDidDispose(() => {
       this.cts?.cancel();
@@ -92,6 +94,8 @@ export class AnswerPanel implements vscode.Disposable {
   private async handle(m: FromWebview): Promise<void> {
     try {
       switch (m.type) {
+        case 'ready': // resolved by the listener in the constructor
+          break;
         case 'copy':
           await vscode.env.clipboard.writeText(m.text);
           void vscode.window.setStatusBarMessage('$(copy) Copied', 2000);

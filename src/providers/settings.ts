@@ -45,7 +45,7 @@ function toMeta(key: string, prop: ContributedProperty): SettingMeta {
       key,
       type: 'enum',
       description,
-      enum: prop.enum as string[],
+      enum: prop.enum,
       enumDescriptions: (prop.markdownEnumDescriptions ?? prop.enumDescriptions)?.map(plainMarkdown),
     };
   }
@@ -173,6 +173,8 @@ async function editSetting(meta: SettingMeta, ctx: RunContext): Promise<void> {
       if (!vscode.workspace.workspaceFolders?.length) throw new Error('Open a folder to use workspace settings.');
       target = vscode.ConfigurationTarget.Workspace;
       break;
+    default:
+      break;
   }
 
   const current = config.get(meta.key);
@@ -192,7 +194,7 @@ async function editSetting(meta: SettingMeta, ctx: RunContext): Promise<void> {
       (await vscode.window.showInputBox({
         title: settingTitle(meta.key),
         prompt: meta.description,
-        value: current === undefined ? '' : String(current),
+        value: typeof current === 'string' || typeof current === 'number' ? String(current) : '',
         ignoreFocusOut: true,
       }));
     if (input === undefined) return;

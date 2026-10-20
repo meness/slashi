@@ -18,7 +18,7 @@ class EventEmitter {
     };
   }
   fire(e) {
-    for (const fn of [...this.listeners]) fn(e);
+    for (const fn of Array.from(this.listeners)) fn(e);
   }
   dispose() {
     this.listeners.clear();

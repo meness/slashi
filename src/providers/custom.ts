@@ -359,7 +359,7 @@ async function readTeamFile(uri: vscode.Uri): Promise<{ $schema?: string; comman
   try {
     json = parseJsonc(text) as typeof json;
   } catch (err) {
-    throw new Error(`Fix ${TEAM_FILE} first: ${(err as Error).message}`);
+    throw new Error(`Fix ${TEAM_FILE} first: ${(err as Error).message}`, { cause: err });
   }
   if (Array.isArray(json)) return { commands: json };
   if (!json || typeof json !== 'object' || (json.commands !== undefined && !Array.isArray(json.commands)))
