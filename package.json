@@ -201,6 +201,11 @@
         "category": "Slashi"
       },
       {
+        "command": "slashi.copyDiagnostics",
+        "title": "Copy Diagnostics for a Bug Report",
+        "category": "Slashi"
+      },
+      {
         "command": "slashi.refresh",
         "title": "Refresh Catalogues",
         "category": "Slashi"

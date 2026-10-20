@@ -14,18 +14,15 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: "1. Press Cmd+/\n2. Type /f readme\n3. ..."
-  - type: input
-    id: versions
+  - type: textarea
+    id: diagnostics
     attributes:
-      label: Versions
-      placeholder: "Slashi 0.1.0, VS Code 1.95, macOS 15"
+      label: Diagnostics
+      description: Run `/diagnostics` in Slashi (or **Slashi: Copy Diagnostics for a Bug Report**) and paste the result. It holds versions and setup only, never keys, file names or code.
+      placeholder: "Slashi: 0.1.0\nEditor: Visual Studio Code 1.95.0\nOS: darwin arm64 …"
+      render: text
     validations:
       required: true
-  - type: dropdown
-    id: popup
-    attributes:
-      label: Popup style
-      options: [Spotlight, Native]
   - type: textarea
     id: log
     attributes:

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import type { SlashiApi } from './api';
 import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, shortcutLabel, updateGlobal } from './config';
 import { parseQuery } from './core/query';
+import { HELP_LINKS } from './data/links';
 import { execute, reportError } from './executor';
 import { AiProvider, pickModel } from './providers/ai';
 import { CommandsProvider } from './providers/commands';
@@ -14,7 +15,7 @@ import { doWithAi, NaturalLanguageProvider } from './providers/naturalLanguage';
 import { NavigationProvider } from './providers/navigation';
 import { ProjectProvider } from './providers/project';
 import { SettingsProvider } from './providers/settings';
-import { SystemProvider } from './providers/system';
+import { diagnostics, SystemProvider } from './providers/system';
 import { TerminalProvider } from './providers/terminal';
 import { ThemesProvider } from './providers/themes';
 import { TransformsProvider } from './providers/transforms';
@@ -160,6 +161,11 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     if (value) await installFromUrl(services, /^[a-z]+:\/\//i.test(value) ? value : vscode.Uri.file(value).toString());
   });
   command('slashi.customizeShortcuts', () => vscode.commands.executeCommand('workbench.action.openGlobalKeybindings', 'slashi.'));
+  command('slashi.copyDiagnostics', async () => {
+    await vscode.env.clipboard.writeText(await diagnostics(services));
+    const choice = await vscode.window.showInformationMessage('Slashi diagnostics copied. Paste them into your bug report.', 'Report a Bug');
+    if (choice) await vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS.bug));
+  });
   command('slashi.clearHistory', async () => {
     await services.history.clear();
     void vscode.window.setStatusBarMessage('$(check) Slashi history cleared', 2500);

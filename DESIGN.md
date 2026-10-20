@@ -217,7 +217,7 @@ Flat panels, lifted overlays. Settings cards, panels and list items are flat: a 
 ### Named Rules
 **The Float-Only Rule.** Only floating surfaces cast `--shadow`. A card inside a page never does.
 
-**The High-Contrast Rule.** In `vscode-high-contrast*` themes, `--shadow` and `--accent-soft` are switched off and `--border` becomes the contrast border. The active row gets a dashed contrast outline instead of a tint. Every new state needs a visible non-color, non-shadow signal.
+**The High-Contrast Rule.** In `vscode-high-contrast*` themes, `--shadow` and `--accent-soft` are switched off and `--border` becomes the contrast border. The active row gets a dashed contrast outline instead of a tint, and filled buttons take `--vscode-button-border` (or the contrast border) so their shape survives a fill that matches the page. Every new state needs a visible non-color, non-shadow signal.
 
 ## Shapes
 

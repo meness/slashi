@@ -297,6 +297,8 @@ Releases are automated: merging the release PR publishes to the VS Code Marketpl
 
 Slashi is free and open source. If it saves you time, you can support its development with a crypto donation (ETH, Polygon, BTC or SOL). The addresses are in [DONATE.md](DONATE.md). Stars, reviews and bug reports help a lot too.
 
+Inside VS Code, **Studio → Help & Support** (`/help-center`) collects the docs, troubleshooting, feedback links and `/support`. When you report a bug, run `/diagnostics` and paste the result. It copies versions and setup only, never keys, file names or code.
+
 ## License
 
 [MIT](LICENSE) © meness and Slashi contributors. Icons by [Phosphor Icons](https://phosphoricons.com) (MIT). See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

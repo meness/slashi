@@ -359,6 +359,34 @@ const check = (name, fn) => {
   });
   mock.lm.selectChatModels = async () => [];
 
+  // Help & Support: links open only by key, and diagnostics never include secrets.
+  await api.run('/help-center');
+  check('/help-center opens the Studio Help & Support tab', () => assert.ok(calls.posted.some((m) => m.type === 'tab' && m.tab === 'help')));
+  await api.run('/support');
+  check('/support opens the donation page', () => assert.equal(calls.opened, 'https://github.com/meness/slashi/blob/main/DONATE.md'));
+  studio.webview._receive({ type: 'openLink', link: 'bug' });
+  await waitFor(() => calls.opened?.includes('bug_report.yml'), 'bug link');
+  calls.opened = undefined;
+  studio.webview._receive({ type: 'openLink', link: 'toString' });
+  studio.webview._receive({ type: 'openLink', link: 'https://evil.dev' });
+  await waitFor(() => calls.messages.filter((m) => m[0] === 'error' && /Unknown link/.test(m[1])).length === 2, 'rejected links');
+  check('Studio opens only known help links', () => {
+    assert.equal(calls.opened, undefined);
+    assert.equal(takeErrors(calls.messages, /Unknown link/), 2);
+  });
+  secrets.set('slashi.apiKey.anthropic', 'sk-ant-SMOKE-SECRET');
+  await mock.workspace.getConfiguration('slashi').update('ai.baseUrl', 'https://private.example.internal/v1');
+  await api.run('/diagnostics');
+  check('/diagnostics copies versions and setup without secrets', () => {
+    assert.match(calls.clipboard, /^Slashi: \d+\.\d+\.\d+\nEditor: Visual Studio Code /);
+    assert.match(calls.clipboard, /^AI: .+ \(setting: auto\)$/m);
+    assert.match(calls.clipboard, /Features off: extensions\.installed, transforms\.case/);
+    assert.ok(!/SMOKE-SECRET|private\.example|sk-ant/.test(calls.clipboard), calls.clipboard);
+    assert.ok(!calls.clipboard.includes(path.resolve(__dirname, '../..')), 'no workspace paths');
+  });
+  secrets.delete('slashi.apiKey.anthropic');
+  await mock.workspace.getConfiguration('slashi').update('ai.baseUrl', '');
+
   // Artifacts used by scripts/screenshots.mjs
   const out = path.join(__dirname, 'out');
   fs.mkdirSync(out, { recursive: true });

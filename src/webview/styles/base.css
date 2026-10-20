@@ -166,6 +166,9 @@ kbd {
 .btn.ghost:hover { background: color-mix(in srgb, var(--fg) 7%, transparent); }
 .btn.danger { background: transparent; color: var(--danger); border-color: color-mix(in srgb, var(--danger) 40%, transparent); }
 .btn[disabled] { opacity: 0.5; cursor: default; }
+/* In high contrast a filled button's fill can match the page, so the border carries its shape (as VS Code's own buttons do). */
+body.vscode-high-contrast .btn:not(.ghost, .danger),
+body.vscode-high-contrast-light .btn:not(.ghost, .danger) { border-color: var(--vscode-button-border, var(--border)); }
 
 .switch {
   position: relative;

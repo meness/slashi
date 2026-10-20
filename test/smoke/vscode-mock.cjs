@@ -119,6 +119,7 @@ const vscode = {
   SymbolKind: new Proxy({}, { get: (_t, k) => (typeof k === 'string' ? k.length : 0) }),
   env: {
     shell: '/bin/bash',
+    appName: 'Visual Studio Code',
     clipboard: { readText: async () => '', writeText: async (t) => { calls.clipboard = t; } },
     openExternal: async (u) => { calls.opened = u.toString(); return true; },
   },

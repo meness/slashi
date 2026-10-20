@@ -183,6 +183,9 @@ const studioState = { ...studio, ai: { ...studio.ai, provider: 'anthropic', labe
 await shoot('studio-providers-dark', page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'providers') }), { width: 1200, height: 800 });
 await shoot('studio-ai-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
 await shoot('studio-ai-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'ai') }), { width: 1200, height: 800 });
+await shoot('studio-help-dark', page({ theme: 'dark', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), { width: 1200, height: 800 });
+await shoot('studio-help-light', page({ theme: 'light', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), { width: 1200, height: 800 });
+await shoot('studio-help-hc', page({ theme: 'hc', script: 'studio.js', styles: ['studio.css'], host: studioHost(studioState, 'help') }), { width: 1200, height: 800 });
 
 // Onboarding steps
 const onboardingState = {
