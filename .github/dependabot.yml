@@ -4,6 +4,11 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    # Runtime deps are bundled into the .vsix, so their bumps ship as a patch release.
+    commit-message:
+      prefix: fix
+      prefix-development: build
+      include: scope
     groups:
       dev-dependencies:
         dependency-type: development
@@ -17,3 +22,5 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    commit-message:
+      prefix: ci

@@ -1,0 +1,24 @@
+name: PR title
+
+# Squash merges use the PR title as the commit message, which release-please reads to bump the version.
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  commitlint:
+    name: Conventional Commit title
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: printf '%s\n' "$TITLE" | npx commitlint
+        env:
+          TITLE: ${{ github.event.pull_request.title }}
