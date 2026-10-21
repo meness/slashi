@@ -240,7 +240,7 @@ The AI backend, model, URL, effort, custom instructions, plan confirmation, web 
 
 - **No telemetry.** Slashi collects nothing.
 - **API keys** live only in VS Code Secret Storage. A repository can’t change your AI backend, its URL, your instructions or your confirmation setting, so it can’t send your key or code to another server.
-- **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and terminal or Slashi settings.
+- **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and settings that change what runs or what is trusted (Slashi, terminal, task, tool path, workspace trust, proxy and agent auto-approve settings).
 - **Action packs** are fetched only over HTTPS, previewed step by step before installing, and checked against their registry listing. Only packs built by Slashi carry the verified seal.
 - **Webviews** use a strict nonce-based Content Security Policy and load only bundled files. Raw HTML in model output is escaped, never rendered.
 - **Untrusted workspaces:** workspace-defined commands are ignored. Team commands (in `.vscode/slashi.json` or the workspace's `slashi.customCommands`) and packs ask before running anything that can reach a shell.
