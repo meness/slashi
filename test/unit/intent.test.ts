@@ -98,6 +98,20 @@ describe('stepReachesShell', () => {
     expect(reaches({ type: 'setting', key: 'terminal.integrated.defaultProfile.osx', value: 'x' })).toBe(true);
   });
 
+  it('flags core and extension settings that run things, trust workspaces or route traffic', () => {
+    const keys = [
+      'terminal.external.osxExec',
+      'task.allowAutomaticTasks',
+      'chat.tools.global.autoApprove',
+      'security.workspace.trust.enabled',
+      'http.proxy',
+      'git.path',
+      'python.defaultInterpreterPath',
+      'typescript.tsdk',
+    ];
+    expect(keys.filter((key) => !reaches({ type: 'setting', key, value: true }))).toEqual([]);
+  });
+
   it('leaves editor-only steps alone', () => {
     expect(reaches({ type: 'item', id: 'cmd:editor.action.formatDocument' })).toBe(false);
     expect(reaches({ type: 'setting', key: 'editor.fontSize', value: 16 })).toBe(false);

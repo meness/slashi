@@ -132,13 +132,15 @@ export function validatePlan(plan: IntentPlan, knownItemIds: ReadonlySet<string>
 }
 
 const SHELL_PROVIDERS = new Set(['terminal', 'project', 'custom', 'marketplace']);
+/** Settings that define what runs (commands, terminals, tasks, tool paths), trust a workspace, auto-approve agent tools or route traffic. */
+const SHELL_SETTING = /^(slashi|terminal|task|security|http|chat\.tools)\.|(path|tsdk|executable|command|shell)s?$/i;
 
 /**
  * Whether a plan step can reach a shell, so it must be confirmed even when plans run unconfirmed: terminal steps,
- * items that run shell commands or macros, and settings that define commands or what a terminal runs.
+ * items that run shell commands or macros, and settings that change what runs or what is trusted.
  */
 export function stepReachesShell(step: PlanStep, providerOf: (id: string) => string | undefined): boolean {
   if (step.type === 'terminal') return true;
-  if (step.type === 'setting') return step.key.startsWith('slashi.') || step.key.startsWith('terminal.integrated.');
+  if (step.type === 'setting') return SHELL_SETTING.test(step.key);
   return SHELL_PROVIDERS.has(providerOf(step.id) ?? '');
 }
