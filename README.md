@@ -104,7 +104,7 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
 | **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools |
 | **Commands** | `/cmd` | about 170 VS Code commands with slash names · every extension command |
-| **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
+| **Settings** | `/set` | every VS Code setting · every extension setting. Booleans toggle, enums pick, numbers and strings edit; set any value for the workspace or the current language |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
 | **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · review your Git changes · commit messages · regex & shell generators · models |
 | **Natural language** | `/do` | a sentence becomes a checked plan of actions |
