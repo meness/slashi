@@ -8,6 +8,8 @@ export interface DirectoryScan {
   dir: string;
   /** File names directly inside `dir`. */
   files: string[];
+  /** Folder names directly inside `dir` (e.g. `supabase`, `.fvm`). */
+  dirs?: string[];
   /** Contents of manifests we know how to read, keyed by file name. */
   read: Record<string, string>;
 }
@@ -127,20 +129,34 @@ export function detectPackageManager(scan: DirectoryScan, pkg?: Record<string, u
   return 'npm';
 }
 
+/** Yarn 2+ (Berry): `.yarnrc.yml`, or a `packageManager` field naming yarn@2 or later. Yarn 1 lacks dlx, up and npm audit. */
+function isYarnBerry(scan: DirectoryScan, pkg: Record<string, unknown> | undefined, rootScan?: DirectoryScan): boolean {
+  const version = typeof pkg?.packageManager === 'string' ? /^yarn@(\d+)/.exec(pkg.packageManager)?.[1] : undefined;
+  if (version) return Number(version) >= 2;
+  return [scan, rootScan].some((s) => s && has(s, '.yarnrc.yml'));
+}
+
 const SCRIPT_ARGS = 'extra arguments (optional)';
 const RUN: Record<Pm, string> = { npm: 'npm run', pnpm: 'pnpm run', yarn: 'yarn', bun: 'bun run' };
 const EXEC: Record<Pm, string> = { npm: 'npx', pnpm: 'pnpm exec', yarn: 'yarn', bun: 'bunx' };
 const DLX: Record<Pm, string> = { npm: 'npx', pnpm: 'pnpm dlx', yarn: 'yarn dlx', bun: 'bunx' };
 
+function hasDep(pkg: Record<string, unknown>, name: string): boolean {
+  return [pkg.dependencies, pkg.devDependencies].some((d) => !!d && typeof d === 'object' && Object.prototype.hasOwnProperty.call(d, name));
+}
+
+const isFlutter = (pubspec: string) => /\bflutter\s*:/.test(pubspec);
+
 function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: DirectoryScan | undefined): void {
   const pm = detectPackageManager(ctx.scan, pkg, rootScan);
   ctx.techs.add(pm);
+  const classic = pm === 'yarn' && !isYarnBerry(ctx.scan, pkg, rootScan);
   const scripts = (pkg.scripts && typeof pkg.scripts === 'object' ? pkg.scripts : {}) as Record<string, string>;
   const deps = {
     ...(pkg.dependencies as Record<string, string> | undefined),
     ...(pkg.devDependencies as Record<string, string> | undefined),
   };
-  const dep = (name: string) => Object.prototype.hasOwnProperty.call(deps, name);
+  const dep = (name: string) => hasDep(pkg, name);
 
   // package.json scripts
   for (const [script, body] of Object.entries(scripts)) {
@@ -161,7 +177,12 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
   P(
     'ci',
     'clean install (frozen lockfile)',
-    { npm: 'npm ci', pnpm: 'pnpm install --frozen-lockfile', yarn: 'yarn install --immutable', bun: 'bun install --frozen-lockfile' }[pm],
+    {
+      npm: 'npm ci',
+      pnpm: 'pnpm install --frozen-lockfile',
+      yarn: classic ? 'yarn install --frozen-lockfile' : 'yarn install --immutable',
+      bun: 'bun install --frozen-lockfile',
+    }[pm],
     'lock-key',
   );
   P('add', 'add package', `${addCmd} \${args}`, 'plus-circle', 'package names, e.g. zod react-query');
@@ -173,18 +194,20 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
     'minus-circle',
     'package names',
   );
-  P('update', 'update packages', pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn up' : `${pm} update`, 'arrow-circle-up');
-  P('outdated', 'list outdated', pm === 'yarn' ? 'yarn outdated' : `${pm} outdated`, 'list-magnifying-glass');
-  if (pm !== 'bun') P('audit', 'security audit', pm === 'yarn' ? 'yarn npm audit' : `${pm} audit`, 'shield-check');
+  // Yarn 2+ `up` needs package names; `upgrade-interactive` is its `outdated`.
+  if (pm === 'yarn' && !classic) P('update', 'update packages', 'yarn up ${args}', 'arrow-circle-up', 'packages, e.g. react "@types/*"');
+  else P('update', 'update packages', pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn upgrade' : `${pm} update`, 'arrow-circle-up');
+  P('outdated', 'list outdated', pm === 'yarn' && !classic ? 'yarn upgrade-interactive' : `${pm} outdated`, 'list-magnifying-glass');
+  if (pm !== 'bun') P('audit', 'security audit', pm === 'yarn' && !classic ? 'yarn npm audit' : `${pm} audit`, 'shield-check');
   if (pm !== 'bun')
     P('why', 'why is a package installed', `${pm === 'npm' ? 'npm explain' : `${pm} why`} \${args}`, 'question', 'package name');
   P(
     'list',
     'list top-level dependencies',
-    pm === 'yarn' ? 'yarn info --name-only' : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`,
+    pm === 'yarn' ? (classic ? 'yarn list --depth=0' : 'yarn info --name-only') : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`,
     'list-bullets',
   );
-  P('dlx', 'run a package binary (dlx/npx)', `${DLX[pm]} \${args}`, 'rocket-launch', 'command, e.g. create-vite@latest');
+  P('dlx', 'run a package binary (dlx/npx)', `${classic ? 'npx' : DLX[pm]} \${args}`, 'rocket-launch', 'command, e.g. create-vite@latest');
   P('exec', 'run a local binary', `${EXEC[pm]} \${args}`, 'terminal-window', 'binary and args');
   if (pm === 'npm') {
     P('version', 'bump version', 'npm version ${args:patch}', 'tag', 'patch | minor | major');
@@ -208,6 +231,10 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
     T('ESLint', 'eslint', 'lint project', `${X} eslint .`, 'warning-circle');
     T('ESLint', 'eslint-fix', 'lint & auto-fix', `${X} eslint . --fix`, 'wrench');
     T('ESLint', 'eslint-file', 'lint current file', `${X} eslint \${q:file}`, 'warning-circle');
+  }
+  if (dep('oxlint')) {
+    T('Oxlint', 'oxlint', 'lint project', `${X} oxlint`, 'warning-circle');
+    T('Oxlint', 'oxlint-fix', 'lint & auto-fix', `${X} oxlint --fix`, 'wrench');
   }
   if (dep('@biomejs/biome')) {
     T('Biome', 'biome-check', 'check', `${X} biome check .`, 'warning-circle');
@@ -269,6 +296,28 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
   if (dep('expo')) {
     T('Expo', 'expo-start', 'start', `${X} expo start`, 'device-mobile');
     T('Expo', 'expo-install', 'install compatible package', `${X} expo install \${args}`, 'device-mobile', 'package names');
+    T('Expo', 'expo-ios', 'build & run on iOS', `${X} expo run:ios`, 'apple-logo');
+    T('Expo', 'expo-android', 'build & run on Android', `${X} expo run:android`, 'android-logo');
+    T('Expo', 'expo-prebuild', 'generate native projects', `${X} expo prebuild`, 'hammer');
+  }
+  // EAS CLI is installed globally (npm i -g eas-cli).
+  if (has(ctx.scan, 'eas.json')) {
+    T('EAS', 'eas-build', 'build in the cloud', 'eas build ${args}', 'cloud-arrow-up', 'optional: --platform ios | android | all');
+    T('EAS', 'eas-update', 'publish an update', 'eas update ${args}', 'cloud-arrow-up', 'optional: --branch <name>');
+    T('EAS', 'eas-submit', 'submit to the stores', 'eas submit', 'storefront');
+  }
+  if (dep('@tauri-apps/cli')) {
+    T('Tauri', 'tauri-dev', 'dev', `${X} tauri dev`, 'rocket-launch');
+    T('Tauri', 'tauri-build', 'build', `${X} tauri build`, 'hammer');
+  }
+  if (dep('@nestjs/core')) ctx.techs.add('NestJS');
+  if (dep('@nestjs/cli'))
+    T('NestJS', 'nest-generate', 'generate', `${X} nest generate \${args}`, 'magic-wand', 'schematic and name, e.g. resource users');
+  if (has(ctx.scan, 'wrangler.toml', 'wrangler.json', 'wrangler.jsonc')) {
+    const w = `${dep('wrangler') ? X : 'npx'} wrangler`;
+    T('Cloudflare Workers', 'wrangler-dev', 'dev', `${w} dev`, 'rocket-launch');
+    T('Cloudflare Workers', 'wrangler-deploy', 'deploy', `${w} deploy`, 'cloud-arrow-up');
+    T('Cloudflare Workers', 'wrangler-tail', 'tail logs', `${w} tail`, 'scroll');
   }
   if (dep('prisma') || dep('@prisma/client')) {
     T('Prisma', 'prisma-generate', 'generate client', `${X} prisma generate`, 'database');
@@ -397,8 +446,26 @@ function pythonProject(ctx: Ctx): void {
     T('django-shell', 'shell', `${m} shell`, 'terminal-window');
     T('django-superuser', 'create superuser', `${m} createsuperuser`, 'user-circle');
   }
-  if (mentions(py, 'fastapi')) ctx.techs.add('FastAPI');
-  if (mentions(py, 'flask')) ctx.techs.add('Flask');
+  if (mentions(py, 'fastapi')) {
+    ctx.techs.add('FastAPI');
+    T('fastapi-dev', 'FastAPI dev server', `${run}fastapi dev`, 'rocket-launch');
+  }
+  if (mentions(py, 'flask')) {
+    ctx.techs.add('Flask');
+    T('flask-run', 'Flask dev server', `${run}flask run --debug`, 'rocket-launch');
+  }
+  if (has(scan, 'alembic.ini')) {
+    ctx.techs.add('Alembic');
+    T('alembic-upgrade', 'migrate to latest (alembic)', `${run}alembic upgrade head`, 'database');
+    T(
+      'alembic-revision',
+      'new migration (alembic)',
+      `${run}alembic revision --autogenerate -m \${q:args}`,
+      'database',
+      'migration message',
+    );
+    T('alembic-downgrade', 'undo last migration (alembic)', `${run}alembic downgrade -1`, 'arrow-counter-clockwise');
+  }
 }
 
 function simple(
@@ -487,6 +554,11 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
       ['go-tidy', 'mod tidy', 'go mod tidy', 'broom'],
       ['go-get', 'add module', 'go get ${args}', 'plus-circle', 'module path'],
     ]);
+    if (has(scan, '.golangci.yml', '.golangci.yaml', '.golangci.toml', '.golangci.json'))
+      simple(ctx, 'golangci-lint', [
+        ['golangci-lint', 'lint', 'golangci-lint run', 'warning-circle'],
+        ['golangci-fix', 'lint & fix', 'golangci-lint run --fix', 'wrench'],
+      ]);
   }
 
   if (hasExt(scan, '.csproj', '.fsproj', '.sln', '.slnx')) {
@@ -567,6 +639,16 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
       add(ctx, 'Composer', 'scripts', `composer-${script}`, `composer: ${script}`, `composer run-script ${script}`, {
         icon: scriptIcon(script),
       });
+    const composerText = scan.read['composer.json'];
+    if (composerText.includes('"symfony/framework-bundle"')) {
+      simple(ctx, 'Symfony', [
+        ['symfony-console', 'console', 'php bin/console ${args}', 'terminal-window', 'command, e.g. debug:router'],
+        ['symfony-cache-clear', 'clear cache', 'php bin/console cache:clear', 'broom'],
+      ]);
+    }
+    // `composer exec` finds vendor/bin on every OS.
+    if (composerText.includes('"phpunit/phpunit"')) simple(ctx, 'PHPUnit', [['phpunit', 'run tests', 'composer exec phpunit', 'flask']]);
+    if (composerText.includes('"pestphp/pest"')) simple(ctx, 'Pest', [['pest', 'run tests', 'composer exec pest', 'flask']]);
     if (has(scan, 'artisan')) {
       simple(ctx, 'Laravel', [
         ['artisan-serve', 'serve', 'php artisan serve', 'rocket-launch'],
@@ -591,15 +673,47 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
 
   const pubspec = scan.read['pubspec.yaml'];
   if (pubspec !== undefined) {
-    const flutter = /\bflutter\s*:/.test(pubspec);
-    const tool = flutter ? 'flutter' : 'dart';
+    const flutter = isFlutter(pubspec);
+    const fvm = [scan, rootScan].some((s) => s && (has(s, '.fvmrc') || s.dirs?.includes('.fvm')));
+    const dart = fvm ? 'fvm dart' : 'dart';
+    const f = fvm ? 'fvm flutter' : 'flutter';
+    const tool = flutter ? f : dart;
+    const id = flutter ? 'flutter' : 'dart';
     simple(ctx, flutter ? 'Flutter' : 'Dart', [
-      [`${tool}-get`, 'pub get', `${tool} pub get`, 'download-simple'],
-      [`${tool}-add`, 'add package', `${tool} pub add \${args}`, 'plus-circle', 'package name'],
-      [`${tool}-test`, 'test', `${tool} test`, 'flask'],
-      [`${tool}-run`, 'run', `${tool} run`, 'play'],
-      ...(flutter ? [['flutter-doctor', 'doctor', 'flutter doctor', 'first-aid'] as [string, string, string, string]] : []),
+      [`${id}-get`, 'pub get', `${tool} pub get`, 'download-simple'],
+      [`${id}-add`, 'add package', `${tool} pub add \${args}`, 'plus-circle', 'package name'],
+      [`${id}-upgrade`, 'pub upgrade', `${tool} pub upgrade`, 'arrow-circle-up'],
+      [`${id}-outdated`, 'pub outdated', `${tool} pub outdated`, 'list-magnifying-glass'],
+      [`${id}-test`, 'test', `${tool} test`, 'flask'],
+      [`${id}-analyze`, 'analyze', `${tool} analyze`, 'warning-circle'],
+      [`${id}-format`, 'format', `${dart} format .`, 'magic-wand'],
+      [`${id}-fix`, 'apply fixes', `${dart} fix --apply`, 'wrench'],
+      ...((flutter
+        ? [
+            ['flutter-run', 'run', `${f} run \${args}`, 'play', 'flags (optional), e.g. -d chrome'],
+            ['flutter-build', 'build', `${f} build \${args}`, 'hammer', 'target: apk | appbundle | ipa | web | macos…'],
+            ['flutter-devices', 'list devices', `${f} devices`, 'device-mobile'],
+            ['flutter-emulators', 'emulators', `${f} emulators \${args}`, 'device-mobile', 'optional: --launch <emulator id>'],
+            ['flutter-clean', 'clean', `${f} clean`, 'broom'],
+            ['flutter-doctor', 'doctor', `${f} doctor`, 'first-aid'],
+            ...(has(scan, 'l10n.yaml') ? [['flutter-l10n', 'generate localizations', `${f} gen-l10n`, 'translate']] : []),
+          ]
+        : [['dart-run', 'run', `${dart} run \${args}`, 'play', 'arguments (optional)']]) as Array<
+        [string, string, string, string, string?]
+      >),
     ]);
+    if (/^\s+build_runner\s*:/m.test(pubspec)) {
+      simple(ctx, 'build_runner', [
+        ['build-runner', 'generate code', `${dart} run build_runner build --delete-conflicting-outputs`, 'gear-six'],
+        ['build-runner-watch', 'generate code (watch)', `${dart} run build_runner watch --delete-conflicting-outputs`, 'eye'],
+      ]);
+    }
+    if (has(scan, 'melos.yaml') || /^melos\s*:/m.test(pubspec)) {
+      simple(ctx, 'Melos', [
+        ['melos-bootstrap', 'bootstrap', 'melos bootstrap', 'download-simple'],
+        ['melos-run', 'run script', 'melos run ${args}', 'play', 'script (optional; empty picks one)'],
+      ]);
+    }
   }
 
   if (has(scan, 'Package.swift')) {
@@ -653,9 +767,28 @@ function scanDirectory(ctx: Ctx, rootScan: DirectoryScan | undefined): void {
     ]);
   }
 
+  if (has(scan, 'firebase.json')) {
+    simple(ctx, 'Firebase', [
+      ['firebase-emulators', 'start emulators', 'firebase emulators:start', 'play'],
+      ['firebase-deploy', 'deploy', 'firebase deploy ${args}', 'cloud-arrow-up', 'optional: --only hosting'],
+    ]);
+  }
+  if (scan.dirs?.includes('supabase')) {
+    // The npm package when the project installs it, else the global CLI.
+    const sb = pkg && hasDep(pkg, 'supabase') ? `${EXEC[detectPackageManager(scan, pkg, rootScan)]} supabase` : 'supabase';
+    simple(ctx, 'Supabase', [
+      ['supabase-start', 'start local stack', `${sb} start`, 'play'],
+      ['supabase-stop', 'stop local stack', `${sb} stop`, 'stop'],
+      ['supabase-reset', 'reset local database', `${sb} db reset`, 'database'],
+      ['supabase-migration', 'new migration', `${sb} migration new \${q:args}`, 'database', 'migration name'],
+    ]);
+  }
+
   if (has(scan, '.pre-commit-config.yaml'))
     simple(ctx, 'pre-commit', [['pre-commit', 'run on all files', 'pre-commit run --all-files', 'check-circle']]);
 }
+
+const PLATFORM_DIRS = new Set(['android', 'ios', 'macos', 'linux', 'windows']);
 
 /** Runs detection over every scanned directory. Root commands have no name prefix. */
 export function detectProject(scans: readonly DirectoryScan[]): DetectionResult {
@@ -663,7 +796,17 @@ export function detectProject(scans: readonly DirectoryScan[]): DetectionResult 
   const commands: ProjectCommand[] = [];
   const root = scans.find((s) => s.dir === '');
   const usedPrefixes = new Set<string>();
+  // Flutter and React Native apps keep generated native projects (Gradle, CMake) in platform folders.
+  const apps = scans.filter((s) => {
+    const pkg = safeJson(s.read['package.json']);
+    return isFlutter(s.read['pubspec.yaml'] ?? '') || (pkg && hasDep(pkg, 'react-native'));
+  });
+  const native = (dir: string) =>
+    apps.some(
+      (a) => (a.dir === '' || dir.startsWith(`${a.dir}/`)) && PLATFORM_DIRS.has(dir.slice(a.dir ? a.dir.length + 1 : 0).split('/')[0]),
+    );
   for (const scan of [...scans].sort((a, b) => a.dir.localeCompare(b.dir))) {
+    if (scan.dir && native(scan.dir)) continue;
     let prefix = '';
     if (scan.dir) {
       let base = scan.dir

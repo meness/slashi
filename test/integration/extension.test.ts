@@ -54,6 +54,23 @@ suite('Slashi in VS Code', () => {
     disposable.dispose();
   });
 
+  test('VS Code serves its settings schema, which lists every core setting', async () => {
+    // Served only once the workbench is ready; Slashi retries the same way.
+    let text = '';
+    for (let i = 0; i < 20 && !text; i++) {
+      try {
+        text = (await vscode.workspace.openTextDocument(vscode.Uri.parse('vscode://schemas/settings/default'))).getText();
+      } catch {
+        await new Promise((r) => {
+          setTimeout(r, 500);
+        });
+      }
+    }
+    const properties: Record<string, { scope?: number; source?: unknown }> = JSON.parse(text).properties;
+    assert.ok(Object.values(properties).filter((p) => !p.source).length > 1000);
+    assert.equal(properties['editor.formatOnSave'].scope, 6, 'language-overridable settings have scope 6');
+  });
+
   test('the Spotlight opens and toggles closed', async () => {
     await assert.doesNotReject(Promise.resolve(vscode.commands.executeCommand('slashi.open')));
     await new Promise((r) => {
