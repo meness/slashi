@@ -102,7 +102,7 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 |---|---|---|
 | **Files & Folders** | `/f` | search · create (`/new`, `/mkdir`) · rename & move · duplicate · delete (to trash) · copy paths · reveal |
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
-| **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools |
+| **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools (JS, Python, Go, Rust, .NET, Java, PHP, Ruby, Elixir, Flutter/Dart with FVM and Melos, Firebase, Supabase, Docker…) |
 | **Commands** | `/cmd` | about 170 VS Code commands with slash names · every extension command |
 | **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |

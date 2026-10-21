@@ -30,7 +30,8 @@ export class ProjectProvider implements SlashProvider {
     {
       id: 'tools',
       title: 'Frameworks & tools',
-      description: 'Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Docker, Cargo, Go, .NET, Maven, Gradle, Terraform…',
+      description:
+        'Next.js, Vite, Vitest, ESLint, Prisma, Expo, Flutter, FastAPI, NestJS, Firebase, Supabase, Docker, Cargo, Go, .NET, Gradle…',
     },
   ];
   readonly scopes = [{ prefix: 'npm', title: 'Scripts', icon: 'package', placeholder: 'Run a package script…', feature: 'scripts' }];
@@ -127,7 +128,7 @@ export class ProjectProvider implements SlashProvider {
     try {
       const found = await vscode.workspace.findFiles(
         new vscode.RelativePattern(folder, MANIFEST_GLOB),
-        '{**/node_modules/**,**/.git/**,**/vendor/**,**/target/**,**/dist/**,**/build/**,**/.venv/**,**/venv/**}',
+        '{**/node_modules/**,**/.git/**,**/vendor/**,**/target/**,**/dist/**,**/build/**,**/.venv/**,**/venv/**,**/Pods/**,**/.dart_tool/**}',
         400,
       );
       for (const uri of found) {
@@ -148,6 +149,7 @@ export class ProjectProvider implements SlashProvider {
         continue;
       }
       const files = entries.filter(([, type]) => type !== vscode.FileType.Directory).map(([name]) => name);
+      const subdirs = entries.filter(([, type]) => type === vscode.FileType.Directory).map(([name]) => name);
       const read: Record<string, string> = {};
       for (const name of files) {
         if (!(MANIFESTS as readonly string[]).includes(name)) continue;
@@ -158,7 +160,7 @@ export class ProjectProvider implements SlashProvider {
           // Unreadable manifests are skipped.
         }
       }
-      scans.push({ dir, files, read });
+      scans.push({ dir, files, dirs: subdirs, read });
     }
     return scans;
   }
