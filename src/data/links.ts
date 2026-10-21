@@ -5,7 +5,7 @@ const REPO = 'https://github.com/meness/slashi';
 export const HELP_LINKS = {
   docs: `${REPO}#readme`,
   packs: `${REPO}/blob/main/docs/BUILDING_ACTIONS.md`,
-  api: `${REPO}#4-from-another-extension`,
+  api: `${REPO}/blob/main/docs/BUILDING_ACTIONS.md#extension-api`,
   bug: `${REPO}/issues/new?template=bug_report.yml`,
   idea: `${REPO}/issues/new?template=feature_request.yml`,
   issues: `${REPO}/issues/new/choose`,

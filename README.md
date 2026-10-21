@@ -8,9 +8,8 @@
 
 One keyboard-first popup for your files, settings, extensions, Git, terminal, project scripts and AI, plus the commands you build yourself.
 
-[![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/meness.slashi.svg?label=VS%20Code%20Marketplace&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
-[![Installs](https://vsmarketplacebadges.dev/installs-short/meness.slashi.svg?label=installs&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
-[![Rating](https://vsmarketplacebadges.dev/rating-short/meness.slashi.svg?label=rating&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi&ssr=false#review-details)
+[![VS Code Marketplace](https://badgen.net/vs-marketplace/v/meness.slashi?label=VS%20Code%20Marketplace&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
+[![Installs](https://badgen.net/vs-marketplace/i/meness.slashi?label=installs&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
 [![Open VSX](https://img.shields.io/open-vsx/v/meness/slashi?label=Open%20VSX&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 [![Open VSX downloads](https://img.shields.io/open-vsx/dt/meness/slashi?label=downloads&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 
@@ -47,7 +46,7 @@ Slashi needs VS Code 1.90 or newer. On first launch, a short onboarding sets up 
 
 Press `Cmd /` on macOS or `Ctrl /` on Windows and Linux, then type.
 
-- **One list for everything.** 170+ named VS Code commands, every extension command and setting, your files, open tabs, symbols, problems, Git branches and themes.
+- **One list for everything.** About 170 VS Code commands with slash names, every extension command and setting, your files, open tabs, symbols, problems, Git branches and themes.
 - **Commands for your project.** Slashi reads your manifests and offers `/test`, `/dev`, `/prisma-migrate` or `/compose-up` for npm, pnpm, yarn, bun, Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Playwright, Docker, Make, Python, Rust, Go, .NET, Java, Terraform and more.
 - **Files from the keyboard.** `/new`, `/mkdir`, `/rename`, `/move`, `/dup`, `/delete` (to the trash), copy paths, reveal.
 - **AI where you work.** `/ask`, `/explain`, `/fix`, `/edit`, `/tests`, `/review` and `/commit-msg`, with GitHub Copilot, Claude Code, Codex, Claude, OpenAI, Ollama or any OpenAI-compatible server. Slashi works fine without AI too.
@@ -104,7 +103,7 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 | **Files & Folders** | `/f` | search · create (`/new`, `/mkdir`) · rename & move · duplicate · delete (to trash) · copy paths · reveal |
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
 | **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools |
-| **Commands** | `/cmd` | ~170 curated VS Code commands with slash names · every extension command |
+| **Commands** | `/cmd` | about 170 VS Code commands with slash names · every extension command |
 | **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
 | **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · review your Git changes · commit messages · regex & shell generators · models |
@@ -116,6 +115,8 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 | **Web** | `/web` | Google, Stack Overflow, GitHub, MDN, npm, PyPI, crates.io, DevDocs, Can I Use, YouTube, plus your own engines |
 | **My Commands** | `/my` | your commands · team commands · installed packs · commands from other extensions |
 | **Marketplace** | `/market` | browse registries · install from URL or file |
+
+Other extensions can add providers of their own (for example `/jira`). They show up in Studio with the extension's name and turn off the same way.
 
 <p align="center"><img src="media/screenshots/studio-providers-dark.png" alt="Studio providers" width="820"></p>
 
@@ -144,7 +145,7 @@ Switch models with `/models`, and test the connection in **Studio → AI & Model
 | `/shell <description>` | Writes a shell command, which you review before it runs |
 | `/do <task>` | Sends your request and a shortlist of matching actions to the model, drops any step that names an unknown action or setting, then shows the plan and runs it when you confirm |
 
-## Your own commands
+## Make it yours
 
 ### 1. The wizard
 
@@ -194,23 +195,7 @@ Add commands to `slashi.customCommands` (user settings), or to **`.vscode/slashi
 
 ### 3. The action marketplace
 
-`/market` lists community **action packs**: Git Power Moves, AI Writing Tools, Focus & Present, Web Dev Toolkit, Handy Inserts and more. Packs built by Slashi carry a verified seal, and every download is checked against the registry before it installs. Before you install a pack, Slashi shows every step in it and marks the ones that can run commands. To build and publish your own, see [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md). `/export-pack` turns your commands into a pack, and teams can host private registries with `slashi.marketplace.registries`.
-
-### 4. From another extension
-
-```ts
-const slashi = await vscode.extensions.getExtension('meness.slashi')?.activate();
-slashi?.registerCommand({
-  extensionId: 'acme.deploy',
-  name: 'deploy',
-  title: 'Deploy to Staging',
-  icon: 'rocket-launch',
-  args: 'service',
-  run: (service) => deploy(service),
-});
-```
-
-`registerProvider` adds a whole source of results with its own scope, such as `/jira ` listing your tickets. See [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md#providers).
+`/market` lists **action packs**: Git Power Moves, AI Writing Tools, Focus & Present, Web Dev Toolkit, Handy Inserts and more. Packs built by Slashi carry a verified seal, and every download is checked against its registry listing before it installs. Before you install a pack, Slashi shows every step in it and marks the ones that can run commands. `/export-pack` turns your commands into a pack.
 
 ## Keyboard shortcuts
 
@@ -238,6 +223,7 @@ Scoped entry points such as `slashi.openFiles`, `slashi.openGit`, `slashi.openPr
 | `slashi.popup.style` | `spotlight` | `spotlight` (custom design) or `native` (VS Code Quick Pick, follows every accessibility setting) |
 | `slashi.shortcut.useSlashKey` | `true` | `Cmd/Ctrl /` opens Slashi; the comment toggle moves to `Cmd/Ctrl Alt /` |
 | `slashi.providers.*` | `true` | Turn each provider on or off |
+| `slashi.disabledProviders` | `[]` | Providers from other extensions that are turned off |
 | `slashi.disabledFeatures` | `[]` | Turn off single features, e.g. `extensions.installed` |
 | `slashi.hiddenCommands` | `[]` | Hide single results (supports a trailing `*`) |
 | `slashi.inlineTrigger.languages` | markdown, plaintext, scminput | Where `/` at line start suggests commands (`*` = everywhere) |
@@ -255,6 +241,7 @@ The AI backend, model, URL, effort, custom instructions, plan confirmation, web 
 - **No telemetry.** Slashi collects nothing.
 - **API keys** live only in VS Code Secret Storage. A repository can’t change your AI backend, its URL, your instructions or your confirmation setting, so it can’t send your key or code to another server.
 - **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and terminal or Slashi settings.
+- **Action packs** are fetched only over HTTPS, previewed step by step before installing, and checked against their registry listing. Only packs built by Slashi carry the verified seal.
 - **Webviews** use a strict nonce-based Content Security Policy and load only bundled files. Raw HTML in model output is escaped, never rendered.
 - **Untrusted workspaces:** workspace-defined commands are ignored. Team commands (in `.vscode/slashi.json` or the workspace's `slashi.customCommands`) and packs ask before running anything that can reach a shell.
 
@@ -262,41 +249,48 @@ See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
 ## Performance
 
-The popup ranks local results itself, so typing doesn't wait on the extension host. Only big catalogues, such as workspace files, are ranked in the host. The index is lowercased up front, a subsequence check skips non-matches early, and highlights are computed only for visible rows. esbuild bundles the extension into one file that activates in about 50 ms.
+The popup ranks local results itself, so typing doesn't wait on the extension host. Only big catalogues, such as workspace files, are ranked in the host. The index is lowercased up front, a subsequence check skips non-matches early, and highlights are computed only for visible rows. esbuild bundles the extension, and the Anthropic SDK loads only when you first use Claude.
 
-`npm run bench` on a laptop-class CPU:
+`npm run bench` on an Apple M2 Pro:
 
 | Items | Average rank | p95 |
 |---:|---:|---:|
-| 1,000 | 0.8 ms | 1.4 ms |
-| 5,000 | 2.9 ms | 6.8 ms |
-| 20,000 | 11 ms | 20 ms |
+| 1,000 | 0.3 ms | 0.5 ms |
+| 5,000 | 1.0 ms | 1.9 ms |
+| 20,000 | 4.2 ms | 7.7 ms |
+
+## Extend Slashi
+
+For extension authors, teams and pack publishers. The full guide is [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md).
+
+- **Publish a pack:** add it to [`marketplace/packs`](marketplace/packs) in a pull request, or host a private registry for your team and add it to `slashi.marketplace.registries`.
+- **Add commands from your extension** with `registerCommand`:
+
+```ts
+const slashi = await vscode.extensions.getExtension('meness.slashi')?.activate();
+slashi?.registerCommand({
+  extensionId: 'acme.deploy',
+  name: 'deploy',
+  title: 'Deploy to Staging',
+  icon: 'rocket-launch',
+  args: 'service',
+  run: (service) => deploy(service),
+});
+```
+
+- **Add a whole provider** with `registerProvider` (Slashi 0.5.0+): your own results under your own scope, such as `/jira ` listing your tickets. See [Providers](docs/BUILDING_ACTIONS.md#providers).
 
 ## Contributing
 
-Bug reports, ideas, action packs and pull requests are welcome. To work on Slashi you need **Node 20+** and **VS Code 1.90+**:
+Bug reports, ideas, action packs and pull requests are welcome. You need **Node 20+** and **VS Code 1.90+**:
 
 ```bash
 git clone https://github.com/meness/slashi && cd slashi
 npm ci
-npm run check       # typecheck, unit tests, smoke test, marketplace validation
+npm run check       # what CI runs: typecheck, lint, format, unit and smoke tests, pack validation
 ```
 
-Open the folder and press **F5** (*Run Slashi*) to start an Extension Development Host with your build. Run `npm run watch` to rebuild on save, then **Developer: Reload Window** in that window.
-
-| Script | |
-|---|---|
-| `npm run watch` | Rebuild on change |
-| `npm test` | Unit tests (Vitest) |
-| `npm run test:smoke` | Activates the bundled extension against a mocked VS Code API and drives the real popup protocol |
-| `npm run test:integration` | Runs the integration suite in a real VS Code (downloads VS Code) |
-| `npm run test:e2e` | Runs user scenarios (scripts, Git, team files) in a real VS Code on a throwaway Git repo. `SLASHI_E2E_AI=1` adds an AI scenario through the Claude Code CLI |
-| `npm run bench` | Ranking benchmark |
-| `npm run screenshots` | Re-renders the README images (needs Chromium; set `CHROME_PATH`) |
-| `npm run marketplace` | Validates packs and regenerates `marketplace/index.json` |
-| `npm run package` | Builds `slashi-<version>.vsix` |
-
-Releases are automated: merging the release PR publishes to the VS Code Marketplace and Open VSX and attaches the `.vsix` to the GitHub release. See [CONTRIBUTING.md](CONTRIBUTING.md).
+Press **F5** (*Run Slashi*) to start an Extension Development Host with your build. [CONTRIBUTING.md](CONTRIBUTING.md) has the project layout, every script, the testing guide and how releases work.
 
 ## Support Slashi
 
