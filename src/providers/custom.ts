@@ -72,10 +72,6 @@ export class CustomProvider implements SlashProvider {
   async items(): Promise<SlashItem[]> {
     const items: SlashItem[] = [...this.builtins()];
     const add = (def: CustomCommandDef, source: CommandSource, origin: string, feature: string) => {
-      if (def.languages?.length) {
-        const lang = this.services.snapshot?.document.languageId;
-        if (lang && !def.languages.includes(lang)) return;
-      }
       items.push(
         make({
           id: `custom:${source}:${origin}:${def.name}`,
@@ -89,6 +85,8 @@ export class CustomProvider implements SlashProvider {
           args: def.args || usesArgs(def) ? { placeholder: def.args ?? 'arguments' } : undefined,
           boost: 5,
           aiKind: 'custom command',
+          // Filtered by the registry for the editor at search time; this catalogue is cached.
+          languages: def.languages?.length ? def.languages : undefined,
           run: (ctx) => runCustomCommand(def, ctx, source),
         }),
       );

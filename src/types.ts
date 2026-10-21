@@ -24,6 +24,8 @@ export interface SlashItem extends ItemView {
    * and never posted to the Spotlight webview in bulk.
    */
   remote?: boolean;
+  /** Shown only while the current editor is in one of these languages (custom commands' `languages`). */
+  languages?: string[];
   /** Items that always need the previous text editor (transforms, AI on selection…). */
   needsEditor?: boolean;
 }
