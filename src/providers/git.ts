@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { isFeatureEnabled } from '../config';
 import { innermostRoot } from '../core/paths';
+import { currentDocument } from '../services/editor';
 import type { SlashItem, SlashProvider } from '../types';
 import { ensureArgs, itemFactory } from './util';
 
@@ -20,7 +21,7 @@ interface Repo {
   getRefs?(query?: { pattern?: string }): Promise<Ref[]>;
   checkout(treeish: string): Promise<void>;
   createBranch(name: string, checkout: boolean, ref?: string): Promise<void>;
-  commit(message: string, opts?: { all?: boolean }): Promise<void>;
+  commit(message: string, opts?: { all?: boolean | 'tracked' }): Promise<void>;
 }
 
 function repositories(): Repo[] {
@@ -28,9 +29,9 @@ function repositories(): Repo[] {
   return ext?.isActive ? ext.exports.getAPI(1).repositories : [];
 }
 
-function currentRepo(): Repo {
+/** The repository of the current editor (see `currentDocument`). */
+function currentRepo(uri: vscode.Uri | undefined): Repo {
   const repos = repositories();
-  const uri = vscode.window.activeTextEditor?.document.uri;
   const repo = innermostRoot(uri?.fsPath, repos, (r) => r.rootUri.fsPath) ?? repos[0];
   if (!repo) throw new Error('No Git repository is open.');
   return repo;
@@ -53,7 +54,7 @@ export class GitProvider implements SlashProvider {
 
   async items(): Promise<SlashItem[]> {
     const items: SlashItem[] = [];
-    const cmd = (feature: string, name: string, title: string, icon: string, command: string, boost = 0) =>
+    const cmd = (feature: string, name: string, title: string, icon: string, command: string, boost = 0, needsEditor = false) =>
       make({
         id: `git:${name}`,
         name,
@@ -61,6 +62,8 @@ export class GitProvider implements SlashProvider {
         icon,
         feature,
         boost,
+        // File-scoped Git commands act on the active editor, so bring it back first.
+        needsEditor,
         keywords: ['git'],
         aiKind: 'git command',
         run: () => vscode.commands.executeCommand(command),
@@ -79,11 +82,22 @@ export class GitProvider implements SlashProvider {
           args: { placeholder: 'commit message' },
           keywords: ['git'],
           run: async (ctx) => {
-            const repo = currentRepo();
+            const repo = currentRepo(currentDocument(ctx.services.snapshot)?.uri);
             const message = await ensureArgs(ctx.args, 'Commit message', { value: repo.inputBox.value });
             if (!message) return;
             const all = repo.state.indexChanges.length === 0;
-            await repo.commit(message, { all });
+            if (all && !repo.state.workingTreeChanges.length) throw new Error('There are no changes to commit.');
+            // Like VS Code: with nothing staged, ask before committing everything unless smart commit is on.
+            const git = vscode.workspace.getConfiguration('git');
+            if (all && !git.get('enableSmartCommit', false)) {
+              const choice = await vscode.window.showWarningMessage(
+                'There are no staged changes. Stage all your changes and commit them?',
+                { modal: true },
+                'Commit All',
+              );
+              if (choice !== 'Commit All') return;
+            }
+            await repo.commit(message, all ? { all: git.get<string>('smartCommitChanges') === 'tracked' ? 'tracked' : true } : {});
             void vscode.window.setStatusBarMessage(`$(git-commit) Committed${all ? ' all changes' : ''}: ${message}`, 4000);
           },
         }),
@@ -91,16 +105,16 @@ export class GitProvider implements SlashProvider {
         cmd('core', 'pull', 'Git: Pull', 'cloud-arrow-down', 'git.pull', 4),
         cmd('core', 'sync', 'Git: Sync (Pull & Push)', 'arrows-clockwise', 'git.sync', 2),
         cmd('core', 'fetch', 'Git: Fetch', 'cloud-arrow-down', 'git.fetch'),
-        cmd('core', 'stage', 'Git: Stage Current File', 'plus-circle', 'git.stage'),
+        cmd('core', 'stage', 'Git: Stage Current File', 'plus-circle', 'git.stage', 0, true),
         cmd('core', 'stage-all', 'Git: Stage All Changes', 'plus-circle', 'git.stageAll', 2),
         cmd('core', 'unstage-all', 'Git: Unstage All Changes', 'minus-circle', 'git.unstageAll'),
-        cmd('core', 'discard', 'Git: Discard Changes in Current File', 'arrow-counter-clockwise', 'git.clean'),
+        cmd('core', 'discard', 'Git: Discard Changes in Current File', 'arrow-counter-clockwise', 'git.clean', 0, true),
         cmd('core', 'undo-commit', 'Git: Undo Last Commit', 'arrow-u-up-left', 'git.undoCommit'),
         cmd('core', 'amend', 'Git: Commit (Amend)', 'git-commit', 'git.commitAmend'),
-        cmd('core', 'diff', 'Git: Open Changes', 'git-diff', 'git.openChange', 2),
-        cmd('core', 'git-file', 'Git: Open File (HEAD)', 'file', 'git.openFile'),
-        cmd('core', 'blame', 'Git: Toggle Inline Blame', 'user-circle', 'git.blame.toggleEditorDecoration'),
-        cmd('core', 'history', 'Git: File History (Timeline)', 'clock-counter-clockwise', 'timeline.focus'),
+        cmd('core', 'diff', 'Git: Open Changes', 'git-diff', 'git.openChange', 2, true),
+        cmd('core', 'git-file', 'Git: Open File (HEAD)', 'file', 'git.openFile', 0, true),
+        cmd('core', 'blame', 'Git: Toggle Inline Blame', 'user-circle', 'git.blame.toggleEditorDecoration', 0, true),
+        cmd('core', 'history', 'Git: File History (Timeline)', 'clock-counter-clockwise', 'timeline.focus', 0, true),
         cmd('core', 'clone', 'Git: Clone…', 'download-simple', 'git.clone'),
         cmd('core', 'init', 'Git: Initialize Repository', 'git-branch', 'git.init'),
         cmd('core', 'add-remote', 'Git: Add Remote…', 'globe', 'git.addRemote'),
@@ -133,7 +147,7 @@ export class GitProvider implements SlashProvider {
           keywords: ['git', 'new branch'],
           run: async (ctx) => {
             const name = await ensureArgs(ctx.args, 'New branch name');
-            if (name) await currentRepo().createBranch(name.replace(/\s+/g, '-'), true);
+            if (name) await currentRepo(currentDocument(ctx.services.snapshot)?.uri).createBranch(name.replace(/\s+/g, '-'), true);
           },
         }),
         cmd('branches', 'checkout', 'Git: Checkout to…', 'git-branch', 'git.checkout'),
