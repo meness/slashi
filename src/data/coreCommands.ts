@@ -1,4 +1,4 @@
-// Curated built-in VS Code commands with friendly slash names and Phosphor icons.
+// Curated VS Code commands, and a few from popular extensions, with friendly slash names and Phosphor icons.
 
 export interface CoreCommand {
   id: string;
@@ -11,6 +11,8 @@ export interface CoreCommand {
   editor?: boolean;
   args?: { placeholder: string; map: (args: string) => unknown[] };
   boost?: number;
+  /** Extension that contributes the command; the item is shown only while it is installed and enabled. */
+  ext?: string;
 }
 
 const c = (
@@ -30,6 +32,8 @@ const c = (
 });
 
 const E = { editor: true };
+const TS = { ext: 'vscode.typescript-language-features' };
+const DART = { ext: 'dart-code.dart-code' };
 
 export const CORE_COMMANDS: CoreCommand[] = [
   // Files
@@ -205,6 +209,28 @@ export const CORE_COMMANDS: CoreCommand[] = [
   c('Testing', 'testing.debugAll', 'debug-tests', 'Debug All Tests', 'bug'),
   c('Testing', 'testing.coverageAll', 'coverage', 'Run All Tests with Coverage', 'chart-pie-slice'),
   c('Testing', 'testing.showMostRecentOutput', 'test-output', 'Show Test Output', 'scroll'),
+
+  // Chat
+  c('Chat', 'workbench.action.chat.open', 'chat', 'Open Chat', 'chats'),
+  c('Chat', 'workbench.action.chat.newChat', 'new-chat', 'New Chat', 'chat-circle-dots'),
+  c('Chat', 'inlineChat.start', 'inline-chat', 'Inline Chat', 'sparkle', E),
+
+  // Popular extensions
+  c('Languages', 'typescript.restartTsServer', 'ts-restart', 'TypeScript: Restart TS Server', 'arrows-clockwise', {
+    ...TS,
+    keywords: 'tsserver reload',
+  }),
+  c('Languages', 'eslint.restart', 'eslint-restart', 'ESLint: Restart ESLint Server', 'arrows-clockwise', {
+    ext: 'dbaeumer.vscode-eslint',
+  }),
+  c('Languages', 'python.setInterpreter', 'interpreter', 'Python: Select Interpreter', 'file-py', {
+    ext: 'ms-python.python',
+    keywords: 'venv environment',
+  }),
+  c('Languages', 'flutter.hotReload', 'hot-reload', 'Flutter: Hot Reload', 'lightning', DART),
+  c('Languages', 'flutter.hotRestart', 'hot-restart', 'Flutter: Hot Restart', 'arrow-clockwise', DART),
+  c('Languages', 'flutter.selectDevice', 'device', 'Flutter: Select Device', 'device-mobile', DART),
+  c('Languages', 'dart.openDevTools', 'dart-devtools', 'Dart: Open DevTools', 'wrench', DART),
 
   // Window & app
   c('Window', 'workbench.action.showCommands', 'palette', 'Show VS Code Command Palette', 'list-magnifying-glass'),

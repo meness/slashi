@@ -48,6 +48,7 @@ export class CommandsProvider implements SlashProvider {
     const seen = new Set<string>();
     if (isFeatureEnabled('commands', 'core')) {
       for (const cmd of CORE_COMMANDS) {
+        if (cmd.ext && !vscode.extensions.getExtension(cmd.ext)) continue;
         seen.add(cmd.id);
         items.push(
           make({
