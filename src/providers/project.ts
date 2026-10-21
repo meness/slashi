@@ -9,7 +9,31 @@ import type { SlashItem, SlashProvider } from '../types';
 import { ensureArgs, itemFactory } from './util';
 
 const make = itemFactory('project', 'Project');
-const MANIFEST_GLOB = `**/{${MANIFESTS.join(',')},*.csproj,*.fsproj,*.sln,Dockerfile,compose.yaml,compose.yml,docker-compose.yml,docker-compose.yaml,*.tf,CMakeLists.txt,Package.swift}`;
+// Files that only mark a stack (read by name, not content) still need a scan and a refresh when they change.
+const MARKERS = [
+  '*.csproj',
+  '*.fsproj',
+  '*.sln',
+  'Dockerfile',
+  'compose.yaml',
+  'compose.yml',
+  'docker-compose.yml',
+  'docker-compose.yaml',
+  '*.tf',
+  'CMakeLists.txt',
+  'Package.swift',
+  'eas.json',
+  'firebase.json',
+  'wrangler.toml',
+  'wrangler.json',
+  'wrangler.jsonc',
+  'alembic.ini',
+  '.golangci.*',
+  'l10n.yaml',
+  'melos.yaml',
+  '.fvmrc',
+];
+const MANIFEST_GLOB = `**/{${[...MANIFESTS, ...MARKERS].join(',')}}`;
 const MAX_DIRS = 40;
 
 /** Detects the repository's stack and offers matching commands (scripts, package manager, tools). */
@@ -30,7 +54,8 @@ export class ProjectProvider implements SlashProvider {
     {
       id: 'tools',
       title: 'Frameworks & tools',
-      description: 'Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Docker, Cargo, Go, .NET, Maven, Gradle, Terraform…',
+      description:
+        'Next.js, Vite, Vitest, ESLint, Prisma, Expo, Flutter, FastAPI, NestJS, Firebase, Supabase, Docker, Cargo, Go, .NET, Gradle…',
     },
   ];
   readonly scopes = [{ prefix: 'npm', title: 'Scripts', icon: 'package', placeholder: 'Run a package script…', feature: 'scripts' }];
@@ -127,7 +152,7 @@ export class ProjectProvider implements SlashProvider {
     try {
       const found = await vscode.workspace.findFiles(
         new vscode.RelativePattern(folder, MANIFEST_GLOB),
-        '{**/node_modules/**,**/.git/**,**/vendor/**,**/target/**,**/dist/**,**/build/**,**/.venv/**,**/venv/**}',
+        '{**/node_modules/**,**/.git/**,**/vendor/**,**/target/**,**/dist/**,**/build/**,**/.venv/**,**/venv/**,**/Pods/**,**/.dart_tool/**}',
         400,
       );
       for (const uri of found) {
@@ -148,6 +173,7 @@ export class ProjectProvider implements SlashProvider {
         continue;
       }
       const files = entries.filter(([, type]) => type !== vscode.FileType.Directory).map(([name]) => name);
+      const subdirs = entries.filter(([, type]) => type === vscode.FileType.Directory).map(([name]) => name);
       const read: Record<string, string> = {};
       for (const name of files) {
         if (!(MANIFESTS as readonly string[]).includes(name)) continue;
@@ -158,7 +184,7 @@ export class ProjectProvider implements SlashProvider {
           // Unreadable manifests are skipped.
         }
       }
-      scans.push({ dir, files, read });
+      scans.push({ dir, files, dirs: subdirs, read });
     }
     return scans;
   }

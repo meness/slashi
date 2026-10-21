@@ -177,3 +177,139 @@ describe('deno tasks', () => {
     expect(description('lint')).toBe('deno lint');
   });
 });
+
+describe('more stacks', () => {
+  const commands = (...scans: DirectoryScan[]) => Object.fromEntries(detectProject(scans).commands.map((c) => [c.name, c.command]));
+  const withDirs = (s: DirectoryScan, dirs: string[]): DirectoryScan => ({ ...s, dirs });
+  const flutterPubspec = 'name: app\ndependencies:\n  flutter:\n    sdk: flutter\ndev_dependencies:\n  build_runner: ^2.4.0\n';
+
+  it('covers the daily Flutter loop', () => {
+    const c = commands(scan('', { 'pubspec.yaml': flutterPubspec, 'l10n.yaml': null }));
+    expect(c['flutter-run']).toBe('flutter run ${args}');
+    expect(c['flutter-build']).toBe('flutter build ${args}');
+    expect(c['flutter-clean']).toBe('flutter clean');
+    expect(c['flutter-devices']).toBe('flutter devices');
+    expect(c['flutter-analyze']).toBe('flutter analyze');
+    expect(c['flutter-format']).toBe('dart format .');
+    expect(c['flutter-fix']).toBe('dart fix --apply');
+    expect(c['flutter-upgrade']).toBe('flutter pub upgrade');
+    expect(c['flutter-outdated']).toBe('flutter pub outdated');
+    expect(c['build-runner']).toBe('dart run build_runner build --delete-conflicting-outputs');
+    expect(c['build-runner-watch']).toBe('dart run build_runner watch --delete-conflicting-outputs');
+    expect(c['flutter-l10n']).toBe('flutter gen-l10n');
+  });
+
+  it('runs Flutter through FVM when the project pins a version', () => {
+    expect(commands(scan('', { 'pubspec.yaml': flutterPubspec, '.fvmrc': null }))['flutter-run']).toBe('fvm flutter run ${args}');
+    const c = commands(withDirs(scan('', { 'pubspec.yaml': flutterPubspec }), ['.fvm']));
+    expect(c['build-runner']).toBe('fvm dart run build_runner build --delete-conflicting-outputs');
+  });
+
+  it('keeps plain Dart packages on dart', () => {
+    const c = commands(scan('', { 'pubspec.yaml': 'name: lib\n' }));
+    expect(c['dart-test']).toBe('dart test');
+    expect(c['dart-analyze']).toBe('dart analyze');
+    expect(c['flutter-run']).toBeUndefined();
+    expect(c['build-runner']).toBeUndefined();
+  });
+
+  it('offers Melos in Dart monorepos', () => {
+    const c = commands(scan('', { 'pubspec.yaml': 'name: repo\n', 'melos.yaml': null }));
+    expect(c['melos-bootstrap']).toBe('melos bootstrap');
+    expect(c['melos-run']).toBe('melos run ${args}');
+  });
+
+  it('skips the native platform folders of Flutter and React Native apps', () => {
+    const gradle = "plugins { id 'com.android.application' }";
+    const flutter = commands(
+      scan('', { 'pubspec.yaml': flutterPubspec }),
+      scan('android', { 'build.gradle.kts': gradle, gradlew: null }),
+      scan('android/app', { 'build.gradle.kts': gradle }),
+      scan('windows', { 'CMakeLists.txt': null }),
+    );
+    expect(Object.keys(flutter).filter((n) => /gradle|cmake|ctest/.test(n))).toEqual([]);
+    const rn = commands(
+      scan('apps/mobile', { 'package.json': pkg({ dependencies: { 'react-native': '0.76.0' } }) }),
+      scan('apps/mobile/android', { 'build.gradle': gradle }),
+      scan('', {}),
+    );
+    expect(Object.keys(rn).filter((n) => n.includes('gradle'))).toEqual([]);
+    // A plain Android project keeps its Gradle commands.
+    expect(commands(scan('', { 'build.gradle': gradle }))['gradle-build']).toBe('gradle build');
+  });
+
+  it('detects Firebase, Supabase and Cloudflare Workers', () => {
+    const c = commands(
+      withDirs(scan('', { 'package.json': pkg({ devDependencies: { supabase: '^2' } }), 'firebase.json': null, 'wrangler.toml': null }), [
+        'supabase',
+      ]),
+    );
+    expect(c['firebase-emulators']).toBe('firebase emulators:start');
+    expect(c['firebase-deploy']).toBe('firebase deploy ${args}');
+    expect(c['supabase-start']).toBe('npx supabase start');
+    expect(c['supabase-reset']).toBe('npx supabase db reset');
+    expect(c['supabase-migration']).toBe('npx supabase migration new ${q:args}');
+    expect(c['wrangler-dev']).toBe('npx wrangler dev');
+    expect(c['wrangler-deploy']).toBe('npx wrangler deploy');
+    // Without the npm package, the global Supabase CLI.
+    expect(commands(withDirs(scan('', {}), ['supabase']))['supabase-start']).toBe('supabase start');
+  });
+
+  it('adds commands for frontend and Node tools that scripts rarely cover', () => {
+    const c = commands(
+      scan('', {
+        'package.json': pkg({
+          dependencies: { expo: '52', '@nestjs/core': '10' },
+          devDependencies: { oxlint: '1', '@tauri-apps/cli': '2', '@nestjs/cli': '10' },
+        }),
+        'pnpm-lock.yaml': null,
+        'eas.json': null,
+      }),
+    );
+    expect(c['oxlint']).toBe('pnpm exec oxlint');
+    expect(c['oxlint-fix']).toBe('pnpm exec oxlint --fix');
+    expect(c['expo-ios']).toBe('pnpm exec expo run:ios');
+    expect(c['expo-android']).toBe('pnpm exec expo run:android');
+    expect(c['expo-prebuild']).toBe('pnpm exec expo prebuild');
+    expect(c['eas-build']).toBe('eas build ${args}');
+    expect(c['eas-update']).toBe('eas update ${args}');
+    expect(c['tauri-dev']).toBe('pnpm exec tauri dev');
+    expect(c['tauri-build']).toBe('pnpm exec tauri build');
+    expect(c['nest-generate']).toBe('pnpm exec nest generate ${args}');
+    expect(detectProject([scan('', { 'package.json': pkg({ dependencies: { '@nestjs/core': '10' } }) })]).techs).toContain('NestJS');
+  });
+
+  it('runs FastAPI, Flask and Alembic through the Python tool', () => {
+    const c = commands(
+      scan('', {
+        'pyproject.toml': '[project]\ndependencies = ["fastapi[standard]", "flask", "alembic"]',
+        'uv.lock': null,
+        'alembic.ini': null,
+      }),
+    );
+    expect(c['fastapi-dev']).toBe('uv run fastapi dev');
+    expect(c['flask-run']).toBe('uv run flask run --debug');
+    expect(c['alembic-upgrade']).toBe('uv run alembic upgrade head');
+    expect(c['alembic-revision']).toBe('uv run alembic revision --autogenerate -m ${q:args}');
+    expect(c['alembic-downgrade']).toBe('uv run alembic downgrade -1');
+  });
+
+  it('adds golangci-lint, Symfony and PHP test runners', () => {
+    const go = commands(scan('', { 'go.mod': 'module x', '.golangci.yml': null }));
+    expect(go['golangci-lint']).toBe('golangci-lint run');
+    expect(go['golangci-fix']).toBe('golangci-lint run --fix');
+    expect(commands(scan('', { 'go.mod': 'module x' }))['golangci-lint']).toBeUndefined();
+    const php = commands(
+      scan('', {
+        'composer.json': pkg({
+          require: { 'symfony/framework-bundle': '7' },
+          'require-dev': { 'phpunit/phpunit': '11', 'pestphp/pest': '3' },
+        }),
+      }),
+    );
+    expect(php['symfony-console']).toBe('php bin/console ${args}');
+    expect(php['symfony-cache-clear']).toBe('php bin/console cache:clear');
+    expect(php['phpunit']).toBe('composer exec phpunit');
+    expect(php['pest']).toBe('composer exec pest');
+  });
+});
