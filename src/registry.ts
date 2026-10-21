@@ -20,6 +20,7 @@ export class Registry implements vscode.Disposable {
   /** Ids each provider has put in `byId`, so items that disappear are dropped on the next load. */
   private readonly idsByProvider = new Map<ProviderId, Set<string>>();
   private readonly disposables: vscode.Disposable[] = [];
+  private readonly warned = new Set<string>();
   private readonly onDidChangeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.onDidChangeEmitter.event;
 
@@ -196,6 +197,10 @@ export class Registry implements vscode.Disposable {
   scopes(): ScopeView[] {
     const out: ScopeView[] = [];
     for (const p of this.enabled()) {
+      if (p.source && this.shadowsCommand(p)) {
+        this.warnOnce(`Provider ${p.id}: /${p.prefix} is also a command name, so the command wins and the scope is off.`);
+        continue;
+      }
       out.push({ prefix: p.prefix, providerId: p.id, title: p.title, icon: p.icon, remote: false, placeholder: p.placeholder });
       for (const s of p.scopes ?? []) {
         if (isFeatureEnabled(p.id, s.feature)) out.push({ ...s, providerId: p.id, remote: false });
@@ -204,8 +209,28 @@ export class Registry implements vscode.Disposable {
     return out;
   }
 
+  /**
+   * An extension provider's prefix must not shadow another provider's command: with `run` as a scope,
+   * `/run npm test` would search that provider instead of running the command. Checks loaded catalogues.
+   */
+  private shadowsCommand(provider: SlashProvider): boolean {
+    for (const [id, entry] of this.cache) {
+      const named = (i: SlashItem) => i.name === provider.prefix;
+      if (id !== provider.id && (entry.items.some(named) || entry.remote.some(named))) return true;
+    }
+    return false;
+  }
+
+  private warnOnce(message: string): void {
+    if (this.warned.has(message)) return;
+    this.warned.add(message);
+    this.log.warn(message);
+  }
+
   /** Marks scopes whose provider has remote items so the webview asks the host while typing. */
   async scopesWithRemote(): Promise<ScopeView[]> {
+    // Loaded first, so scopes() knows every command name an extension's prefix could shadow.
+    await this.warm();
     const scopes = this.scopes();
     for (const scope of scopes) {
       const provider = this.providers.get(scope.providerId)!;

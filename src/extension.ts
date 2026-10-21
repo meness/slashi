@@ -263,6 +263,8 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     registerProvider: (def) => {
       const disposable = registry.register(new ExtensionProvider(def, registry.takenPrefixes(), log));
       context.subscriptions.push(disposable);
+      // Load it now, so a slow items() is cached before the popup first needs it.
+      void registry.warm();
       return disposable;
     },
     open: (query) => services.openPopup(query ?? ''),

@@ -42,7 +42,10 @@ export interface SlashiProvider {
   description?: string;
   /** Phosphor icon name (https://phosphoricons.com), used for the provider and as the default for its items. */
   icon?: string;
-  /** Scope keyword: `jira` → type `/jira ` to search only this provider. Must not be used by another provider. */
+  /**
+   * Scope keyword: `jira` → type `/jira ` to search only this provider. Must not be another provider's prefix,
+   * and while it matches a command name (such as `run`) the command wins and the scope is off.
+   */
   prefix: string;
   /** Placeholder shown inside the scope. */
   placeholder?: string;
@@ -51,7 +54,8 @@ export interface SlashiProvider {
   /** Show results only inside the scope, not in the global search. */
   scopedOnly?: boolean;
   /**
-   * Returns the results. Slashi waits up to 3 seconds; a slower call shows its results once it finishes.
+   * Returns the results. Called when you register and cached; Slashi waits at most 0.5 s for it when opening,
+   * and a slower call's results show the next time Slashi opens.
    * Invalid items are skipped and logged, and at most 2000 are kept.
    */
   items(): SlashiProviderItem[] | PromiseLike<SlashiProviderItem[]>;

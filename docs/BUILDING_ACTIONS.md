@@ -164,10 +164,10 @@ if (typeof slashi.registerProvider === 'function') {
 ```
 
 - **Caching:** Slashi calls `items()` once and caches the results until you fire `onDidChange`. Set `volatile: true` to call it every time Slashi opens.
-- **Speed:** Slashi waits up to 3 seconds for `items()`. A slower call doesn't hold up the popup; its results appear once it finishes.
+- **Speed:** Slashi loads your provider when you register it, so the popup normally uses cached results. When it does have to call `items()` while opening, it waits at most 0.5 seconds; a slower call's results show the next time Slashi opens. Keep `volatile` providers fast.
 - **Limits:** items need an `id`, a `title` and `run`; invalid ones are skipped and logged in the Slashi output channel. At most 2000 items are kept.
 - **Names:** give an item a `name` to make it a slash command (`/key-1`). Leave it out for results that are only found by search, and set `scopedOnly: true` to keep them out of the global search.
-- **Prefix:** must not be used by another provider; `registerProvider` throws if it is. Users can turn your provider off in Slashi Studio (stored in `slashi.disabledProviders`).
+- **Prefix:** must not be another provider's prefix; `registerProvider` throws if it is. If it matches a command name (such as `run`), the command wins and your scope is turned off with a warning in the log, so pick a distinctive one. Users can turn your provider off in Slashi Studio (stored in `slashi.disabledProviders`).
 
 Add `"extensionDependencies": ["meness.slashi"]` only if your extension can’t work without Slashi. Otherwise, treat it as optional as shown above.
 

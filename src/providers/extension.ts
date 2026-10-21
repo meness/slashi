@@ -5,8 +5,8 @@ import type { ExtensionProviderId } from '../core/protocol';
 import type { SlashItem, SlashProvider } from '../types';
 import { itemFactory } from './util';
 
-/** How long the popup waits for an extension's `items()`. */
-export const ITEMS_TIMEOUT_MS = 3000;
+/** How long the popup waits for an extension's `items()`: it can't show until every provider answers. */
+export const ITEMS_TIMEOUT_MS = 500;
 const TIMED_OUT = Symbol('timed out');
 
 /** Wraps a provider another extension registered, so its bugs and slowness can't break Slashi. */
@@ -41,7 +41,7 @@ export class ExtensionProvider implements SlashProvider {
     if (errors.length) throw new Error(`Invalid Slashi provider: ${errors.join('; ')}`);
     this.id = extensionProviderId(def.extensionId, def.id);
     this.title = def.title;
-    this.description = def.description ?? `Results from ${def.extensionId}.`;
+    this.description = def.description ?? `Results from ${def.title}.`;
     this.icon = def.icon ?? 'puzzle-piece';
     this.prefix = def.prefix;
     this.placeholder = def.placeholder ?? `Search ${def.title}…`;
@@ -89,15 +89,19 @@ export class ExtensionProvider implements SlashProvider {
     } finally {
       clearTimeout(timer);
     }
-    this.warnOnce(`items() took longer than ${ITEMS_TIMEOUT_MS / 1000} s; its results are shown once it finishes`);
+    this.warnOnce(`items() took longer than ${ITEMS_TIMEOUT_MS} ms; its results show the next time Slashi opens`);
     this.inflight = call
       .then(
-        (value) => void (this.late = { value }),
+        (value) => {
+          this.late = { value };
+          // A failure has nothing new to show, so only success asks for a reload.
+          this.emitter.fire();
+          return undefined;
+        },
         (err: unknown) => this.log.error(`Provider ${this.id} failed`, err),
       )
       .finally(() => {
         this.inflight = undefined;
-        this.emitter.fire();
       });
     return [];
   }

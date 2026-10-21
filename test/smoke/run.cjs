@@ -319,7 +319,7 @@ const check = (name, fn) => {
   const slowStart = Date.now();
   assert.equal(await api.run('/slow-thing'), false);
   const waited = Date.now() - slowStart;
-  check('waits at most 3 s for a slow extension provider', () => assert.ok(waited >= 2900 && waited < 4500, `${waited} ms`));
+  check('waits at most 0.5 s for a slow extension provider', () => assert.ok(waited >= 450 && waited < 1500, `${waited} ms`));
   releaseSlow();
   for (let i = 0; !(await api.run('/slow-thing')); i++) {
     if (i > 100) throw new Error('Timed out waiting for late results from the slow provider');
@@ -330,7 +330,7 @@ const check = (name, fn) => {
   check('shows a slow provider’s results once they arrive', () => assert.equal(apiRan, 'slow'));
   check('logs a provider whose items() throws, and keeps the rest working', () => {
     assert.equal(takeErrors(calls.messages, /Provider ext:acme\.broken\/broken failed/) > 0, true);
-    assert.ok(calls.messages.some((m) => m[0] === 'warn' && /took longer than 3 s/.test(m[1])));
+    assert.ok(calls.messages.some((m) => m[0] === 'warn' && /took longer than 500 ms/.test(m[1])));
   });
   // Later reloads would log the broken one again.
   slow.dispose();
@@ -354,6 +354,24 @@ const check = (name, fn) => {
   releaseGone();
   const goneRan = await goneRun;
   check('drops the items of a provider removed while loading', () => assert.equal(goneRan, false));
+
+  // A prefix that is also a command name doesn't become a scope, so `/run npm test` keeps running the command.
+  const shadow = api.registerProvider({ extensionId: 'acme.shadow', id: 'run', title: 'Shadow', prefix: 'run', items: () => [] });
+  for (const open of calls.panels.filter((x) => x.viewType === 'slashi.spotlight' && !x.disposed)) open.dispose();
+  const initsBefore = calls.posted.filter((m) => m.type === 'init').length;
+  await mock.commands.executeCommand('slashi.open');
+  calls.panels.at(-1).webview._receive({ type: 'ready' });
+  const shadowInit = (await waitFor(() => calls.posted.filter((m) => m.type === 'init')[initsBefore], 'init with the shadow provider'))
+    .data;
+  check('drops an extension scope that would shadow a command', () => {
+    assert.ok(!shadowInit.scopes.some((x) => x.prefix === 'run'));
+    assert.ok(
+      shadowInit.scopes.some((x) => x.prefix === 'jira'),
+      'other extension scopes stay',
+    );
+    assert.ok(calls.messages.some((m) => m[0] === 'warn' && /\/run is also a command name/.test(m[1])));
+  });
+  shadow.dispose();
 
   // Disposing removes the provider and its items, and the id can be registered again.
   jira.dispose();
