@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { get, updateGlobal } from '../config';
 import { innermostRoot } from '../core/paths';
 import { stripFences } from '../core/text';
+import { currentDocument } from '../services/editor';
 import { BACKEND_LABELS } from '../llm/types';
 import type { Services } from '../services/services';
 import type { RunContext, SlashItem, SlashProvider } from '../types';
@@ -82,7 +83,7 @@ export class AiProvider implements SlashProvider {
   readonly placeholder = 'Ask AI or pick an AI command…';
   readonly features = [
     { id: 'ask', title: 'Ask', description: '/ask, /explain, /summarize.' },
-    { id: 'code', title: 'Code actions', description: '/fix, /doc, /tests, /review, /edit, /convert, /name.' },
+    { id: 'code', title: 'Code actions', description: '/fix, /doc, /tests, /review, /review-changes, /edit, /convert, /name.' },
     { id: 'commitMessage', title: 'Commit messages', description: '/commit-msg writes a commit message from your staged changes.' },
     { id: 'generate', title: 'Generators', description: '/regex and /shell.' },
     { id: 'models', title: 'Models', description: '/models, /ai-setup, /ai-key.' },
@@ -264,6 +265,24 @@ export class AiProvider implements SlashProvider {
         },
       }),
       make({
+        id: 'ai:review-changes',
+        name: 'review-changes',
+        title: 'Review My Changes',
+        description: 'Review the staged (or all) Git changes before you commit',
+        icon: 'git-diff',
+        feature: 'code',
+        boost: 2,
+        keywords: ['diff', 'pull request', 'pr', 'git'],
+        run: async () => {
+          const { diff, staged } = await changes(s);
+          await answer(
+            'Review changes',
+            `Review my ${staged ? 'staged' : 'unstaged'} changes`,
+            `Review this diff like a senior engineer before it is committed. List concrete issues by severity (bugs, security, missing tests, readability), citing file and line, with suggested fixes. Say so if it looks good.\n\n${staged ? 'Staged' : 'Unstaged'} changes:\n${diff}`,
+          );
+        },
+      }),
+      make({
         id: 'ai:convert',
         name: 'convert',
         title: 'Convert Code',
@@ -418,9 +437,10 @@ export function gitApi(): { repositories: GitRepository[] } | undefined {
   return ext?.isActive ? ext.exports.getAPI(1) : undefined;
 }
 
-async function commitMessage(services: Services): Promise<void> {
+/** Staged changes, or unstaged ones when nothing is staged, of the current editor's repository (see `currentDocument`). */
+async function changes(services: Services): Promise<{ repo: GitRepository; diff: string; staged: boolean }> {
   const api = gitApi();
-  const uri = vscode.window.activeTextEditor?.document.uri;
+  const uri = currentDocument(services.snapshot)?.uri;
   const repo = innermostRoot(uri?.fsPath, api?.repositories ?? [], (r) => r.rootUri.fsPath) ?? api?.repositories[0];
   if (!repo) throw new Error('No Git repository found.');
   let diff = await repo.diff(true);
@@ -428,6 +448,11 @@ async function commitMessage(services: Services): Promise<void> {
   if (!staged) diff = await repo.diff(false);
   if (!diff.trim()) throw new Error('There are no changes to describe.');
   if (diff.length > 40_000) diff = `${diff.slice(0, 40_000)}\n… (diff truncated)`;
+  return { repo, diff, staged };
+}
+
+async function commitMessage(services: Services): Promise<void> {
+  const { repo, diff, staged } = await changes(services);
   const message = await vscode.window.withProgress(
     { location: vscode.ProgressLocation.SourceControl, title: 'Writing commit message…', cancellable: true },
     (_p, token) =>

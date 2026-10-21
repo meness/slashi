@@ -31,6 +31,7 @@ test/
   unit/               Vitest tests for src/core
   smoke/              activates the bundle against a mocked vscode module
   integration/        runs inside a real VS Code (npm run test:integration)
+  e2e/                user scenarios in a real VS Code on a throwaway Git repo (npm run test:e2e)
 marketplace/          community action packs + generated index.json
 schemas/              JSON schema for commands, team files and packs
 docs/                 plan & audit, building actions

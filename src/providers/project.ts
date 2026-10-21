@@ -94,7 +94,11 @@ export class ProjectProvider implements SlashProvider {
       category: command.group === 'scripts' ? 'Scripts' : command.tech,
       feature: command.group,
       keywords: [command.tech, command.command],
-      args: command.args || templateVariables(command.command).includes('args') ? { placeholder: command.args ?? 'arguments' } : undefined,
+      args:
+        command.args || templateVariables(command.command).includes('args')
+          ? // Scripts run on Enter; arguments are only used when typed (`/test --watch`).
+            { placeholder: command.args ?? 'arguments', required: command.group === 'scripts' ? false : undefined }
+          : undefined,
       boost: command.group === 'scripts' ? 6 : 0,
       aiKind: 'shell command',
       aiHint: command.command,
@@ -109,7 +113,9 @@ export class ProjectProvider implements SlashProvider {
         const editor = vars.some((v) => v !== 'args') ? await ctx.editor() : undefined;
         const resolve = await variableResolver(editor, args, {});
         const shell = shellKind();
-        const line = expandTemplate(command.command, resolve, (v) => shellQuote(v, shell)).replace(/\s+$/, '');
+        let line = expandTemplate(command.command, resolve, (v) => shellQuote(v, shell)).replace(/\s+$/, '');
+        // `npm run x --` with nothing after it.
+        if (!args) line = line.replace(/\s+--$/, '');
         ctx.services.terminal.run(line, { cwd: path.join(folder.uri.fsPath, command.cwd) });
       },
     });

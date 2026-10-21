@@ -162,8 +162,9 @@ export function rank(index: readonly IndexedItem[], query: ParsedQuery, options:
 
   const scored: Scored[] = [];
   for (const entry of index) {
-    // `/run npm test` — exact name match for an item that takes arguments.
-    if (entry.item.args && entry.name && entry.name === query.head) {
+    // `/run npm test` — exact name match for an item that takes arguments. Optional ones only once arguments are typed,
+    // so `/format` still finds Format Document before a `format` script.
+    if (entry.item.args && entry.name && entry.name === query.head && (query.rest || entry.item.args.required !== false)) {
       scored.push({ entry, score: 400 + (entry.item.boost ?? 0), argText: query.rest });
       continue;
     }
@@ -240,6 +241,17 @@ function dedupe(values: number[] | undefined): number[] | undefined {
 function topN(results: RankedView[], limit: number): RankedView[] {
   results.sort((a, b) => b.score - a.score || a.title.localeCompare(b.title));
   return results.length > limit ? results.slice(0, limit) : results;
+}
+
+/**
+ * The item `/name args` runs: among exact name matches, the one the popup ranks first before any history.
+ * History is left out on purpose so a keybinding or `slash` step always means the same command.
+ */
+export function pickByName<T extends ItemView>(items: readonly T[], query: ParsedQuery): T | undefined {
+  const matches = items.filter((i) => i.name && i.name === query.head);
+  if (matches.length < 2) return matches[0];
+  const [best] = rank(indexItems(matches), query, { limit: 1 });
+  return matches.find((i) => i.id === best?.id) ?? matches[0];
 }
 
 /** Merges already-ranked lists, keeping the best score per id. */

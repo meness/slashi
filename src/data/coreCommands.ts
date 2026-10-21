@@ -220,7 +220,7 @@ export const CORE_COMMANDS: CoreCommand[] = [
   c('Window', 'workbench.action.showLogs', 'logs', 'Show Logs…', 'scroll'),
   c('Window', 'workbench.action.openGlobalKeybindings', 'keybindings', 'Open Keyboard Shortcuts', 'keyboard'),
   c('Window', 'workbench.action.keybindingsReference', 'shortcuts-pdf', 'Keyboard Shortcuts Reference', 'keyboard'),
-  c('Window', 'workbench.action.openWalkthrough', 'welcome', 'Welcome & Walkthroughs', 'hand-waving'),
+  c('Window', 'workbench.action.openWalkthrough', 'walkthroughs', 'Welcome & Walkthroughs', 'hand-waving'),
   c('Window', 'workbench.action.openDocumentationUrl', 'vscode-docs', 'VS Code Documentation', 'book-open'),
   c('Window', 'update.checkForUpdate', 'check-update', 'Check for Updates', 'arrow-circle-up'),
   c('Window', 'workbench.action.showAboutDialog', 'about', 'About VS Code', 'info'),

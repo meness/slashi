@@ -15,7 +15,7 @@ One keyboard-first popup for your files, settings, extensions, Git, terminal, pr
 [![Open VSX downloads](https://img.shields.io/open-vsx/dt/meness/slashi?label=downloads&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 
 [![CI](https://github.com/meness/slashi/actions/workflows/ci.yml/badge.svg)](https://github.com/meness/slashi/actions/workflows/ci.yml)
-[![Core coverage](https://img.shields.io/badge/core%20coverage-95%25-22c55e.svg)](vitest.config.mts)
+[![Core coverage](https://img.shields.io/badge/core%20coverage-96%25-22c55e.svg)](vitest.config.mts)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.90%2B-06b6d4.svg)](https://code.visualstudio.com/)
 
@@ -63,6 +63,7 @@ Press `Cmd /` on macOS or `Ctrl /` on Windows and Linux, then type.
 | Move | `↑` `↓` (or `Ctrl N` / `Ctrl P`) |
 | Run | `Enter` |
 | Complete a command, then type its arguments | `Tab`, e.g. `/run` → `Tab` → `npm test` |
+| Run the last command again, with the same arguments | `/again` |
 | Actions menu (rename, delete, copy path, hide, bind a key…) | `Shift Enter` or `→` |
 | First action (e.g. open a file to the side) | `Alt Enter` |
 | Hand what you typed to AI | `Cmd Enter` / `Ctrl Enter` |
@@ -102,11 +103,11 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 |---|---|---|
 | **Files & Folders** | `/f` | search · create (`/new`, `/mkdir`) · rename & move · duplicate · delete (to trash) · copy paths · reveal |
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
-| **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer) · package manager · frameworks & tools |
+| **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools |
 | **Commands** | `/cmd` | ~170 curated VS Code commands with slash names · every extension command |
 | **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
-| **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · commit messages · regex & shell generators · models |
+| **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · review your Git changes · commit messages · regex & shell generators · models |
 | **Natural language** | `/do` | a sentence becomes a checked plan of actions |
 | **Text tools** | `/tx` | case conversion · lines · encode & hash · JSON · inserts (UUID, dates, lorem) · stats |
 | **Terminal & Tasks** | `/term` | `/run <cmd>` · VS Code tasks · terminal management |
@@ -137,6 +138,7 @@ Switch models with `/models`, and test the connection in **Studio → AI & Model
 | `/explain`, `/summarize`, `/review` | Explains, summarizes or reviews the selection or file |
 | `/fix [hint]`, `/edit <instruction>`, `/doc` | Rewrites code. **Apply** (`Cmd/Ctrl Enter`) replaces the original, and `Cmd/Ctrl Z` undoes it. Code too large to send in full must be selected in parts, so Apply never cuts a file short |
 | `/tests`, `/convert <target>`, `/name` | Writes tests, translates code, suggests names |
+| `/review-changes` | Reviews your staged (or unstaged) Git changes before you commit |
 | `/commit-msg` | Writes a Conventional Commits message from staged (or unstaged) changes into the Source Control box |
 | `/regex <description>` | Writes a regex and inserts it |
 | `/shell <description>` | Writes a shell command, which you review before it runs |
@@ -244,7 +246,7 @@ Scoped entry points such as `slashi.openFiles`, `slashi.openGit`, `slashi.openPr
 | `slashi.marketplace.registries` | this repo | Registry index URLs (HTTPS) |
 | `slashi.files.maxIndexed` | `20000` | File index size |
 
-The AI backend, model, URL, effort, custom instructions, plan confirmation and registry settings are machine-scoped: only your user settings can change them, never a repository’s workspace settings. Search **@ext:meness.slashi** in Settings for the rest.
+The AI backend, model, URL, effort, custom instructions, plan confirmation, web search engines and registry settings are machine-scoped: only your user settings can change them, never a repository’s workspace settings. Search **@ext:meness.slashi** in Settings for the rest.
 
 ## Privacy & security
 
@@ -252,7 +254,7 @@ The AI backend, model, URL, effort, custom instructions, plan confirmation and r
 - **API keys** live only in VS Code Secret Storage. A repository can’t change your AI backend, its URL, your instructions or your confirmation setting, so it can’t send your key or code to another server.
 - **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and terminal or Slashi settings.
 - **Webviews** use a strict nonce-based Content Security Policy and load only bundled files. Raw HTML in model output is escaped, never rendered.
-- **Untrusted workspaces:** workspace-defined commands are ignored. Team files and packs ask before running anything that can reach a shell.
+- **Untrusted workspaces:** workspace-defined commands are ignored. Team commands (in `.vscode/slashi.json` or the workspace's `slashi.customCommands`) and packs ask before running anything that can reach a shell.
 
 See [SECURITY.md](SECURITY.md) to report a vulnerability.
 
@@ -286,6 +288,7 @@ Open the folder and press **F5** (*Run Slashi*) to start an Extension Developmen
 | `npm test` | Unit tests (Vitest) |
 | `npm run test:smoke` | Activates the bundled extension against a mocked VS Code API and drives the real popup protocol |
 | `npm run test:integration` | Runs the integration suite in a real VS Code (downloads VS Code) |
+| `npm run test:e2e` | Runs user scenarios (scripts, Git, team files) in a real VS Code on a throwaway Git repo. `SLASHI_E2E_AI=1` adds an AI scenario through the Claude Code CLI |
 | `npm run bench` | Ranking benchmark |
 | `npm run screenshots` | Re-renders the README images (needs Chromium; set `CHROME_PATH`) |
 | `npm run marketplace` | Validates packs and regenerates `marketplace/index.json` |

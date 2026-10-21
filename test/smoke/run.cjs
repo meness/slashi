@@ -300,13 +300,14 @@ const check = (name, fn) => {
   await mock.commands.executeCommand('slashi.newCommand');
   restore();
   check('the wizard adds to a team file with comments instead of replacing it', () => {
-    const saved = JSON.parse(calls.writtenText[teamPath]);
+    assert.match(calls.writtenText[teamPath], /^\/\/ shared with the team/, 'comments survive');
+    const saved = JSON.parse(calls.writtenText[teamPath].replace(/^\/\/.*$/m, ''));
     assert.deepEqual(
       saved.commands.map((c) => c.name),
       ['ship', 'deploy'],
     );
   });
-  teamText = '{"commands": [{"name": "ship", "steps": [],}]}';
+  teamText = '{"commands": [{"name": "ship", "steps": []}';
   delete calls.writtenText[teamPath];
   restore = script(wizard());
   await mock.commands.executeCommand('slashi.newCommand');
@@ -345,6 +346,65 @@ const check = (name, fn) => {
   mock.window.showWarningMessage = showWarning;
   mock.workspace.fs.readFile = readFile;
   await reloadTeam();
+
+  // Commands in .vscode/settings.json come from the repo too: they ask first, and saving your own never copies them.
+  const slashiConfig = mock.workspace.getConfiguration('slashi');
+  await slashiConfig.update('customCommands', [{ name: 'mine', steps: [{ notify: 'mine' }] }]);
+  await slashiConfig.update('customCommands', [{ name: 'repo-cmd', steps: [{ terminal: 'echo repo' }] }], 2);
+  let repoPrompts = 0;
+  mock.window.showWarningMessage = async (message, ...rest) => {
+    if (!message.startsWith('/repo-cmd comes from')) return showWarning(message, ...rest);
+    repoPrompts++;
+  };
+  await api.run('/repo-cmd');
+  mock.window.showWarningMessage = showWarning;
+  check('workspace-settings commands ask before reaching a shell', () => {
+    assert.equal(repoPrompts, 1);
+    assert.ok(!calls.terminals.some((t) => t.text === 'echo repo'));
+  });
+  restore = script(['added', 'Added', (i) => i.type === 'notify', 'hi', (i) => i.type === 'done', (i) => i.value === 'user']);
+  await mock.commands.executeCommand('slashi.newCommand');
+  restore();
+  check('the wizard keeps your own commands and never copies the repo’s', () =>
+    assert.deepEqual(
+      mock._settings['slashi.customCommands'].map((c) => c.name),
+      ['mine', 'added'],
+    ),
+  );
+  await slashiConfig.update('customCommands', undefined, 2);
+  await slashiConfig.update('customCommands', []);
+
+  // `languages` limits a command to editors in those languages, checked when you search or run, not when cached.
+  await slashiConfig.update('customCommands', [{ name: 'py-only', languages: ['python'], steps: [{ notify: 'py' }] }]);
+  const editorIn = (languageId) => {
+    const sel = new mock.Selection(0, 0, 0, 0);
+    const document = { uri: mock.Uri.file(path.join(__dirname, `x.${languageId}`)), languageId, isUntitled: false, isClosed: false };
+    return { document, selection: sel, selections: [sel], viewColumn: 1 };
+  };
+  mock.window.activeTextEditor = editorIn('typescript');
+  const inTs = await api.run('/py-only');
+  mock.window.activeTextEditor = editorIn('python');
+  const inPy = await api.run('/py-only');
+  mock.window.activeTextEditor = undefined;
+  check('a command limited to Python only runs in Python files', () => assert.deepEqual([inTs, inPy], [false, true]));
+  await slashiConfig.update('customCommands', []);
+
+  // A name shared by a core command and a package script runs what the popup ranks first; arguments go to the script.
+  await api.run('/format');
+  check('“/format” runs Format Document, not this repo’s format script', () => {
+    assert.equal(calls.commands.at(-1)[0], 'editor.action.formatDocument');
+    assert.ok(!calls.terminals.some((t) => t.text.startsWith('npm run format')));
+  });
+  await api.run('/format --check');
+  check('“/format --check” passes the arguments to the script', () =>
+    assert.equal(calls.terminals.at(-1).text, 'npm run format -- --check'),
+  );
+  const before = calls.terminals.length;
+  await api.run('/again');
+  check('“/again” repeats the last command with its arguments', () => {
+    assert.equal(calls.terminals.length, before + 1);
+    assert.equal(calls.terminals.at(-1).text, 'npm run format -- --check');
+  });
 
   // /fix on a file too large to send whole refuses instead of offering an Apply that would cut the file.
   const big = 'x'.repeat(70_000);
@@ -466,6 +526,19 @@ const check = (name, fn) => {
   await mock.workspace.getConfiguration('slashi').update('ai.baseUrl', '');
 
   // Artifacts used by scripts/screenshots.mjs
+  // The Anthropic SDK ships as dist/anthropic-sdk.js and loads on first use: listing models must reach the API.
+  secrets.set('slashi.apiKey.anthropic', 'sk-test');
+  const realFetch = globalThis.fetch;
+  const fetched = [];
+  globalThis.fetch = async (input) => {
+    fetched.push(String(input?.url ?? input));
+    throw new Error('offline');
+  };
+  await mock.commands.executeCommand('slashi.selectModel');
+  globalThis.fetch = realFetch;
+  secrets.delete('slashi.apiKey.anthropic');
+  check('loads the Anthropic SDK on first use', () => assert.ok(fetched.some((u) => u.startsWith('https://api.anthropic.com/'))));
+
   const out = path.join(__dirname, 'out');
   fs.mkdirSync(out, { recursive: true });
   fs.writeFileSync(path.join(out, 'init.json'), JSON.stringify({ ...init, live: { '/f package': live.items, spotlight: global.items } }));

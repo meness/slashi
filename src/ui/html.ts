@@ -11,7 +11,7 @@ export function webviewHtml(
   const asset = (path: string) => webview.asWebviewUri(vscode.Uri.joinPath(extensionUri, 'dist', 'webview', path)).toString();
   const csp = [
     "default-src 'none'",
-    `img-src ${webview.cspSource} https: data:`,
+    `img-src ${webview.cspSource} data:`,
     `font-src ${webview.cspSource}`,
     `style-src ${webview.cspSource}`,
     `script-src 'nonce-${nonce}'`,

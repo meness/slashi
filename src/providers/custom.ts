@@ -1,9 +1,9 @@
 import * as vscode from 'vscode';
-import { get, isFeatureEnabled, updateGlobal } from '../config';
+import { globalValue, isFeatureEnabled, section, updateGlobal } from '../config';
 import { HELP_LINKS } from '../data/links';
 import { NAME_PATTERN, PACK_ID_PATTERN, validateCommands, type CustomCommandDef, type PackDef, type StepDef } from '../core/commandSchema';
 import { pickIcon } from '../core/icons';
-import { parseJsonc } from '../core/text';
+import { addCommand, parseJsonc } from '../core/jsonc';
 import { runCustomCommand, usesArgs, type CommandSource } from '../services/macro';
 import type { Services } from '../services/services';
 import type { SlashItem, SlashProvider } from '../types';
@@ -72,10 +72,6 @@ export class CustomProvider implements SlashProvider {
   async items(): Promise<SlashItem[]> {
     const items: SlashItem[] = [...this.builtins()];
     const add = (def: CustomCommandDef, source: CommandSource, origin: string, feature: string) => {
-      if (def.languages?.length) {
-        const lang = this.services.snapshot?.document.languageId;
-        if (lang && !def.languages.includes(lang)) return;
-      }
       items.push(
         make({
           id: `custom:${source}:${origin}:${def.name}`,
@@ -89,17 +85,26 @@ export class CustomProvider implements SlashProvider {
           args: def.args || usesArgs(def) ? { placeholder: def.args ?? 'arguments' } : undefined,
           boost: 5,
           aiKind: 'custom command',
+          // Filtered by the registry for the editor at search time; this catalogue is cached.
+          languages: def.languages?.length ? def.languages : undefined,
           run: (ctx) => runCustomCommand(def, ctx, source),
         }),
       );
     };
 
     if (isFeatureEnabled('custom', 'user')) {
-      const { commands, errors } = validateCommands(get('customCommands', []), 'slashi.customCommands');
+      const { commands, errors } = validateCommands(globalValue('customCommands', undefined), 'slashi.customCommands');
       this.warn('settings', errors);
       commands.forEach((c) => add(c, 'user', 'settings', 'user'));
     }
     if (isFeatureEnabled('custom', 'team') && vscode.workspace.isTrusted) {
+      // Commands in .vscode/settings.json come from the repository too, so they ask first like the team file.
+      const inspected = section().inspect<unknown>('customCommands');
+      for (const raw of [inspected?.workspaceValue, inspected?.workspaceFolderValue]) {
+        const { commands, errors } = validateCommands(raw, 'workspace slashi.customCommands');
+        this.warn('workspace-settings', errors);
+        commands.forEach((c) => add(c, 'team', 'workspace settings', 'team'));
+      }
       for (const folder of vscode.workspace.workspaceFolders ?? []) {
         const uri = vscode.Uri.joinPath(folder.uri, TEAM_FILE);
         let text: string;
@@ -253,7 +258,8 @@ export async function newCommandWizard(services: Services): Promise<void> {
   );
   if (!where) return;
   if (where.value === 'user') {
-    const existing = (get<CustomCommandDef[]>('customCommands', []) ?? []).filter((c) => c?.name !== name);
+    const saved = globalValue<unknown>('customCommands', []);
+    const existing = (Array.isArray(saved) ? (saved as CustomCommandDef[]) : []).filter((c) => c?.name !== name);
     await updateGlobal('customCommands', [...existing, def]);
   } else {
     await writeTeamCommand(def);
@@ -347,33 +353,34 @@ async function teamFileUri(): Promise<vscode.Uri> {
   return vscode.Uri.joinPath(folder.uri, TEAM_FILE);
 }
 
-async function readTeamFile(uri: vscode.Uri): Promise<{ $schema?: string; commands: CustomCommandDef[] }> {
+/** The team file's text, checked to be an array or an object with a `commands` array. */
+async function readTeamFile(uri: vscode.Uri): Promise<string> {
   let text: string;
   try {
     text = new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
   } catch {
-    return { $schema: SCHEMA_URL, commands: [] };
+    return `${JSON.stringify({ $schema: SCHEMA_URL, commands: [] }, null, 2)}\n`;
   }
   // A file we can't parse is never rewritten: that would drop every command in it.
-  let json: { commands?: CustomCommandDef[] } | CustomCommandDef[];
+  let json: unknown;
   try {
-    json = parseJsonc(text) as typeof json;
+    json = parseJsonc(text);
   } catch (err) {
     throw new Error(`Fix ${TEAM_FILE} first: ${(err as Error).message}`, { cause: err });
   }
-  if (Array.isArray(json)) return { commands: json };
-  if (!json || typeof json !== 'object' || (json.commands !== undefined && !Array.isArray(json.commands)))
+  const commands = (json as { commands?: unknown } | null)?.commands;
+  if (!Array.isArray(json) && (!json || typeof json !== 'object' || (commands !== undefined && !Array.isArray(commands))))
     throw new Error(`${TEAM_FILE} must be an array or an object with a "commands" array.`);
-  return { ...json, commands: json.commands ?? [] };
+  return text;
 }
 
 const SCHEMA_URL = 'https://raw.githubusercontent.com/meness/slashi/main/schemas/slashi.schema.json';
 
+/** Adds the command to the team file as a text edit, so comments and formatting survive. */
 async function writeTeamCommand(def: CustomCommandDef): Promise<void> {
   const uri = await teamFileUri();
-  const file = await readTeamFile(uri);
-  file.commands = [...file.commands.filter((c) => c.name !== def.name), def];
-  await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(`${JSON.stringify(file, null, 2)}\n`));
+  const text = addCommand(await readTeamFile(uri), def);
+  await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(text.endsWith('\n') ? text : `${text}\n`));
 }
 
 export async function editTeamCommands(): Promise<void> {
@@ -403,7 +410,7 @@ export async function editTeamCommands(): Promise<void> {
 
 /** Bundles the user's commands into a shareable pack document. */
 export async function exportPack(): Promise<void> {
-  const { commands } = validateCommands(get('customCommands', []));
+  const { commands } = validateCommands(globalValue('customCommands', []));
   if (!commands.length) {
     const choice = await vscode.window.showInformationMessage('No custom commands to export yet.', 'Create Command');
     if (choice) await vscode.commands.executeCommand('slashi.newCommand');

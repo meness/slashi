@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { ItemView } from '../../src/core/protocol';
 import { parseQuery } from '../../src/core/query';
-import { frecencyBonus, indexItems, mergeRanked, rank, scoreWord } from '../../src/core/search';
+import { frecencyBonus, indexItems, mergeRanked, pickByName, rank, scoreWord } from '../../src/core/search';
 
 const item = (id: string, name: string, title: string, extra: Partial<ItemView> = {}): ItemView => ({
   id,
@@ -131,5 +131,39 @@ describe('scoreWord boundaries', () => {
 describe('scoreWord mid-word penalty', () => {
   it('scores an earlier mid-word match above a later one', () => {
     expect(scoreWord('ab', 'xab', 'xab')!.score).toBeGreaterThan(scoreWord('ab', 'xxxxab', 'xxxxab')!.score);
+  });
+});
+
+describe('pickByName', () => {
+  const core = item('cmd:format', 'format', 'Format Document', { boost: 8 });
+  const script = item('project:format', 'format', 'npm: format', {
+    boost: 6,
+    providerId: 'project',
+    args: { placeholder: 'extra arguments (optional)', required: false },
+  });
+
+  it('picks what the popup ranks first, not the first provider', () => {
+    expect(pickByName([script, core], q('/format'))?.id).toBe('cmd:format');
+    expect(rank(indexItems([script, core]), q('/format'), { limit: 2 })[0].id).toBe('cmd:format');
+  });
+
+  it('passes arguments to the item that accepts them', () => {
+    expect(pickByName([core, script], q('/format --check'))?.id).toBe('project:format');
+  });
+
+  it('ignores history and falls back to the only match', () => {
+    // Even a script run 20 times today doesn't change what `/format` means in a keybinding.
+    expect(pickByName([script, core], q('/format'))?.id).toBe('cmd:format');
+    expect(pickByName([core], q('/format extra'))?.id).toBe('cmd:format');
+    expect(pickByName([core], q('/nope'))).toBeUndefined();
+  });
+});
+
+describe('optional arguments', () => {
+  const script = item('test', 'test', 'npm: test', { args: { placeholder: 'extra arguments', required: false } });
+
+  it('scores optional-argument items normally until arguments are typed', () => {
+    expect(rank(indexItems([script]), q('/test'), { limit: 1 })[0].argText).toBeUndefined();
+    expect(rank(indexItems([script]), q('/test --watch'), { limit: 1 })[0].argText).toBe('--watch');
   });
 });

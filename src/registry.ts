@@ -23,7 +23,11 @@ export class Registry implements vscode.Disposable {
   private readonly onDidChangeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.onDidChangeEmitter.event;
 
-  constructor(private readonly log: vscode.LogOutputChannel) {
+  constructor(
+    private readonly log: vscode.LogOutputChannel,
+    /** Language of the current editor, for items limited to some languages. */
+    private readonly language: () => string | undefined = () => undefined,
+  ) {
     this.disposables.push(
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (
@@ -127,7 +131,9 @@ export class Registry implements vscode.Disposable {
   private visible(provider: SlashProvider): (item: SlashItem) => boolean {
     const hidden = hiddenMatcher();
     const enabled = enabledFeatures();
-    return (item) => enabled(provider.id, item.feature) && !hidden(item.id);
+    const language = this.language();
+    return (item) =>
+      enabled(provider.id, item.feature) && !hidden(item.id) && (!item.languages || !language || item.languages.includes(language));
   }
 
   /** Local (non-remote) items of every enabled provider. */

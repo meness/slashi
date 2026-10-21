@@ -43,6 +43,8 @@ export class AiManager {
       codex: new CliBackend('codex'),
     };
     secrets.onDidChange(() => this.changed());
+    // The provider or model can change outside Studio (Settings UI, settings.json, Settings Sync).
+    vscode.workspace.onDidChangeConfiguration((e) => e.affectsConfiguration('slashi.ai') && this.changed());
     vscode.lm?.onDidChangeChatModels?.(() => this.changed());
     vscode.extensions.onDidChange(() => this.changed());
   }

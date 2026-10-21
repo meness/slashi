@@ -352,11 +352,12 @@
           },
           "slashi.web.engines": {
             "type": "object",
+            "scope": "machine",
             "additionalProperties": {
               "type": "string"
             },
             "default": {},
-            "markdownDescription": "Extra web search engines. Key = slash name, value = URL with `%s` for the query. Example: `{ \"rust\": \"https://docs.rs/releases/search?query=%s\" }`."
+            "markdownDescription": "Extra web search engines. Key = slash name, value = an `https://` (or `http://`) URL with `%s` for the query. Example: `{ \"rust\": \"https://docs.rs/releases/search?query=%s\" }`. An engine with a built-in name replaces it. User settings only: a repository can't change where your searches go."
           },
           "slashi.marketplace.registries": {
             "type": "array",
@@ -915,6 +916,7 @@
     "coverage": "vitest run --coverage && node scripts/coverage-badge.mjs",
     "test:smoke": "npm run build && node test/smoke/run.cjs",
     "test:integration": "npm run build && tsc -p test/integration && vscode-test",
+    "test:e2e": "npm run build && tsc -p test/e2e && node test/e2e/out/run.js",
     "bench": "node scripts/bench.mjs",
     "screenshots": "npm run test:smoke && node scripts/screenshots.mjs",
     "check": "npm run typecheck && npm run lint && npm run format:check && vitest run --coverage && node scripts/coverage-badge.mjs --check && npm run test:smoke && node scripts/marketplace.mjs --check",
@@ -926,6 +928,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
+    "jsonc-parser": "^3.3.1",
     "marked": "^18.1.1"
   },
   "devDependencies": {

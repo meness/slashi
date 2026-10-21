@@ -10,7 +10,7 @@ export default defineConfig({
       include: ['src/core/**'],
       reporter: ['text', 'json-summary'],
       // Just under the current numbers: raise them when coverage goes up, never lower them.
-      thresholds: { lines: 95, statements: 94, functions: 92, branches: 87 },
+      thresholds: { lines: 96, statements: 95, functions: 93, branches: 89 },
     },
   },
 });

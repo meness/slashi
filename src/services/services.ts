@@ -22,7 +22,7 @@ export interface AnswerRequest {
 /** Shared services handed to every provider and UI component. */
 export class Services implements vscode.Disposable {
   readonly history: History;
-  readonly terminal = new TerminalRunner();
+  readonly terminal = new TerminalRunner(() => this.snapshot?.document.uri);
   readonly ai: AiManager;
   readonly packs: PackStore;
   /** Technologies detected by the Project provider. */
