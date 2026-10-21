@@ -2,6 +2,8 @@ import * as os from 'node:os';
 import * as vscode from 'vscode';
 import { get, isProviderEnabled } from '../config';
 import { HELP_LINKS, type HelpLink } from '../data/links';
+import { execute } from '../executor';
+import { AGAIN_ID } from '../services/history';
 import type { Services } from '../services/services';
 import type { SlashItem, SlashProvider } from '../types';
 import { itemFactory } from './util';
@@ -43,6 +45,22 @@ export class SystemProvider implements SlashProvider {
         run: () => vscode.env.openExternal(vscode.Uri.parse(HELP_LINKS[key])),
       });
     return [
+      make({
+        id: AGAIN_ID,
+        name: 'again',
+        title: 'Slashi: Run Last Command Again',
+        description: 'Repeats the last command with the same arguments',
+        icon: 'arrow-clockwise',
+        feature: 'default',
+        boost: 3,
+        keywords: ['repeat', 'last', 'redo'],
+        run: async () => {
+          const last = this.services.history.last;
+          const item = last && this.services.registry.find(last.id);
+          if (!item) return void vscode.window.showInformationMessage('Slashi: there is no command to run again yet.');
+          await execute(this.services, item, last.args, last.action, this.services.snapshot);
+        },
+      }),
       cmd('welcome', 'Slashi: Welcome & Onboarding', 'rocket-launch', 'slashi.welcome', 'Replay the onboarding'),
       cmd(
         'help',

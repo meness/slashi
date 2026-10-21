@@ -20,7 +20,7 @@ export async function execute(
   snapshot: EditorSnapshot | undefined,
 ): Promise<void> {
   if (action && (await runCommonAction(item, action))) return;
-  await services.history.record(item.id);
+  await services.history.record(item.id, args.trim(), action);
   let restored: Promise<vscode.TextEditor | undefined> | undefined;
   const ctx: RunContext = {
     args: args.trim(),

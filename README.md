@@ -63,6 +63,7 @@ Press `Cmd /` on macOS or `Ctrl /` on Windows and Linux, then type.
 | Move | `↑` `↓` (or `Ctrl N` / `Ctrl P`) |
 | Run | `Enter` |
 | Complete a command, then type its arguments | `Tab`, e.g. `/run` → `Tab` → `npm test` |
+| Run the last command again, with the same arguments | `/again` |
 | Actions menu (rename, delete, copy path, hide, bind a key…) | `Shift Enter` or `→` |
 | First action (e.g. open a file to the side) | `Alt Enter` |
 | Hand what you typed to AI | `Cmd Enter` / `Ctrl Enter` |
