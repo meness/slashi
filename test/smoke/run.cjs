@@ -300,14 +300,14 @@ const check = (name, fn) => {
   const slowDone = new Promise((r) => {
     releaseSlow = r;
   });
-  api.registerProvider({
+  const slow = api.registerProvider({
     extensionId: 'acme.slow',
     id: 'slow',
     title: 'Slow',
     prefix: 'slow',
     items: () => slowDone.then(() => [{ id: 'a', title: 'Slow Thing', name: 'slow-thing', run: () => (apiRan = 'slow') }]),
   });
-  api.registerProvider({
+  const broken = api.registerProvider({
     extensionId: 'acme.broken',
     id: 'broken',
     title: 'Broken',
@@ -332,6 +332,9 @@ const check = (name, fn) => {
     assert.equal(takeErrors(calls.messages, /Provider ext:acme\.broken\/broken failed/) > 0, true);
     assert.ok(calls.messages.some((m) => m[0] === 'warn' && /took longer than 3 s/.test(m[1])));
   });
+  // Later reloads would log the broken one again.
+  slow.dispose();
+  broken.dispose();
 
   // A provider removed while items() is still running never gets its late items back.
   let releaseGone;
