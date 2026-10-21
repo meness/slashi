@@ -164,6 +164,14 @@ body.vscode-high-contrast-light .row.active {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* Shape, not just color, so it survives high contrast. */
+.row .title .verified {
+  flex: none;
+  align-self: center;
+  display: inline-flex;
+  font-size: 14px;
+  color: var(--brand-ink);
+}
 .row .title mark {
   background: none;
   color: var(--brand-ink);

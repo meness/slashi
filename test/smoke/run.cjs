@@ -525,6 +525,94 @@ const check = (name, fn) => {
   secrets.delete('slashi.apiKey.anthropic');
   await mock.workspace.getConfiguration('slashi').update('ai.baseUrl', '');
 
+  // Marketplace: packs from the official registry are verified, and a download must match its listing.
+  const OFFICIAL = 'https://raw.githubusercontent.com/meness/slashi/main/marketplace/index.json';
+  const OTHER = 'https://example.com/index.json';
+  const market = JSON.parse(fs.readFileSync(path.resolve(__dirname, '../../marketplace/index.json'), 'utf8'));
+  const listed = (id) => market.packs.find((p) => p.id === id);
+  const official = {
+    ...market,
+    packs: [
+      listed('focus-mode'),
+      { ...listed('git-power'), sha256: '0'.repeat(64) },
+      { ...listed('focus-mode'), id: 'renamed', name: 'Renamed' },
+    ],
+  };
+  const other = { version: 1, packs: [{ ...listed('snippets'), url: 'https://example.com/snippets.json' }] };
+  const realFetchMarket = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const file = url.startsWith('https://example.com/') ? url.replace('https://example.com/', 'packs/') : url.split('/marketplace/')[1];
+    const body =
+      url === OFFICIAL
+        ? JSON.stringify(official)
+        : url === OTHER
+          ? JSON.stringify(other)
+          : fs.readFileSync(path.resolve(__dirname, '../../marketplace', file), 'utf8');
+    return { ok: true, status: 200, text: async () => body };
+  };
+  await mock.workspace.getConfiguration('slashi').update('marketplace.registries', [OFFICIAL, OTHER]);
+  await mock.commands.executeCommand('slashi.refresh');
+  const marketItems = async () => {
+    const inits = calls.posted.filter((m) => m.type === 'init').length;
+    // An open popup is reused without a new init, so start from a closed one.
+    for (const open of calls.panels.filter((x) => x.viewType === 'slashi.spotlight' && !x.disposed)) open.dispose();
+    await mock.commands.executeCommand('slashi.open');
+    const p = calls.panels.at(-1);
+    p.webview._receive({ type: 'ready' });
+    const data = (await waitFor(() => calls.posted.filter((m) => m.type === 'init')[inits], 'marketplace init')).data;
+    return { panel: p, items: data.items.filter((i) => i.providerId === 'marketplace' && i.category === 'Action Packs') };
+  };
+  const { items: packItems } = await marketItems();
+  const byTitle = (title) => packItems.find((i) => i.title === title);
+  check('marks only official-registry packs as verified', () => {
+    assert.equal(byTitle('Focus & Present').verified, true);
+    assert.ok(!byTitle('Handy Inserts').verified);
+    assert.match(byTitle('Handy Inserts').description, /by Slashi \(unverified\)$/);
+    assert.match(byTitle('Focus & Present').description, /by Slashi$/);
+  });
+  const { showInformationMessage } = mock.window;
+  let prompt;
+  mock.window.showInformationMessage = async (...a) => {
+    if (a[1]?.modal) {
+      prompt = a;
+      return a[2];
+    }
+    return showInformationMessage(...a);
+  };
+  const installRun = async (title) => {
+    const { panel: p, items } = await marketItems();
+    p.webview._receive({ type: 'run', id: items.find((i) => i.title === title).id, args: '' });
+  };
+  const installed = () => (context.globalState.get('slashi.packs') ?? []).map((pk) => pk.id);
+  await installRun('Focus & Present');
+  await waitFor(() => installed().includes('focus-mode'), 'verified pack install');
+  check('installs a verified pack and says so before installing', () => {
+    assert.equal(prompt[0], 'Install Focus & Present v1.0.0 by Slashi?');
+    assert.match(prompt[1].detail, /^✓ Verified: published by Slashi/);
+  });
+  prompt = undefined;
+  await installRun('Git Power Moves');
+  await waitFor(() => takeErrors(calls.messages, /doesn’t match its registry listing/), 'digest mismatch error');
+  await installRun('Renamed');
+  await waitFor(
+    () => takeErrors(calls.messages, /The registry lists “renamed”, but the file is the pack “focus-mode”/),
+    'id mismatch error',
+  );
+  check('refuses a pack that differs from its listing, without asking', () => {
+    assert.ok(!installed().includes('git-power'));
+    assert.equal(prompt, undefined);
+  });
+  await installRun('Handy Inserts');
+  await waitFor(() => installed().includes('snippets'), 'unverified pack install');
+  check('labels a pack that only claims to be Slashi’s as unverified', () => {
+    assert.equal(prompt[0], 'Install Handy Inserts v1.0.0 by Slashi (unverified)?');
+    assert.doesNotMatch(prompt[1].detail, /Verified/);
+  });
+  mock.window.showInformationMessage = showInformationMessage;
+  globalThis.fetch = realFetchMarket;
+  await context.globalState.update('slashi.packs', []);
+  await mock.workspace.getConfiguration('slashi').update('marketplace.registries', undefined);
+
   // Artifacts used by scripts/screenshots.mjs
   // The Anthropic SDK ships as dist/anthropic-sdk.js and loads on first use: listing models must reach the API.
   secrets.set('slashi.apiKey.anthropic', 'sk-test');

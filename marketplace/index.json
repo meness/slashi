@@ -16,7 +16,8 @@
       ],
       "url": "packs/focus-mode.json",
       "commands": 3,
-      "terminal": false
+      "terminal": false,
+      "sha256": "98f5ac04fe461591a7419a781ac847f8cad57d88d84928b25e2d24bb96f9eecc"
     },
     {
       "id": "git-power",
@@ -31,7 +32,8 @@
       ],
       "url": "packs/git-power.json",
       "commands": 6,
-      "terminal": true
+      "terminal": true,
+      "sha256": "3466e296ba8a4f3ff8059656bf283453097ec13d0a71fa5902e7814c08ad118b"
     },
     {
       "id": "snippets",
@@ -46,7 +48,8 @@
       ],
       "url": "packs/snippets.json",
       "commands": 4,
-      "terminal": false
+      "terminal": false,
+      "sha256": "b93c006d4885dd81c015c627147ea8708edeb069fe4e9437ffe74ec9e969e343"
     },
     {
       "id": "web-dev",
@@ -62,7 +65,8 @@
       ],
       "url": "packs/web-dev.json",
       "commands": 5,
-      "terminal": true
+      "terminal": true,
+      "sha256": "ef3fb134012d394763aa2e30ad3afe918744da0444a671e24ce77054e1c01894"
     },
     {
       "id": "writing-tools",
@@ -78,7 +82,8 @@
       ],
       "url": "packs/writing-tools.json",
       "commands": 5,
-      "terminal": false
+      "terminal": false,
+      "sha256": "f0534737c3642e8fc6c6c0d3af59880822adab37230df11d37586126540f2455"
     }
   ]
 }

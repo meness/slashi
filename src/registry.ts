@@ -207,9 +207,42 @@ export class Registry implements vscode.Disposable {
 
 /** Strips functions so items can be posted to a webview. */
 export function toView(item: SlashItem): ItemView {
-  const { id, name, title, description, badge, icon, providerId, feature, category, keywords, args, actions, boost, kind, scopePrefix } =
-    item;
-  return { id, name, title, description, badge, icon, providerId, feature, category, keywords, args, actions, boost, kind, scopePrefix };
+  const {
+    id,
+    name,
+    title,
+    description,
+    badge,
+    icon,
+    providerId,
+    feature,
+    category,
+    keywords,
+    args,
+    actions,
+    boost,
+    kind,
+    scopePrefix,
+    verified,
+  } = item;
+  return {
+    id,
+    name,
+    title,
+    description,
+    badge,
+    icon,
+    providerId,
+    feature,
+    category,
+    keywords,
+    args,
+    actions,
+    boost,
+    kind,
+    scopePrefix,
+    verified,
+  };
 }
 
 function toRankedView(r: RankedView): RankedView {

@@ -2,8 +2,11 @@ import * as vscode from 'vscode';
 import { get, isFeatureEnabled } from '../config';
 import {
   approvalSteps,
+  claimsSlashi,
   compareVersions,
   describeStep,
+  isVerified,
+  packDigest,
   resolvePackUrl,
   validatePack,
   validateRegistry,
@@ -21,6 +24,19 @@ const MAX_BYTES = 1_000_000;
 interface Listing extends RegistryEntry {
   registry: string;
   resolvedUrl: string;
+  verified: boolean;
+}
+
+/** What a registry listing promises about the pack behind its URL. */
+export interface Expected {
+  id: string;
+  sha256?: string;
+  verified: boolean;
+}
+
+/** “by Slashi”, “by Slashi (unverified)” for packs that only claim to be Slashi's. */
+function byline(author: string, verified: boolean): string {
+  return `by ${author}${!verified && claimsSlashi(author) ? ' (unverified)' : ''}`;
 }
 
 export async function fetchJson(url: string): Promise<unknown> {
@@ -86,7 +102,7 @@ export class MarketplaceProvider implements SlashProvider {
             errors.forEach((e) => this.services.log.warn(`${registry}: ${e}`));
             for (const entry of value?.packs ?? []) {
               try {
-                all.push({ ...entry, registry, resolvedUrl: resolvePackUrl(registry, entry.url) });
+                all.push({ ...entry, registry, resolvedUrl: resolvePackUrl(registry, entry.url), verified: isVerified(registry, entry) });
               } catch (err) {
                 this.services.log.warn(String(err));
               }
@@ -160,12 +176,13 @@ export class MarketplaceProvider implements SlashProvider {
         make({
           id: `market:${listing.registry}:${listing.id}`,
           title: listing.name,
-          description: `${listing.description} · by ${listing.author}`,
+          description: `${listing.description} · ${byline(listing.author, listing.verified)}`,
           badge: update ? 'update' : current ? 'installed' : `${listing.commands} cmds`,
           icon: listing.icon ?? 'package',
           category: 'Action Packs',
           feature: 'browse',
-          keywords: [...(listing.tags ?? []), listing.id, 'pack'],
+          keywords: [...(listing.tags ?? []), listing.id, 'pack', ...(listing.verified ? ['verified'] : [])],
+          verified: listing.verified,
           actions: [
             {
               id: 'install',
@@ -196,7 +213,7 @@ export class MarketplaceProvider implements SlashProvider {
           await runFromPack(this.services, current);
           return;
         }
-        await installFromUrl(this.services, listing.resolvedUrl);
+        await installFromUrl(this.services, listing.resolvedUrl, listing);
     }
   }
 }
@@ -217,12 +234,18 @@ async function installFromUrlOrFile(services: Services, input: string): Promise<
   await installFromUrl(services, url);
 }
 
-export async function installFromUrl(services: Services, url: string): Promise<void> {
+/** Installs after showing every step. `expected` comes from a registry listing; the download must match it. */
+export async function installFromUrl(services: Services, url: string, expected?: Expected): Promise<void> {
   const raw = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: 'Downloading action pack…' }, () =>
     fetchJson(url),
   );
   const { value: pack, errors } = validatePack(raw);
   if (!pack) throw new Error(`Invalid action pack: ${errors.slice(0, 3).join('; ')}`);
+  if (expected && pack.id !== expected.id)
+    throw new Error(`The registry lists “${expected.id}”, but the file is the pack “${pack.id}”. Nothing was installed.`);
+  if (expected?.sha256 && (await packDigest(raw)) !== expected.sha256)
+    throw new Error(`${pack.name} doesn’t match its registry listing; it changed after it was listed. Nothing was installed.`);
+  const verified = expected?.verified === true;
   const lines = pack.commands.map((c) => {
     const risky = approvalSteps(c);
     const steps = c.steps.map((s) => `${risky.includes(s) ? '⚠ ' : '   '}${describeStep(s)}`).join('\n');
@@ -232,10 +255,10 @@ export async function installFromUrl(services: Services, url: string): Promise<v
   const existing = services.packs.get(pack.id);
   const verb = existing ? `Update ${pack.name} ${existing.version} → ${pack.version}` : `Install ${pack.name} v${pack.version}`;
   const choice = await vscode.window.showInformationMessage(
-    `${verb} by ${pack.author}?`,
+    `${verb} ${byline(pack.author, verified)}?`,
     {
       modal: true,
-      detail: `${pack.description}\n\n${lines.join('\n\n')}${asks ? '\n\n⚠ Steps marked ⚠ can run commands, change settings or open links. Each command asks you before it runs the first time.' : ''}`,
+      detail: `${verified ? '✓ Verified: published by Slashi and checked against its official registry.\n\n' : ''}${pack.description}\n\n${lines.join('\n\n')}${asks ? '\n\n⚠ Steps marked ⚠ can run commands, change settings or open links. Each command asks you before it runs the first time.' : ''}`,
     },
     existing ? 'Update' : 'Install',
   );

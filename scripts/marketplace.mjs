@@ -14,7 +14,7 @@ const bundled = await build({
   format: 'esm',
   platform: 'node',
 });
-const { validatePack, stepType } = await import(
+const { validatePack, stepType, packDigest } = await import(
   `data:text/javascript;base64,${Buffer.from(bundled.outputFiles[0].text).toString('base64')}`
 );
 
@@ -54,6 +54,7 @@ for (const file of readdirSync(dir)
     url: `packs/${file}`,
     commands: value.commands.length,
     terminal,
+    sha256: await packDigest(raw),
   });
   console.log(`✓ ${file} — ${value.commands.length} commands${terminal ? ' (terminal)' : ''}`);
 }
