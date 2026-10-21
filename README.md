@@ -252,7 +252,7 @@ The AI backend, model, URL, effort, custom instructions, plan confirmation and r
 - **API keys** live only in VS Code Secret Storage. A repository can’t change your AI backend, its URL, your instructions or your confirmation setting, so it can’t send your key or code to another server.
 - **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and terminal or Slashi settings.
 - **Webviews** use a strict nonce-based Content Security Policy and load only bundled files. Raw HTML in model output is escaped, never rendered.
-- **Untrusted workspaces:** workspace-defined commands are ignored. Team files and packs ask before running anything that can reach a shell.
+- **Untrusted workspaces:** workspace-defined commands are ignored. Team commands (in `.vscode/slashi.json` or the workspace's `slashi.customCommands`) and packs ask before running anything that can reach a shell.
 
 See [SECURITY.md](SECURITY.md) to report a vulnerability.
 

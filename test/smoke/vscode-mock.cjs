@@ -8,6 +8,8 @@ const root = process.env.SLASHI_SMOKE_ROOT || process.cwd();
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
 const calls = { commands: [], terminals: [], messages: [], posted: [], panels: [] };
 const settings = {};
+// Values from .vscode/settings.json; they win over user settings, like in VS Code.
+const workspaceSettings = {};
 
 class EventEmitter {
   constructor() {
@@ -107,15 +109,21 @@ function configuration(section) {
   return {
     get(key, fallback) {
       const k = full(key);
+      if (k in workspaceSettings) return workspaceSettings[k];
       if (k in settings) return settings[k];
       if (k in defaultSettings) return defaultSettings[k];
       return fallback;
     },
-    async update(key, value) {
-      settings[full(key)] = value;
+    async update(key, value, target) {
+      const store = target === 2 ? workspaceSettings : settings;
+      if (value === undefined) delete store[full(key)];
+      else store[full(key)] = value;
       configEmitter.fire({ affectsConfiguration: (s) => full(key).startsWith(s) });
     },
-    inspect: () => undefined,
+    inspect(key) {
+      const k = full(key);
+      return { key: k, defaultValue: defaultSettings[k], globalValue: settings[k], workspaceValue: workspaceSettings[k] };
+    },
   };
 }
 const configEmitter = new EventEmitter();

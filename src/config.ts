@@ -36,20 +36,25 @@ export function hiddenMatcher(): (id: string) => boolean {
   return (id) => exact.has(id) || prefixes.some((p) => id.startsWith(p));
 }
 
+/** The user-settings value only. `get` also returns workspace values, which must never be copied into user settings. */
+export function globalValue<T>(key: string, fallback: T): T {
+  return section().inspect<T>(key)?.globalValue ?? fallback;
+}
+
 export async function updateGlobal(key: string, value: unknown): Promise<void> {
   await section().update(key, value, vscode.ConfigurationTarget.Global);
 }
 
 export async function setFeatureEnabled(provider: ProviderId, feature: string, enabled: boolean): Promise<void> {
   const key = `${provider}.${feature}`;
-  const current = new Set(get<string[]>('disabledFeatures', []));
+  const current = new Set(globalValue<string[]>('disabledFeatures', []));
   if (enabled) current.delete(key);
   else current.add(key);
   await updateGlobal('disabledFeatures', Array.from(current).sort());
 }
 
 export async function hideItem(id: string): Promise<void> {
-  const current = new Set(get<string[]>('hiddenCommands', []));
+  const current = new Set(globalValue<string[]>('hiddenCommands', []));
   current.add(id);
   await updateGlobal('hiddenCommands', Array.from(current).sort());
 }

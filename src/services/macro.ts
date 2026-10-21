@@ -72,7 +72,7 @@ async function approveSteps(ctx: RunContext, def: CustomCommandDef, source: Comm
   const fingerprint = JSON.stringify(def.steps);
   if (state.get<string>(key) === fingerprint) return true;
   const detail = risky.map((s) => `• ${describeStep(s)}`).join('\n');
-  const origin = source === 'team' ? 'this workspace (.vscode/slashi.json)' : 'an installed action pack';
+  const origin = source === 'team' ? 'this workspace' : 'an installed action pack';
   const choice = await vscode.window.showWarningMessage(
     `/${def.name} comes from ${origin} and will:`,
     { modal: true, detail },

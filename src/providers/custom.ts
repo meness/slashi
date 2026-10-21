@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { get, isFeatureEnabled, updateGlobal } from '../config';
+import { globalValue, isFeatureEnabled, section, updateGlobal } from '../config';
 import { HELP_LINKS } from '../data/links';
 import { NAME_PATTERN, PACK_ID_PATTERN, validateCommands, type CustomCommandDef, type PackDef, type StepDef } from '../core/commandSchema';
 import { pickIcon } from '../core/icons';
@@ -95,11 +95,18 @@ export class CustomProvider implements SlashProvider {
     };
 
     if (isFeatureEnabled('custom', 'user')) {
-      const { commands, errors } = validateCommands(get('customCommands', []), 'slashi.customCommands');
+      const { commands, errors } = validateCommands(globalValue('customCommands', undefined), 'slashi.customCommands');
       this.warn('settings', errors);
       commands.forEach((c) => add(c, 'user', 'settings', 'user'));
     }
     if (isFeatureEnabled('custom', 'team') && vscode.workspace.isTrusted) {
+      // Commands in .vscode/settings.json come from the repository too, so they ask first like the team file.
+      const inspected = section().inspect<unknown>('customCommands');
+      for (const raw of [inspected?.workspaceValue, inspected?.workspaceFolderValue]) {
+        const { commands, errors } = validateCommands(raw, 'workspace slashi.customCommands');
+        this.warn('workspace-settings', errors);
+        commands.forEach((c) => add(c, 'team', 'workspace settings', 'team'));
+      }
       for (const folder of vscode.workspace.workspaceFolders ?? []) {
         const uri = vscode.Uri.joinPath(folder.uri, TEAM_FILE);
         let text: string;
@@ -253,7 +260,8 @@ export async function newCommandWizard(services: Services): Promise<void> {
   );
   if (!where) return;
   if (where.value === 'user') {
-    const existing = (get<CustomCommandDef[]>('customCommands', []) ?? []).filter((c) => c?.name !== name);
+    const saved = globalValue<unknown>('customCommands', []);
+    const existing = (Array.isArray(saved) ? (saved as CustomCommandDef[]) : []).filter((c) => c?.name !== name);
     await updateGlobal('customCommands', [...existing, def]);
   } else {
     await writeTeamCommand(def);
@@ -404,7 +412,7 @@ export async function editTeamCommands(): Promise<void> {
 
 /** Bundles the user's commands into a shareable pack document. */
 export async function exportPack(): Promise<void> {
-  const { commands } = validateCommands(get('customCommands', []));
+  const { commands } = validateCommands(globalValue('customCommands', []));
   if (!commands.length) {
     const choice = await vscode.window.showInformationMessage('No custom commands to export yet.', 'Create Command');
     if (choice) await vscode.commands.executeCommand('slashi.newCommand');
