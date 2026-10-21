@@ -342,6 +342,7 @@ const vscode = {
     onDidChangeConfiguration: configEmitter.event,
     onDidChangeWorkspaceFolders: event(),
     onDidGrantWorkspaceTrust: event(),
+    onDidSaveTextDocument: event(),
     createFileSystemWatcher: () => ({ onDidCreate: event(), onDidDelete: event(), onDidChange: event(), dispose() {} }),
     getWorkspaceFolder: () => vscode.workspace.workspaceFolders[0],
     asRelativePath: (u) =>

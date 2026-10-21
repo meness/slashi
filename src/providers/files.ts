@@ -3,7 +3,8 @@ import * as vscode from 'vscode';
 import { get, isFeatureEnabled } from '../config';
 import type { ActionView } from '../core/protocol';
 import type { Services } from '../services/services';
-import { workspaceRoot } from '../services/terminal';
+import { gitignoreGlobs } from '../core/paths';
+import { currentDocument } from '../services/editor';
 import type { RunContext, SlashItem, SlashProvider } from '../types';
 import { ensureArgs, itemFactory } from './util';
 
@@ -105,8 +106,9 @@ export class FilesProvider implements SlashProvider {
   private uris?: Promise<vscode.Uri[]>;
   private readonly watcher = vscode.workspace.createFileSystemWatcher('**/*', false, true, false);
   private timer?: NodeJS.Timeout;
+  private readonly subs: vscode.Disposable[] = [];
 
-  constructor(private readonly services: Services) {
+  constructor(readonly services: Services) {
     const changed = () => {
       clearTimeout(this.timer);
       this.timer = setTimeout(() => {
@@ -114,33 +116,54 @@ export class FilesProvider implements SlashProvider {
         this.emitter.fire();
       }, 800);
     };
-    this.watcher.onDidCreate(changed);
-    this.watcher.onDidDelete(changed);
-    vscode.workspace.onDidChangeWorkspaceFolders(changed);
+    this.subs.push(
+      this.watcher.onDidCreate(changed),
+      this.watcher.onDidDelete(changed),
+      vscode.workspace.onDidChangeWorkspaceFolders(changed),
+      // The watcher skips change events, so re-index when a .gitignore is edited.
+      vscode.workspace.onDidSaveTextDocument((d) => path.basename(d.fileName) === '.gitignore' && changed()),
+    );
   }
 
   dispose(): void {
+    clearTimeout(this.timer);
+    this.subs.forEach((s) => s.dispose());
     this.watcher.dispose();
     this.emitter.dispose();
   }
 
   private listFiles(): Promise<vscode.Uri[]> {
-    if (!this.uris) {
-      const excludes = new Set(['**/node_modules/**', '**/.git/**']);
-      for (const section of ['files.exclude', 'search.exclude']) {
-        const map = vscode.workspace.getConfiguration().get<Record<string, unknown>>(section) ?? {};
-        for (const [glob, on] of Object.entries(map)) if (on === true) excludes.add(glob);
-      }
-      const max = get('files.maxIndexed', 20000);
-      this.uris = Promise.resolve(vscode.workspace.findFiles('**/*', `{${Array.from(excludes).join(',')}}`, max)).then(
+    this.uris ??= this.excludes().then((excludes) =>
+      vscode.workspace.findFiles('**/*', `{${Array.from(excludes).join(',')}}`, get('files.maxIndexed', 20000)).then(
         (uris) => uris,
         (err) => {
           this.services.log.error('Indexing files failed', err);
           return [];
         },
-      );
-    }
+      ),
+    );
     return this.uris;
+  }
+
+  /** Like Search: files.exclude, search.exclude and (with search.useIgnoreFiles) each folder's root .gitignore. */
+  private async excludes(): Promise<Set<string>> {
+    const config = vscode.workspace.getConfiguration();
+    const excludes = new Set(['**/node_modules/**', '**/.git/**']);
+    for (const section of ['files.exclude', 'search.exclude']) {
+      const map = config.get<Record<string, unknown>>(section) ?? {};
+      for (const [glob, on] of Object.entries(map)) if (on === true) excludes.add(glob);
+    }
+    if (config.get('search.useIgnoreFiles', true)) {
+      for (const folder of vscode.workspace.workspaceFolders ?? []) {
+        try {
+          const text = new TextDecoder().decode(await vscode.workspace.fs.readFile(vscode.Uri.joinPath(folder.uri, '.gitignore')));
+          gitignoreGlobs(text).forEach((g) => excludes.add(g));
+        } catch {
+          // No .gitignore.
+        }
+      }
+    }
+    return excludes;
   }
 
   async items(): Promise<SlashItem[]> {
@@ -309,6 +332,7 @@ export class FilesProvider implements SlashProvider {
   }
 
   private commandItems(): SlashItem[] {
+    const doc = () => currentDocument(this.services.snapshot);
     const current = async (ctx: RunContext) => {
       const uri = (await ctx.editor())?.document.uri;
       if (!uri || uri.scheme === 'untitled') throw new Error('Open a saved file first.');
@@ -327,9 +351,9 @@ export class FilesProvider implements SlashProvider {
         keywords: ['create', 'touch', 'add file'],
         run: async (ctx) => {
           const input = await ensureArgs(ctx.args, 'New file path (relative to the workspace, ./ for the current folder)', {
-            value: relativeBase(),
+            value: relativeBase(doc()),
           });
-          if (input) await createPath(resolveInput(input), input.endsWith('/'));
+          if (input) await createPath(resolveInput(input, doc()), input.endsWith('/'));
         },
       }),
       make({
@@ -342,8 +366,8 @@ export class FilesProvider implements SlashProvider {
         args: { placeholder: 'path/to/folder' },
         keywords: ['create directory'],
         run: async (ctx) => {
-          const input = await ensureArgs(ctx.args, 'New folder path', { value: relativeBase() });
-          if (input) await createPath(resolveInput(input), true);
+          const input = await ensureArgs(ctx.args, 'New folder path', { value: relativeBase(doc()) });
+          if (input) await createPath(resolveInput(input, doc()), true);
         },
       }),
       make({
@@ -439,24 +463,23 @@ export class FilesProvider implements SlashProvider {
   }
 }
 
-function relativeBase(): string {
-  const doc = vscode.window.activeTextEditor?.document;
+function relativeBase(doc: vscode.TextDocument | undefined): string {
   if (!doc || doc.isUntitled) return '';
   const dir = path.posix.dirname(vscode.workspace.asRelativePath(doc.uri, false));
   return dir === '.' ? '' : `${dir}/`;
 }
 
 /** `./x` and `../x` are relative to the active file; everything else to the workspace root. */
-function resolveInput(input: string): vscode.Uri {
+function resolveInput(input: string, doc: vscode.TextDocument | undefined): vscode.Uri {
   const clean = input.trim().replace(/\\/g, '/');
   if (path.isAbsolute(clean)) return vscode.Uri.file(clean);
-  const doc = vscode.window.activeTextEditor?.document;
   if ((clean.startsWith('./') || clean.startsWith('../')) && doc && !doc.isUntitled) {
     return vscode.Uri.joinPath(doc.uri, '..', clean);
   }
-  const root = vscode.workspace.workspaceFolders?.[0]?.uri ?? (workspaceRoot() ? vscode.Uri.file(workspaceRoot()!) : undefined);
-  if (!root) throw new Error('Open a folder first.');
-  return vscode.Uri.joinPath(root, clean);
+  // The current file's folder in a multi-root workspace. Kept as a Uri so virtual workspaces keep their scheme.
+  const folder = (doc && vscode.workspace.getWorkspaceFolder(doc.uri)) ?? vscode.workspace.workspaceFolders?.[0];
+  if (!folder) throw new Error('Open a folder first.');
+  return vscode.Uri.joinPath(folder.uri, clean);
 }
 
 async function exists(uri: vscode.Uri): Promise<boolean> {
@@ -497,7 +520,7 @@ async function rename(uri: vscode.Uri, args: string): Promise<void> {
 
 async function move(uri: vscode.Uri, args: string, provider: FilesProvider): Promise<void> {
   let destination: vscode.Uri | undefined;
-  if (args) destination = resolveInput(args);
+  if (args) destination = resolveInput(args, currentDocument(provider.services.snapshot));
   else {
     const folders = await provider.folderUris();
     const pick = await vscode.window.showQuickPick(
