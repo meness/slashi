@@ -2,6 +2,25 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.5.0](https://github.com/meness/slashi/compare/v0.4.0...v0.5.0) (2026-10-21)
+
+
+### Features
+
+* **api:** let extensions register whole providers ([#24](https://github.com/meness/slashi/issues/24)) ([9b47be5](https://github.com/meness/slashi/commit/9b47be5ba216502372d9c433d9fb83e9495bff43))
+* **marketplace:** verified seal and digest check for official packs ([#25](https://github.com/meness/slashi/issues/25)) ([0c74dde](https://github.com/meness/slashi/commit/0c74dde99a50098b29f86c216557f7bcae8c1d6e))
+
+
+### Bug Fixes
+
+* **scripts:** escape captured data in the screenshot pages' inline scripts ([#28](https://github.com/meness/slashi/issues/28)) ([1610727](https://github.com/meness/slashi/commit/16107278d243c71eb8ee59ab99fe62add3a8c3ca))
+
+
+### Documentation
+
+* remove the outdated original plan ([#23](https://github.com/meness/slashi/issues/23)) ([48a5145](https://github.com/meness/slashi/commit/48a514595c72b3b20721be9a4590ec298003f122))
+* reorganize the README, fix stale docs and badges, add a shipping guide ([#27](https://github.com/meness/slashi/issues/27)) ([b81b6e1](https://github.com/meness/slashi/commit/b81b6e1fdce6a4ba36bba057a9b3a9ab5b1df6be))
+
 ## [0.4.0](https://github.com/meness/slashi/compare/v0.3.0...v0.4.0) (2026-10-21)
 
 
