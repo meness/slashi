@@ -156,6 +156,7 @@ describe('validator rejections', () => {
     ['bad pick var', { name: 'ok', steps: [{ pick: ['a'] }] }, /var: must be a variable name/],
     ['wait too long', { name: 'ok', steps: [{ wait: 60_001 }] }, /wait: must be 0–60000 ms/],
     ['non-number wait', { name: 'ok', steps: [{ wait: '5' }] }, /wait: must be 0–60000 ms/],
+    ['non-boolean background', { name: 'ok', steps: [{ terminal: 'x', background: 'yes' }] }, /background: must be true or false/],
     ['bad ai output', { name: 'ok', steps: [{ ai: 'x', output: 'file' }] }, /output: must be panel, replace or insert/],
   ])('rejects %s', (_label, raw, message) => {
     const { value, errors } = validateCommand(raw);
@@ -165,8 +166,10 @@ describe('validator rejections', () => {
 
   it('accepts the limits themselves', () => {
     expect(
-      validateCommand({ name: 'a'.repeat(40), steps: [{ wait: 0 }, { wait: 60_000 }, { setting: 'a.b', value: 1, target: 'workspace' }] })
-        .errors,
+      validateCommand({
+        name: 'a'.repeat(40),
+        steps: [{ wait: 0 }, { wait: 60_000 }, { setting: 'a.b', value: 1, target: 'workspace' }, { terminal: 'x', background: true }],
+      }).errors,
     ).toEqual([]);
     expect(validateCommand({ name: 'a'.repeat(41), steps: [{ wait: 0 }] }).errors[0]).toMatch(/name/);
   });

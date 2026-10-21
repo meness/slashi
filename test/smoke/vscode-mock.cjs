@@ -258,6 +258,9 @@ const vscode = {
     tabGroups: { all: [], close: async () => true },
     onDidChangeActiveTextEditor: event(),
     onDidCloseTerminal: event(),
+    onDidStartTerminalShellExecution: event(),
+    onDidEndTerminalShellExecution: event(),
+    onDidChangeTerminalShellIntegration: event(),
     createOutputChannel: () => ({
       info() {},
       warn: (...a) => calls.messages.push(['warn', ...a]),

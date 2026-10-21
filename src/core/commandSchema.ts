@@ -3,7 +3,7 @@
 export type StepDef =
   | { command: string; args?: unknown }
   | { slash: string }
-  | { terminal: string; name?: string; cwd?: string }
+  | { terminal: string; name?: string; cwd?: string; background?: boolean }
   | { setting: string; value: unknown; target?: 'user' | 'workspace' }
   | { insert: string }
   | { open: string }
@@ -141,6 +141,9 @@ export function validateStep(raw: unknown, where: string): Validation<StepDef> {
     case 'wait':
       if (typeof s.wait !== 'number' || s.wait < 0 || s.wait > 60_000) errors.push(`${where}.wait: must be 0–60000 ms`);
       break;
+  }
+  if (kind === 'terminal' && s.background !== undefined && typeof s.background !== 'boolean') {
+    errors.push(`${where}.background: must be true or false`);
   }
   if (kind === 'ai' && s.output !== undefined && !['panel', 'replace', 'insert'].includes(s.output as string)) {
     errors.push(`${where}.output: must be panel, replace or insert`);

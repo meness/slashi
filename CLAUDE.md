@@ -1,6 +1,6 @@
 # Slashi
 
-VS Code extension (TypeScript, esbuild, Vitest). Node ≥ 20, VS Code ≥ 1.90.
+VS Code extension (TypeScript, esbuild, Vitest). Node ≥ 20, VS Code ≥ 1.93.
 
 @CONTRIBUTING.md
 

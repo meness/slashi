@@ -73,7 +73,11 @@
           "properties": {
             "terminal": { "type": "string", "description": "Shell command." },
             "name": { "type": "string", "description": "Terminal name." },
-            "cwd": { "type": "string", "description": "Working directory, relative to the workspace." }
+            "cwd": { "type": "string", "description": "Working directory, relative to the workspace." },
+            "background": {
+              "type": "boolean",
+              "description": "Don't wait for the command to finish (for servers and watchers). Otherwise later steps wait, and a failed or interrupted run stops the command."
+            }
           },
           "additionalProperties": false
         },

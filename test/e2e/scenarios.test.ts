@@ -23,12 +23,6 @@ interface GitRepository {
   status(): Promise<void>;
 }
 
-/** Terminal shell-integration events (VS Code 1.93+, newer than the @types/vscode this repo pins). */
-interface ShellEvents {
-  onDidStartTerminalShellExecution?: vscode.Event<{ execution: { commandLine: { value: string } } }>;
-  onDidEndTerminalShellExecution?: vscode.Event<{ exitCode: number | undefined }>;
-}
-
 const ws = vscode.workspace.workspaceFolders![0].uri.fsPath;
 const marker = path.join(ws, 'format-ran.txt');
 const git = (...args: string[]) => execFileSync('git', args, { cwd: ws, encoding: 'utf8' }).trim();
@@ -69,9 +63,8 @@ suite('Slashi end to end', () => {
   suiteSetup(async () => {
     api = await vscode.extensions.getExtension<SlashiApi>('meness.slashi')!.activate();
     // What reached the terminal, for the log when a terminal scenario fails.
-    const shell = vscode.window as unknown as ShellEvents;
-    shell.onDidStartTerminalShellExecution?.((e) => events.push(`ran: ${e.execution.commandLine.value}`));
-    shell.onDidEndTerminalShellExecution?.((e) => events.push(`exit code: ${e.exitCode}`));
+    vscode.window.onDidStartTerminalShellExecution((e) => events.push(`ran: ${e.execution.commandLine.value}`));
+    vscode.window.onDidEndTerminalShellExecution((e) => events.push(`exit code: ${e.exitCode}`));
   });
 
   teardown(function () {
@@ -113,6 +106,51 @@ suite('Slashi end to end', () => {
     assert.equal(await api.run('/ts-only'), true, 'shown in a TypeScript file');
     await open('notes.txt');
     assert.equal(await api.run('/ts-only'), false, 'hidden in a plain-text file');
+  });
+
+  test('a terminal step waits for its command, leaves background ones running, and a failure stops the command', async () => {
+    const write = (file: string, js: string) => `node -e "require('fs').writeFileSync('${file}', ${js})"`;
+    const exists = (file: string) => fs.existsSync(path.join(ws, file));
+    const slashi = vscode.workspace.getConfiguration('slashi');
+    await slashi.update(
+      'customCommands',
+      [
+        {
+          name: 'chain-ok',
+          steps: [
+            { terminal: `node -e "setTimeout(() => require('fs').writeFileSync('chain-1.txt', ''), 1500)"` },
+            { open: 'chain-1.txt' },
+          ],
+        },
+        {
+          name: 'chain-bg',
+          steps: [
+            { terminal: `node -e "setTimeout(() => require('fs').writeFileSync('chain-bg.txt', ''), 8000)"`, background: true },
+            { terminal: 'node -e ""' },
+            { notify: 'done' },
+          ],
+        },
+        { name: 'chain-fail', steps: [{ terminal: 'node -e "process.exit(3)"' }, { terminal: write('chain-3.txt', "''") }] },
+      ],
+      vscode.ConfigurationTarget.Global,
+    );
+    try {
+      assert.equal(await api.run('/chain-ok'), true);
+      const opened = await waitFor(
+        () => vscode.window.activeTextEditor?.document.uri.fsPath.endsWith('chain-1.txt'),
+        'chain-1.txt to open',
+      );
+      assert.ok(opened, 'the open step waited for the terminal step');
+      assert.equal(await api.run('/chain-bg'), true);
+      assert.equal(exists('chain-bg.txt'), false, 'the waited step ran in a new terminal, not queued behind the background one');
+      await waitFor(() => exists('chain-bg.txt'), 'the background step to finish, not interrupted by the next step', 15_000);
+      assert.equal(await api.run('/chain-fail'), true);
+      await sleep(3000);
+      assert.equal(exists('chain-3.txt'), false, 'a non-zero exit stops the command');
+    } finally {
+      await slashi.update('customCommands', undefined, vscode.ConfigurationTarget.Global);
+      for (const f of ['chain-1.txt', 'chain-bg.txt', 'chain-3.txt']) fs.rmSync(path.join(ws, f), { force: true });
+    }
   });
 
   test('a provider registered by another extension runs, turns off in settings, and goes away when disposed', async () => {
