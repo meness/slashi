@@ -46,7 +46,7 @@ Slashi needs VS Code 1.90 or newer. On first launch, a short onboarding sets up 
 
 Press `Cmd /` on macOS or `Ctrl /` on Windows and Linux, then type.
 
-- **One list for everything.** About 170 VS Code commands with slash names, every extension command and setting, your files, open tabs, symbols, problems, Git branches and themes.
+- **One list for everything.** About 180 VS Code and popular extension commands with slash names, every extension command and setting, your files, open tabs, symbols, problems, Git branches and themes.
 - **Commands for your project.** Slashi reads your manifests and offers `/test`, `/dev`, `/prisma-migrate` or `/compose-up` for npm, pnpm, yarn, bun, Next.js, Vite, Vitest, Jest, ESLint, Prettier, Prisma, Playwright, Docker, Make, Python, Rust, Go, .NET, Java, Terraform and more.
 - **Files from the keyboard.** `/new`, `/mkdir`, `/rename`, `/move`, `/dup`, `/delete` (to the trash), copy paths, reveal.
 - **AI where you work.** `/ask`, `/explain`, `/fix`, `/edit`, `/tests`, `/review` and `/commit-msg`, with GitHub Copilot, Claude Code, Codex, Claude, OpenAI, Ollama or any OpenAI-compatible server. Slashi works fine without AI too.
@@ -103,7 +103,7 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 | **Files & Folders** | `/f` | search · create (`/new`, `/mkdir`) · rename & move · duplicate · delete (to trash) · copy paths · reveal |
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
 | **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools |
-| **Commands** | `/cmd` | about 170 VS Code commands with slash names · every extension command |
+| **Commands** | `/cmd` | about 180 VS Code and popular extension commands with slash names · every extension command |
 | **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
 | **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · review your Git changes · commit messages · regex & shell generators · models |
