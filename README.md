@@ -15,7 +15,7 @@ One keyboard-first popup for your files, settings, extensions, Git, terminal, pr
 [![Open VSX downloads](https://img.shields.io/open-vsx/dt/meness/slashi?label=downloads&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 
 [![CI](https://github.com/meness/slashi/actions/workflows/ci.yml/badge.svg)](https://github.com/meness/slashi/actions/workflows/ci.yml)
-[![Core coverage](https://img.shields.io/badge/core%20coverage-95%25-22c55e.svg)](vitest.config.mts)
+[![Core coverage](https://img.shields.io/badge/core%20coverage-96%25-22c55e.svg)](vitest.config.mts)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.90%2B-06b6d4.svg)](https://code.visualstudio.com/)
 
