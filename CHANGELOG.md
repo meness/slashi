@@ -2,6 +2,21 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.0](https://github.com/meness/slashi/compare/v0.5.0...v0.6.0) (2026-10-21)
+
+
+### Features
+
+* **commands:** slash names for Chat and popular extension commands ([#33](https://github.com/meness/slashi/issues/33)) ([f542e21](https://github.com/meness/slashi/commit/f542e21d8fa1901b7c1800354d709b36e972fdd3))
+* **project:** detect more of the Flutter, frontend and backend stacks ([#31](https://github.com/meness/slashi/issues/31)) ([90b08b4](https://github.com/meness/slashi/commit/90b08b424eb12999e2f9ccefd57dcc05c2083c5c))
+* **settings:** list every VS Code setting and set values per language ([#29](https://github.com/meness/slashi/issues/29)) ([5593f83](https://github.com/meness/slashi/commit/5593f832e2b0b622c398f6a2c25e211afa248fbd))
+
+
+### Bug Fixes
+
+* **marketplace:** reload packs when registries change during a fetch ([#32](https://github.com/meness/slashi/issues/32)) ([4f5b6d2](https://github.com/meness/slashi/commit/4f5b6d2e939a9608f6f6f6002c3ec2e33cede39d))
+* **project:** use Yarn 1 commands in Yarn 1 projects ([#30](https://github.com/meness/slashi/issues/30)) ([ad2bac8](https://github.com/meness/slashi/commit/ad2bac8748e6b86da94154462543dc366e2a8ef5))
+
 ## [0.5.0](https://github.com/meness/slashi/compare/v0.4.0...v0.5.0) (2026-10-21)
 
 
