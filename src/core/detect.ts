@@ -127,6 +127,13 @@ export function detectPackageManager(scan: DirectoryScan, pkg?: Record<string, u
   return 'npm';
 }
 
+/** Yarn 2+ (Berry): `.yarnrc.yml`, or a `packageManager` field naming yarn@2 or later. Yarn 1 lacks dlx, up and npm audit. */
+function isYarnBerry(scan: DirectoryScan, pkg: Record<string, unknown> | undefined, rootScan?: DirectoryScan): boolean {
+  const version = typeof pkg?.packageManager === 'string' ? /^yarn@(\d+)/.exec(pkg.packageManager)?.[1] : undefined;
+  if (version) return Number(version) >= 2;
+  return [scan, rootScan].some((s) => s && has(s, '.yarnrc.yml'));
+}
+
 const SCRIPT_ARGS = 'extra arguments (optional)';
 const RUN: Record<Pm, string> = { npm: 'npm run', pnpm: 'pnpm run', yarn: 'yarn', bun: 'bun run' };
 const EXEC: Record<Pm, string> = { npm: 'npx', pnpm: 'pnpm exec', yarn: 'yarn', bun: 'bunx' };
@@ -135,6 +142,7 @@ const DLX: Record<Pm, string> = { npm: 'npx', pnpm: 'pnpm dlx', yarn: 'yarn dlx'
 function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: DirectoryScan | undefined): void {
   const pm = detectPackageManager(ctx.scan, pkg, rootScan);
   ctx.techs.add(pm);
+  const classic = pm === 'yarn' && !isYarnBerry(ctx.scan, pkg, rootScan);
   const scripts = (pkg.scripts && typeof pkg.scripts === 'object' ? pkg.scripts : {}) as Record<string, string>;
   const deps = {
     ...(pkg.dependencies as Record<string, string> | undefined),
@@ -161,7 +169,12 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
   P(
     'ci',
     'clean install (frozen lockfile)',
-    { npm: 'npm ci', pnpm: 'pnpm install --frozen-lockfile', yarn: 'yarn install --immutable', bun: 'bun install --frozen-lockfile' }[pm],
+    {
+      npm: 'npm ci',
+      pnpm: 'pnpm install --frozen-lockfile',
+      yarn: classic ? 'yarn install --frozen-lockfile' : 'yarn install --immutable',
+      bun: 'bun install --frozen-lockfile',
+    }[pm],
     'lock-key',
   );
   P('add', 'add package', `${addCmd} \${args}`, 'plus-circle', 'package names, e.g. zod react-query');
@@ -173,18 +186,20 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
     'minus-circle',
     'package names',
   );
-  P('update', 'update packages', pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn up' : `${pm} update`, 'arrow-circle-up');
-  P('outdated', 'list outdated', pm === 'yarn' ? 'yarn outdated' : `${pm} outdated`, 'list-magnifying-glass');
-  if (pm !== 'bun') P('audit', 'security audit', pm === 'yarn' ? 'yarn npm audit' : `${pm} audit`, 'shield-check');
+  // Yarn 2+ `up` needs package names; `upgrade-interactive` is its `outdated`.
+  if (pm === 'yarn' && !classic) P('update', 'update packages', 'yarn up ${args}', 'arrow-circle-up', 'packages, e.g. react "@types/*"');
+  else P('update', 'update packages', pm === 'npm' ? 'npm update' : pm === 'yarn' ? 'yarn upgrade' : `${pm} update`, 'arrow-circle-up');
+  P('outdated', 'list outdated', pm === 'yarn' && !classic ? 'yarn upgrade-interactive' : `${pm} outdated`, 'list-magnifying-glass');
+  if (pm !== 'bun') P('audit', 'security audit', pm === 'yarn' && !classic ? 'yarn npm audit' : `${pm} audit`, 'shield-check');
   if (pm !== 'bun')
     P('why', 'why is a package installed', `${pm === 'npm' ? 'npm explain' : `${pm} why`} \${args}`, 'question', 'package name');
   P(
     'list',
     'list top-level dependencies',
-    pm === 'yarn' ? 'yarn info --name-only' : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`,
+    pm === 'yarn' ? (classic ? 'yarn list --depth=0' : 'yarn info --name-only') : pm === 'bun' ? 'bun pm ls' : `${pm} ls --depth=0`,
     'list-bullets',
   );
-  P('dlx', 'run a package binary (dlx/npx)', `${DLX[pm]} \${args}`, 'rocket-launch', 'command, e.g. create-vite@latest');
+  P('dlx', 'run a package binary (dlx/npx)', `${classic ? 'npx' : DLX[pm]} \${args}`, 'rocket-launch', 'command, e.g. create-vite@latest');
   P('exec', 'run a local binary', `${EXEC[pm]} \${args}`, 'terminal-window', 'binary and args');
   if (pm === 'npm') {
     P('version', 'bump version', 'npm version ${args:patch}', 'tag', 'patch | minor | major');
