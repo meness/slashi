@@ -16,7 +16,7 @@ One keyboard-first popup for your files, settings, extensions, Git, terminal, pr
 [![CI](https://github.com/meness/slashi/actions/workflows/ci.yml/badge.svg)](https://github.com/meness/slashi/actions/workflows/ci.yml)
 [![Core coverage](https://img.shields.io/badge/core%20coverage-96%25-22c55e.svg)](vitest.config.mts)
 [![License: MIT](https://img.shields.io/badge/license-MIT-8b5cf6.svg)](LICENSE)
-[![VS Code](https://img.shields.io/badge/VS%20Code-1.90%2B-06b6d4.svg)](https://code.visualstudio.com/)
+[![VS Code](https://img.shields.io/badge/VS%20Code-1.93%2B-06b6d4.svg)](https://code.visualstudio.com/)
 
 <picture>
   <source media="(prefers-color-scheme: light)" srcset="media/screenshots/hero-light.png">
@@ -38,7 +38,7 @@ One keyboard-first popup for your files, settings, extensions, Git, terminal, pr
 | **Command line** | `code --install-extension meness.slashi` |
 | **VSIX file** | Download `slashi-<version>.vsix` from the [latest release](https://github.com/meness/slashi/releases/latest), then **Extensions** → `…` → **Install from VSIX…** |
 
-Slashi needs VS Code 1.90 or newer. On first launch, a short onboarding sets up the shortcut, your providers and AI.
+Slashi needs VS Code 1.93 or newer. On first launch, a short onboarding sets up the shortcut, your providers and AI.
 
 <p align="center">
   <img src="media/screenshots/hero-onboarding-dark.png" alt="Slashi onboarding" width="820">
@@ -182,7 +182,7 @@ Add commands to `slashi.customCommands` (user settings), or to **`.vscode/slashi
 |---|---|
 | `command` | `{ "command": "editor.action.formatDocument" }` (optional `args`) |
 | `slash` | `{ "slash": "/run npm test" }` |
-| `terminal` | `{ "terminal": "npm run build", "cwd": "packages/web" }` |
+| `terminal` | `{ "terminal": "npm run build", "cwd": "packages/web" }`. Later steps wait for it, and a failed or interrupted run stops the command (needs [shell integration](https://code.visualstudio.com/docs/terminal/shell-integration)). Add `"background": true` for servers and watchers. |
 | `setting` | `{ "setting": "editor.fontSize", "value": 18, "target": "user" }` |
 | `insert` | `{ "insert": "// TODO(${env:USER}): " }` |
 | `open` | `{ "open": "https://github.com/${input:repo}" }` or a workspace path |
@@ -284,7 +284,7 @@ slashi?.registerCommand({
 
 ## Contributing
 
-Bug reports, ideas, action packs and pull requests are welcome. You need **Node 20+** and **VS Code 1.90+**:
+Bug reports, ideas, action packs and pull requests are welcome. You need **Node 20+** and **VS Code 1.93+**:
 
 ```bash
 git clone https://github.com/meness/slashi && cd slashi

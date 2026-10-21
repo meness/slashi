@@ -100,11 +100,11 @@ export async function runCustomCommand(def: CustomCommandDef, ctx: RunContext, s
   const shell = shellKind();
   const shared = source === 'team' || source === 'pack';
   try {
-    for (const step of def.steps) {
+    for (const [i, step] of def.steps.entries()) {
       const all = await variableResolver(editor, args, vars);
       const resolve = shared ? (name: string) => (sharedVariableAllowed(step, name) ? all(name) : undefined) : all;
       const expand = (s: string) => expandTemplate(s, resolve, (v) => shellQuote(v, shell));
-      await runStep(step, ctx, expand, vars, editor);
+      await runStep(step, ctx, expand, vars, editor, i === def.steps.length - 1);
     }
   } catch (err) {
     if (err instanceof Cancelled) return;
@@ -118,6 +118,7 @@ async function runStep(
   expand: (s: string) => string,
   vars: Record<string, string>,
   editor: vscode.TextEditor | undefined,
+  last: boolean,
 ): Promise<void> {
   if ('command' in step) {
     const args = step.args === undefined ? [] : [expandDeep(step.args, expand)];
@@ -128,7 +129,15 @@ async function runStep(
   } else if ('terminal' in step) {
     const root = workspaceRoot(ctx.services.snapshot?.document.uri);
     const cwd = step.cwd ? path.resolve(root ?? '', expand(step.cwd)) : root;
-    ctx.services.terminal.run(expand(step.terminal), { cwd, name: step.name });
+    const command = expand(step.terminal);
+    // The last step has nothing to wait for; `background` keeps servers and watchers from blocking the rest.
+    if (last || step.background) return void ctx.services.terminal.run(command, { cwd, name: step.name });
+    const result = await ctx.services.terminal.runAndWait(command, { cwd, name: step.name });
+    // The unexpanded step in the message: expanded values (`${env:…}`, `${clipboard}`) would reach the log.
+    if (result && result.exitCode !== 0) {
+      const why = result.exitCode === undefined ? "was interrupted or didn't report an exit code" : `exited with code ${result.exitCode}`;
+      throw new Error(`Stopped: "${step.terminal}" ${why}.`);
+    }
   } else if ('setting' in step) {
     const target = step.target === 'workspace' ? vscode.ConfigurationTarget.Workspace : vscode.ConfigurationTarget.Global;
     await vscode.workspace.getConfiguration().update(step.setting, expandDeep(step.value, expand), target);
