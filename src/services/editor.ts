@@ -43,6 +43,14 @@ export async function restoreEditor(snapshot: EditorSnapshot | undefined): Promi
   return editor;
 }
 
+/**
+ * The document a command acts on: the active editor, or the one Slashi opened over while the popup is still closing.
+ * The active editor comes first because the snapshot is stale for runs that never opened the popup (the API, keybindings).
+ */
+export function currentDocument(snapshot: EditorSnapshot | undefined): vscode.TextDocument | undefined {
+  return vscode.window.activeTextEditor?.document ?? (snapshot && !snapshot.document.isClosed ? snapshot.document : undefined);
+}
+
 /** Selected text, or the word under the cursor, or the whole document. */
 export function textTarget(editor: vscode.TextEditor, mode: 'word' | 'document'): { range: vscode.Range; text: string }[] {
   const doc = editor.document;

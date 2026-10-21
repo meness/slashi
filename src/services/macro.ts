@@ -126,7 +126,7 @@ async function runStep(
     const ok = await ctx.services.runSlash(expand(step.slash));
     if (!ok) throw new Error(`Unknown slash command ${step.slash}`);
   } else if ('terminal' in step) {
-    const root = workspaceRoot();
+    const root = workspaceRoot(ctx.services.snapshot?.document.uri);
     const cwd = step.cwd ? path.resolve(root ?? '', expand(step.cwd)) : root;
     ctx.services.terminal.run(expand(step.terminal), { cwd, name: step.name });
   } else if ('setting' in step) {
@@ -142,7 +142,9 @@ async function runStep(
     if (/^(https?|mailto|vscode):/i.test(value)) {
       await vscode.env.openExternal(vscode.Uri.parse(value));
     } else {
-      const uri = vscode.Uri.file(path.isAbsolute(value) ? value : path.join(workspaceRoot() ?? '', value));
+      const uri = vscode.Uri.file(
+        path.isAbsolute(value) ? value : path.join(workspaceRoot(ctx.services.snapshot?.document.uri) ?? '', value),
+      );
       await vscode.window.showTextDocument(uri);
     }
   } else if ('ai' in step) {
