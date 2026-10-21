@@ -9,7 +9,31 @@ import type { SlashItem, SlashProvider } from '../types';
 import { ensureArgs, itemFactory } from './util';
 
 const make = itemFactory('project', 'Project');
-const MANIFEST_GLOB = `**/{${MANIFESTS.join(',')},*.csproj,*.fsproj,*.sln,Dockerfile,compose.yaml,compose.yml,docker-compose.yml,docker-compose.yaml,*.tf,CMakeLists.txt,Package.swift}`;
+// Files that only mark a stack (read by name, not content) still need a scan and a refresh when they change.
+const MARKERS = [
+  '*.csproj',
+  '*.fsproj',
+  '*.sln',
+  'Dockerfile',
+  'compose.yaml',
+  'compose.yml',
+  'docker-compose.yml',
+  'docker-compose.yaml',
+  '*.tf',
+  'CMakeLists.txt',
+  'Package.swift',
+  'eas.json',
+  'firebase.json',
+  'wrangler.toml',
+  'wrangler.json',
+  'wrangler.jsonc',
+  'alembic.ini',
+  '.golangci.*',
+  'l10n.yaml',
+  'melos.yaml',
+  '.fvmrc',
+];
+const MANIFEST_GLOB = `**/{${[...MANIFESTS, ...MARKERS].join(',')}}`;
 const MAX_DIRS = 40;
 
 /** Detects the repository's stack and offers matching commands (scripts, package manager, tools). */
