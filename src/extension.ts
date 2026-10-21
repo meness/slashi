@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import type { SlashiApi } from './api';
-import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, shortcutLabel, updateGlobal } from './config';
+import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, setProviderEnabled, shortcutLabel, updateGlobal } from './config';
 import { parseQuery } from './core/query';
 import { pickByName } from './core/search';
 import { HELP_LINKS } from './data/links';
@@ -8,6 +8,7 @@ import { execute, reportError } from './executor';
 import { AiProvider, pickModel } from './providers/ai';
 import { CommandsProvider } from './providers/commands';
 import { CustomProvider, editTeamCommands, exportPack, newCommandWizard } from './providers/custom';
+import { ExtensionProvider } from './providers/extension';
 import { ExtensionsProvider } from './providers/extensions';
 import { FilesProvider } from './providers/files';
 import { GitProvider } from './providers/git';
@@ -227,7 +228,12 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     services.ai.onDidChange(() => void updateStatus()),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('slashi.statusBar')) void updateStatus();
-      if (e.affectsConfiguration('slashi.disabledFeatures') || e.affectsConfiguration('slashi.providers')) registry.invalidate();
+      if (
+        e.affectsConfiguration('slashi.disabledFeatures') ||
+        e.affectsConfiguration('slashi.providers') ||
+        e.affectsConfiguration('slashi.disabledProviders')
+      )
+        registry.invalidate();
     }),
     vscode.languages.registerCompletionItemProvider('*', new InlineSlashCompletions(services), '/'),
   );
@@ -252,6 +258,13 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     registerCommand: (cmd) => {
       const disposable = custom.register(cmd);
       context.subscriptions.push(disposable);
+      return disposable;
+    },
+    registerProvider: (def) => {
+      const disposable = registry.register(new ExtensionProvider(def, registry.takenPrefixes(), log));
+      context.subscriptions.push(disposable);
+      // Load it now, so a slow items() is cached before the popup first needs it.
+      void registry.warm();
       return disposable;
     },
     open: (query) => services.openPopup(query ?? ''),
@@ -299,7 +312,7 @@ async function toggleProviders(registry: Registry): Promise<void> {
       if (isFeatureEnabled(item.provider as never, item.feature) !== enabled)
         await setFeatureEnabled(item.provider as never, item.feature, enabled);
     } else if (isProviderEnabled(item.provider as never) !== enabled) {
-      await updateGlobal(`providers.${item.provider}`, enabled);
+      await setProviderEnabled(item.provider as never, enabled);
     }
   }
   void vscode.window.setStatusBarMessage('$(check) Slashi providers updated', 2500);

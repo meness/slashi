@@ -98,7 +98,7 @@ Host it on any HTTPS server (or a private GitHub raw URL), then add it to `slash
 
 ## Extension API
 
-Other extensions can add commands that run real code:
+Other extensions can add commands that run real code, and whole providers (below):
 
 ```ts
 import type * as vscode from 'vscode';
@@ -114,6 +114,7 @@ interface SlashiApi {
     args?: string;
     run(args: string): unknown;
   }): vscode.Disposable;
+  registerProvider(provider: SlashiProvider): vscode.Disposable; // 0.5.0+; copy SlashiProvider from src/api.ts
   open(query?: string): Promise<void>;
   run(slash: string): Promise<boolean>;
 }
@@ -134,6 +135,41 @@ export async function activate(context: vscode.ExtensionContext) {
   );
 }
 ```
+
+### Providers
+
+A provider adds a whole source of results with its own scope, such as `/jira ` listing your tickets. Use it when the results come from your data rather than a fixed list:
+
+```ts
+const tickets = new vscode.EventEmitter<void>();
+if (typeof slashi.registerProvider === 'function') {
+  // Slashi 0.5.0 and later
+  context.subscriptions.push(
+    slashi.registerProvider({
+      extensionId: 'acme.jira',
+      id: 'issues',
+      title: 'Jira',
+      icon: 'ticket',
+      prefix: 'jira', // type `/jira ` to search only these
+      items: async () =>
+        (await fetchMyIssues()).map((issue) => ({
+          id: issue.key,
+          title: `${issue.key} ${issue.summary}`,
+          description: issue.status,
+          keywords: [issue.assignee],
+          run: () => vscode.env.openExternal(vscode.Uri.parse(issue.url)),
+        })),
+      onDidChange: tickets.event, // fire it when the list changes
+    }),
+  );
+}
+```
+
+- **Caching:** Slashi calls `items()` once and caches the results until you fire `onDidChange`. Set `volatile: true` to call it every time Slashi opens.
+- **Speed:** Slashi loads your provider when you register it, so the popup normally uses cached results. When it does have to call `items()` while opening, it waits at most 0.5 seconds; a slower call's results show the next time Slashi opens. Keep `volatile` providers fast.
+- **Limits:** items need an `id`, a `title` and `run`; invalid ones are skipped and logged in the Slashi output channel. At most 2000 items are kept.
+- **Names:** give an item a `name` to make it a slash command (`/key-1`). Leave it out for results that are only found by search, and set `scopedOnly: true` to keep them out of the global search.
+- **Prefix:** must not be another provider's prefix; `registerProvider` throws if it is. If it matches a command name (such as `run`), the command wins and your scope is turned off with a warning in the log, so pick a distinctive one. Users can turn your provider off in Slashi Studio (stored in `slashi.disabledProviders`).
 
 Add `"extensionDependencies": ["meness.slashi"]` only if your extension can’t work without Slashi. Otherwise, treat it as optional as shown above.
 
