@@ -1,5 +1,5 @@
-// Popular core VS Code settings. VS Code doesn't expose core setting metadata to extensions,
-// so these are curated; settings contributed by extensions (including built-ins like Git) are read at runtime.
+// Popular core VS Code settings: boosted in search, and the fallback until VS Code's settings schema loads.
+// Settings contributed by extensions (including built-ins like Git) are read at runtime.
 
 export interface SettingMeta {
   key: string;
@@ -7,6 +7,8 @@ export interface SettingMeta {
   description: string;
   enum?: string[];
   enumDescriptions?: string[];
+  /** Can be set per language (`"[typescript]": {…}`). */
+  languageOverridable?: boolean;
 }
 
 const b = (key: string, description: string): SettingMeta => ({ key, type: 'boolean', description });
