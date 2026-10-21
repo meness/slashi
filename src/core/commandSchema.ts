@@ -54,12 +54,17 @@ export interface RegistryEntry {
   sha256?: string;
 }
 
-/** Slashi's own registry: the default of `slashi.marketplace.registries`. Only its packs are shown as verified. */
+/** Slashi's own registry: the default of `slashi.marketplace.registries`. */
 export const OFFICIAL_REGISTRY = 'https://raw.githubusercontent.com/meness/slashi/main/marketplace/index.json';
+/** Author name reserved for packs the Slashi maintainers publish in the official registry. */
+export const SLASHI_AUTHOR = 'Slashi';
 
-/** A listing is verified when it comes from the official registry with a digest, so installing proves the content was reviewed. */
+/**
+ * Verified = built by Slashi: listed in the official registry under Slashi's name, with a digest that
+ * installing checks. Community packs in the same registry are reviewed but not verified.
+ */
 export function isVerified(registry: string, entry: RegistryEntry): boolean {
-  return registry === OFFICIAL_REGISTRY && entry.sha256 !== undefined;
+  return registry === OFFICIAL_REGISTRY && entry.author === SLASHI_AUTHOR && entry.sha256 !== undefined;
 }
 
 /** A pack that claims to be Slashi's but isn't verified. */

@@ -194,7 +194,7 @@ Add commands to `slashi.customCommands` (user settings), or to **`.vscode/slashi
 
 ### 3. The action marketplace
 
-`/market` lists community **action packs**: Git Power Moves, AI Writing Tools, Focus & Present, Web Dev Toolkit, Handy Inserts and more. Packs published by Slashi carry a verified seal, and Slashi checks each download against the registry before installing. Before you install a pack, Slashi shows every step in it and marks the ones that can run commands. To build and publish your own, see [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md). `/export-pack` turns your commands into a pack, and teams can host private registries with `slashi.marketplace.registries`.
+`/market` lists community **action packs**: Git Power Moves, AI Writing Tools, Focus & Present, Web Dev Toolkit, Handy Inserts and more. Packs built by Slashi carry a verified seal, and every download is checked against the registry before it installs. Before you install a pack, Slashi shows every step in it and marks the ones that can run commands. To build and publish your own, see [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md). `/export-pack` turns your commands into a pack, and teams can host private registries with `slashi.marketplace.registries`.
 
 ### 4. From another extension
 

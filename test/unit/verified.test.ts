@@ -26,6 +26,7 @@ describe('verified packs', () => {
     expect(isVerified(OFFICIAL_REGISTRY, entry)).toBe(false);
     expect(isVerified('https://example.com/index.json', { ...entry, sha256: digest })).toBe(false);
     expect(isVerified(`${OFFICIAL_REGISTRY}?x`, { ...entry, sha256: digest })).toBe(false);
+    expect(isVerified(OFFICIAL_REGISTRY, { ...entry, author: 'Jane', sha256: digest })).toBe(false);
   });
 
   it('flags packs that only claim to be Slashi’s', () => {

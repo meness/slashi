@@ -244,7 +244,9 @@ export async function installFromUrl(services: Services, url: string, expected?:
   if (expected && pack.id !== expected.id)
     throw new Error(`The registry lists “${expected.id}”, but the file is the pack “${pack.id}”. Nothing was installed.`);
   if (expected?.sha256 && (await packDigest(raw)) !== expected.sha256)
-    throw new Error(`${pack.name} doesn’t match its registry listing; it changed after it was listed. Nothing was installed.`);
+    throw new Error(
+      `${pack.name} doesn’t match its registry listing, so nothing was installed. If the registry was just updated, try again in a few minutes.`,
+    );
   const verified = expected?.verified === true;
   const lines = pack.commands.map((c) => {
     const risky = approvalSteps(c);

@@ -78,7 +78,7 @@ Review guidelines:
 - Don’t collect data or call third-party services without saying so in the description.
 - Bump `version` whenever you change a pack. Users see an **update** badge.
 
-Packs in this registry show a **verified** seal (✓) in `/market`: they're reviewed here, and `marketplace/index.json` records a SHA-256 digest of each one that Slashi checks before installing. Packs from other registries never get the seal, and one whose author claims to be Slashi is labeled **(unverified)**.
+`marketplace/index.json` records a SHA-256 digest of every pack, and Slashi refuses a download that doesn't match it. Packs the Slashi maintainers publish here (`"author": "Slashi"`, reserved for them) show a **verified** seal in `/market`. Community packs are reviewed but don't get the seal, and a pack from another registry whose author claims to be Slashi is labeled **(unverified)**.
 
 ### Private registries
 

@@ -536,6 +536,7 @@ const check = (name, fn) => {
       listed('focus-mode'),
       { ...listed('git-power'), sha256: '0'.repeat(64) },
       { ...listed('focus-mode'), id: 'renamed', name: 'Renamed' },
+      { ...listed('web-dev'), author: 'Jane' },
     ],
   };
   const other = { version: 1, packs: [{ ...listed('snippets'), url: 'https://example.com/snippets.json' }] };
@@ -569,6 +570,8 @@ const check = (name, fn) => {
     assert.ok(!byTitle('Handy Inserts').verified);
     assert.match(byTitle('Handy Inserts').description, /by Slashi \(unverified\)$/);
     assert.match(byTitle('Focus & Present').description, /by Slashi$/);
+    const community = packItems.find((i) => i.description.endsWith('by Jane'));
+    assert.ok(community && !community.verified, 'community packs in the official registry are not verified');
   });
   const { showInformationMessage } = mock.window;
   let prompt;
@@ -592,7 +595,7 @@ const check = (name, fn) => {
   });
   prompt = undefined;
   await installRun('Git Power Moves');
-  await waitFor(() => takeErrors(calls.messages, /doesn’t match its registry listing/), 'digest mismatch error');
+  await waitFor(() => takeErrors(calls.messages, /doesn’t match its registry listing, so nothing was installed/), 'digest mismatch error');
   await installRun('Renamed');
   await waitFor(
     () => takeErrors(calls.messages, /The registry lists “renamed”, but the file is the pack “focus-mode”/),
