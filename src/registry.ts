@@ -20,6 +20,7 @@ export class Registry implements vscode.Disposable {
   /** Ids each provider has put in `byId`, so items that disappear are dropped on the next load. */
   private readonly idsByProvider = new Map<ProviderId, Set<string>>();
   private readonly disposables: vscode.Disposable[] = [];
+  private readonly warned = new Set<string>();
   private readonly onDidChangeEmitter = new vscode.EventEmitter<void>();
   readonly onDidChange = this.onDidChangeEmitter.event;
 
@@ -32,6 +33,7 @@ export class Registry implements vscode.Disposable {
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (
           e.affectsConfiguration('slashi.providers') ||
+          e.affectsConfiguration('slashi.disabledProviders') ||
           e.affectsConfiguration('slashi.disabledFeatures') ||
           e.affectsConfiguration('slashi.hiddenCommands')
         ) {
@@ -42,13 +44,31 @@ export class Registry implements vscode.Disposable {
   }
 
   register(provider: SlashProvider): vscode.Disposable {
+    if (this.providers.has(provider.id)) throw new Error(`A Slashi provider with the id ${provider.id} is already registered.`);
     this.providers.set(provider.id, provider);
-    if (provider.onDidChange) this.disposables.push(provider.onDidChange(() => this.invalidate(provider.id)));
+    const sub = provider.onDidChange?.(() => this.invalidate(provider.id));
+    let disposed = false;
     return new vscode.Disposable(() => {
+      // Extensions dispose it themselves and again through context.subscriptions; the second call must not remove a re-registered provider.
+      if (disposed) return;
+      disposed = true;
+      sub?.dispose();
       this.providers.delete(provider.id);
-      this.invalidate(provider.id);
+      this.forget(provider.id);
       provider.dispose?.();
     });
+  }
+
+  /** Scope prefixes in use by any registered provider, enabled or not. */
+  takenPrefixes(): Set<string> {
+    return new Set(this.all().flatMap((p) => [p.prefix, ...(p.scopes ?? []).map((s) => s.prefix)]));
+  }
+
+  /** Drops a removed provider's cache and items. */
+  private forget(id: ProviderId): void {
+    for (const itemId of this.idsByProvider.get(id) ?? []) this.byId.delete(itemId);
+    this.idsByProvider.delete(id);
+    this.invalidate(id);
   }
 
   all(): SlashProvider[] {
@@ -96,6 +116,8 @@ export class Registry implements vscode.Disposable {
         } catch (err) {
           this.log.error(`Provider ${provider.id} failed`, err);
         }
+        // Removed while loading: its items must not become runnable again.
+        if (this.providers.get(provider.id) !== provider) return { items: [], remote: [], remoteIndex: [] };
         const ids = this.idsByProvider.get(provider.id) ?? new Set<string>();
         this.idsByProvider.set(provider.id, ids);
         const current = this.pending.get(provider.id) === pending;
@@ -175,6 +197,10 @@ export class Registry implements vscode.Disposable {
   scopes(): ScopeView[] {
     const out: ScopeView[] = [];
     for (const p of this.enabled()) {
+      if (p.source && this.shadowsCommand(p)) {
+        this.warnOnce(`Provider ${p.id}: /${p.prefix} is also a command name, so the command wins and the scope is off.`);
+        continue;
+      }
       out.push({ prefix: p.prefix, providerId: p.id, title: p.title, icon: p.icon, remote: false, placeholder: p.placeholder });
       for (const s of p.scopes ?? []) {
         if (isFeatureEnabled(p.id, s.feature)) out.push({ ...s, providerId: p.id, remote: false });
@@ -183,8 +209,28 @@ export class Registry implements vscode.Disposable {
     return out;
   }
 
+  /**
+   * An extension provider's prefix must not shadow another provider's command: with `run` as a scope,
+   * `/run npm test` would search that provider instead of running the command. Checks loaded catalogues.
+   */
+  private shadowsCommand(provider: SlashProvider): boolean {
+    for (const [id, entry] of this.cache) {
+      const named = (i: SlashItem) => i.name === provider.prefix;
+      if (id !== provider.id && (entry.items.some(named) || entry.remote.some(named))) return true;
+    }
+    return false;
+  }
+
+  private warnOnce(message: string): void {
+    if (this.warned.has(message)) return;
+    this.warned.add(message);
+    this.log.warn(message);
+  }
+
   /** Marks scopes whose provider has remote items so the webview asks the host while typing. */
   async scopesWithRemote(): Promise<ScopeView[]> {
+    // Loaded first, so scopes() knows every command name an extension's prefix could shadow.
+    await this.warm();
     const scopes = this.scopes();
     for (const scope of scopes) {
       const provider = this.providers.get(scope.providerId)!;

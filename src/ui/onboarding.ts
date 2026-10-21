@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { get, isProviderEnabled, shortcutLabel, updateGlobal } from '../config';
+import { get, isProviderEnabled, setProviderEnabled, shortcutLabel, updateGlobal } from '../config';
 import type { ProviderId } from '../core/protocol';
 import { BACKEND_LABELS, type BackendId, type ModelInfo } from '../llm/types';
 import type { Services } from '../services/services';
@@ -77,7 +77,8 @@ export class Onboarding implements vscode.Disposable {
         this.step = m.step;
         break;
       case 'toggleProvider':
-        await updateGlobal(`providers.${m.id}`, m.enabled);
+        if (!this.services.registry.get(m.id)) throw new Error(`Unknown provider ${m.id}`);
+        await setProviderEnabled(m.id, m.enabled);
         await this.pushState();
         break;
       case 'useSlashKey':

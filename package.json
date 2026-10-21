@@ -451,6 +451,16 @@
             "default": true,
             "description": "Marketplace: browse, install and update community Slashi action packs."
           },
+          "slashi.disabledProviders": {
+            "type": "array",
+            "uniqueItems": true,
+            "default": [],
+            "items": {
+              "type": "string",
+              "pattern": "^ext:"
+            },
+            "markdownDescription": "Providers added by other extensions (ids like `ext:acme.jira/issues`) that are turned off. Toggle them in Slashi Studio."
+          },
           "slashi.disabledFeatures": {
             "type": "array",
             "uniqueItems": true,

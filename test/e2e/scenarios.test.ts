@@ -9,6 +9,13 @@ import * as vscode from 'vscode';
 
 interface SlashiApi {
   run(slash: string): Promise<boolean>;
+  registerProvider(provider: {
+    extensionId: string;
+    id: string;
+    title: string;
+    prefix: string;
+    items(): { id: string; title: string; name?: string; args?: string; run(args: string): unknown }[];
+  }): vscode.Disposable;
 }
 
 interface GitRepository {
@@ -106,6 +113,26 @@ suite('Slashi end to end', () => {
     assert.equal(await api.run('/ts-only'), true, 'shown in a TypeScript file');
     await open('notes.txt');
     assert.equal(await api.run('/ts-only'), false, 'hidden in a plain-text file');
+  });
+
+  test('a provider registered by another extension runs, turns off in settings, and goes away when disposed', async () => {
+    let ran = '';
+    const provider = api.registerProvider({
+      extensionId: 'acme.e2e',
+      id: 'tickets',
+      title: 'Tickets',
+      prefix: 'tickets',
+      items: () => [{ id: 'T-1', title: 'First ticket', name: 't-1', args: 'note', run: (args) => (ran = args) }],
+    });
+    assert.equal(await api.run('/t-1 hello'), true);
+    assert.equal(ran, 'hello');
+    const slashi = vscode.workspace.getConfiguration('slashi');
+    await slashi.update('disabledProviders', ['ext:acme.e2e/tickets'], vscode.ConfigurationTarget.Global);
+    assert.equal(await api.run('/t-1'), false, 'hidden while turned off');
+    await slashi.update('disabledProviders', undefined, vscode.ConfigurationTarget.Global);
+    assert.equal(await api.run('/t-1 again'), true);
+    provider.dispose();
+    assert.equal(await api.run('/t-1'), false, 'gone after dispose');
   });
 
   test('/commit with nothing staged commits everything through the real Git API', async () => {

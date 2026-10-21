@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { isExtensionProviderId } from './core/extensionProviders';
 import type { ProviderId } from './core/protocol';
 
 export const section = () => vscode.workspace.getConfiguration('slashi');
@@ -14,7 +15,17 @@ export function get<T>(key: string, fallback: T): T {
 
 export function isProviderEnabled(id: ProviderId): boolean {
   if (id === 'system') return true;
+  // Extension providers aren't known in advance, so they can't have a `slashi.providers.<id>` setting of their own.
+  if (isExtensionProviderId(id)) return !get<string[]>('disabledProviders', []).includes(id);
   return get<boolean>(`providers.${id}`, true);
+}
+
+export async function setProviderEnabled(id: ProviderId, enabled: boolean): Promise<void> {
+  if (!isExtensionProviderId(id)) return updateGlobal(`providers.${id}`, enabled);
+  const current = new Set(globalValue<string[]>('disabledProviders', []));
+  if (enabled) current.delete(id);
+  else current.add(id);
+  await updateGlobal('disabledProviders', Array.from(current).sort());
 }
 
 export function isFeatureEnabled(provider: ProviderId, feature: string): boolean {
