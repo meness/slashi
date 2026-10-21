@@ -2,6 +2,14 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.6.1](https://github.com/meness/slashi/compare/v0.6.0...v0.6.1) (2026-10-21)
+
+
+### Documentation
+
+* **marketplace:** clearer listing description and search keywords ([#37](https://github.com/meness/slashi/issues/37)) ([86a26a8](https://github.com/meness/slashi/commit/86a26a82ed2b61658365eb8afa69e24aecaf908d))
+* **readme:** add a demo GIF under the hero image ([#35](https://github.com/meness/slashi/issues/35)) ([6ab6092](https://github.com/meness/slashi/commit/6ab6092d1b72ecb90ba96a7822aa25be908dd193))
+
 ## [0.6.0](https://github.com/meness/slashi/compare/v0.5.0...v0.6.0) (2026-10-21)
 
 
