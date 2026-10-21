@@ -5,11 +5,11 @@
 coverage/
 dist/
 node_modules/
+# Compiled tests (test/smoke/out, test/e2e/out, test/integration/out)
 out/
-test/integration/out/
-test/e2e/out/
-test/smoke/out/
 .claude/settings.local.json
+# Claude Code worktrees (claude --worktree)
+.claude/worktrees/
 
 # Local design-tool cache (impeccable)
 .impeccable/hook.cache.json
