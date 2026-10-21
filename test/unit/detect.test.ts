@@ -21,6 +21,41 @@ describe('package manager detection', () => {
   });
 });
 
+describe('Yarn versions', () => {
+  const cmds = (files: Record<string, string | null>, root?: DirectoryScan) => {
+    const scans = root ? [root, scan('apps/web', files)] : [scan('', files)];
+    return Object.fromEntries(detectProject(scans).commands.map((c) => [c.name.replace(/^web:/, ''), c.command]));
+  };
+
+  it('uses Yarn 1 commands with only a yarn.lock', () => {
+    const c = cmds({ 'package.json': pkg({}), 'yarn.lock': null });
+    expect(c['yarn-ci']).toBe('yarn install --frozen-lockfile');
+    expect(c['yarn-update']).toBe('yarn upgrade');
+    expect(c['yarn-outdated']).toBe('yarn outdated');
+    expect(c['yarn-audit']).toBe('yarn audit');
+    expect(c['yarn-list']).toBe('yarn list --depth=0');
+    expect(c['yarn-dlx']).toBe('npx ${args}');
+  });
+
+  it('uses Yarn 2+ commands with .yarnrc.yml or a modern packageManager field', () => {
+    for (const c of [
+      cmds({ 'package.json': pkg({}), 'yarn.lock': null, '.yarnrc.yml': null }),
+      cmds({ 'package.json': pkg({ packageManager: 'yarn@4.5.0' }) }),
+      cmds({ 'package.json': pkg({}) }, scan('', { 'yarn.lock': null, '.yarnrc.yml': null })),
+    ]) {
+      expect(c['yarn-ci']).toBe('yarn install --immutable');
+      expect(c['yarn-update']).toBe('yarn up ${args}');
+      expect(c['yarn-outdated']).toBe('yarn upgrade-interactive');
+      expect(c['yarn-audit']).toBe('yarn npm audit');
+      expect(c['yarn-dlx']).toBe('yarn dlx ${args}');
+    }
+  });
+
+  it('treats packageManager yarn@1 as Yarn 1', () => {
+    expect(cmds({ 'package.json': pkg({ packageManager: 'yarn@1.22.22' }) })['yarn-ci']).toBe('yarn install --frozen-lockfile');
+  });
+});
+
 describe('detectProject', () => {
   const result = detectProject([
     scan('', {
