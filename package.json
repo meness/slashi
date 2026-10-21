@@ -1,7 +1,7 @@
 {
   "name": "slashi",
   "displayName": "Slashi — Slash Commands for Everything",
-  "description": "One beautiful, keyboard-first popup to do 99% of your VS Code work with a slash: files, settings, extensions, git, terminal, AI and your own commands.",
+  "description": "Do anything in VS Code. Just type /. One keyboard-first popup for files, settings, extensions, Git, terminal, project scripts, AI and your own commands.",
   "version": "0.6.0",
   "publisher": "meness",
   "license": "MIT",
@@ -18,6 +18,7 @@
     "url": "https://github.com/meness/slashi/issues"
   },
   "homepage": "https://github.com/meness/slashi#readme",
+  "pricing": "Free",
   "sponsor": {
     "url": "https://github.com/meness/slashi/blob/main/DONATE.md"
   },
@@ -34,7 +35,16 @@
     "copilot",
     "ollama",
     "claude",
-    "macros"
+    "macros",
+    "quick open",
+    "fuzzy finder",
+    "npm scripts",
+    "tasks",
+    "git",
+    "settings",
+    "file actions",
+    "custom commands",
+    "shortcuts"
   ],
   "categories": [
     "Other",
