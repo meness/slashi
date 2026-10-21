@@ -26,7 +26,11 @@ export class CommandsProvider implements SlashProvider {
   readonly prefix = 'cmd';
   readonly placeholder = 'Run any VS Code or extension command…';
   readonly features = [
-    { id: 'core', title: 'VS Code commands', description: '~170 curated built-in commands with slash names (/format, /split, /zen…).' },
+    {
+      id: 'core',
+      title: 'VS Code commands',
+      description: '~180 curated VS Code and popular extension commands with slash names (/format, /split, /ts-restart…).',
+    },
     {
       id: 'extensionCommands',
       title: 'Extension commands',
@@ -48,6 +52,7 @@ export class CommandsProvider implements SlashProvider {
     const seen = new Set<string>();
     if (isFeatureEnabled('commands', 'core')) {
       for (const cmd of CORE_COMMANDS) {
+        if (cmd.ext && !vscode.extensions.getExtension(cmd.ext)) continue;
         seen.add(cmd.id);
         items.push(
           make({

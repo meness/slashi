@@ -186,6 +186,11 @@ const check = (name, fn) => {
   check('runs API-registered commands with arguments', () => assert.equal(apiRan, 'world'));
   assert.equal(await api.run('/definitely-not-a-command'), false);
 
+  check('shows extension command aliases only while their extension is installed', () => {
+    assert.ok(names.has('chat'));
+    assert.ok(!names.has('ts-restart') && !names.has('hot-reload'));
+  });
+
   // Core command items execute the VS Code command.
   await api.run('/save-all');
   check('executes core VS Code commands', () => assert.ok(calls.commands.some(([id]) => id === 'workbench.action.files.saveAll')));
