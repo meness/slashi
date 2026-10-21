@@ -106,7 +106,7 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 | **Commands** | `/cmd` | ~170 curated VS Code commands with slash names · every extension command |
 | **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
-| **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · commit messages · regex & shell generators · models |
+| **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · review your Git changes · commit messages · regex & shell generators · models |
 | **Natural language** | `/do` | a sentence becomes a checked plan of actions |
 | **Text tools** | `/tx` | case conversion · lines · encode & hash · JSON · inserts (UUID, dates, lorem) · stats |
 | **Terminal & Tasks** | `/term` | `/run <cmd>` · VS Code tasks · terminal management |
@@ -137,6 +137,7 @@ Switch models with `/models`, and test the connection in **Studio → AI & Model
 | `/explain`, `/summarize`, `/review` | Explains, summarizes or reviews the selection or file |
 | `/fix [hint]`, `/edit <instruction>`, `/doc` | Rewrites code. **Apply** (`Cmd/Ctrl Enter`) replaces the original, and `Cmd/Ctrl Z` undoes it. Code too large to send in full must be selected in parts, so Apply never cuts a file short |
 | `/tests`, `/convert <target>`, `/name` | Writes tests, translates code, suggests names |
+| `/review-changes` | Reviews your staged (or unstaged) Git changes before you commit |
 | `/commit-msg` | Writes a Conventional Commits message from staged (or unstaged) changes into the Source Control box |
 | `/regex <description>` | Writes a regex and inserts it |
 | `/shell <description>` | Writes a shell command, which you review before it runs |
