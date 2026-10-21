@@ -67,7 +67,8 @@ describe('detectProject', () => {
 
   it('creates package.json script commands with the right package manager, skipping pre/post hooks', () => {
     const dev = result.commands.find((c) => c.name === 'dev')!;
-    expect(dev.command).toBe('pnpm run dev');
+    expect(dev.command).toBe('pnpm run dev ${args}');
+    expect(dev.args).toBe('extra arguments (optional)');
     expect(dev.group).toBe('scripts');
     expect(names).not.toContain('pretest');
   });
@@ -117,7 +118,7 @@ describe('untrusted script names', () => {
   const commands = (files: Record<string, string>) => detectProject([scan('', files)]).commands.map((i) => i.command);
 
   it.each([
-    ['package.json scripts', { 'package.json': pkg({ scripts: { [evil]: 'tsc', 'build:prod': 'tsc' } }) }, 'npm run build:prod'],
+    ['package.json scripts', { 'package.json': pkg({ scripts: { [evil]: 'tsc', 'build:prod': 'tsc' } }) }, 'npm run build:prod -- ${args}'],
     ['deno tasks', { 'deno.json': pkg({ tasks: { [evil]: 'x', 'dev:watch': 'x' } }) }, 'deno task dev:watch'],
     ['composer scripts', { 'composer.json': pkg({ scripts: { [evil]: 'x', '@scope/test': 'x' } }) }, 'composer run-script @scope/test'],
   ])('skips shell metacharacters in %s but keeps normal names', (_label, files, safe) => {

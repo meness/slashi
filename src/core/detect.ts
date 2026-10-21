@@ -127,6 +127,7 @@ export function detectPackageManager(scan: DirectoryScan, pkg?: Record<string, u
   return 'npm';
 }
 
+const SCRIPT_ARGS = 'extra arguments (optional)';
 const RUN: Record<Pm, string> = { npm: 'npm run', pnpm: 'pnpm run', yarn: 'yarn', bun: 'bun run' };
 const EXEC: Record<Pm, string> = { npm: 'npx', pnpm: 'pnpm exec', yarn: 'yarn', bun: 'bunx' };
 const DLX: Record<Pm, string> = { npm: 'npx', pnpm: 'pnpm dlx', yarn: 'yarn dlx', bun: 'bunx' };
@@ -144,7 +145,12 @@ function nodeProject(ctx: Ctx, pkg: Record<string, unknown>, rootScan: Directory
   // package.json scripts
   for (const [script, body] of Object.entries(scripts)) {
     if (typeof body !== 'string' || (/^(pre|post)/.test(script) && scripts[script.replace(/^(pre|post)/, '')])) continue;
-    add(ctx, pm, 'scripts', script, `${pm}: ${script}`, `${RUN[pm]} ${script}`, { icon: scriptIcon(script), description: body });
+    // npm needs `--` before arguments meant for the script; the others pass them through.
+    add(ctx, pm, 'scripts', script, `${pm}: ${script}`, `${RUN[pm]} ${script}${pm === 'npm' ? ' --' : ''} \${args}`, {
+      icon: scriptIcon(script),
+      description: body,
+      args: SCRIPT_ARGS,
+    });
   }
 
   // Package manager commands

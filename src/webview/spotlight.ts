@@ -303,8 +303,8 @@ function run(item: RankedView | undefined, action?: string): void {
     vscode.postMessage({ type: 'run', id: 'ai:ask', args: q.term });
     return;
   }
-  // Items that take arguments complete inline first so the arguments can be typed right here.
-  if (!action && item.args && item.argText === undefined && item.name) {
+  // Items that take arguments complete inline first so the arguments can be typed right here; optional ones just run.
+  if (!action && item.args && item.args.required !== false && item.argText === undefined && item.name) {
     complete(item);
     return;
   }

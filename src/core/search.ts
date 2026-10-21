@@ -162,8 +162,9 @@ export function rank(index: readonly IndexedItem[], query: ParsedQuery, options:
 
   const scored: Scored[] = [];
   for (const entry of index) {
-    // `/run npm test` — exact name match for an item that takes arguments.
-    if (entry.item.args && entry.name && entry.name === query.head) {
+    // `/run npm test` — exact name match for an item that takes arguments. Optional ones only once arguments are typed,
+    // so `/format` still finds Format Document before a `format` script.
+    if (entry.item.args && entry.name && entry.name === query.head && (query.rest || entry.item.args.required !== false)) {
       scored.push({ entry, score: 400 + (entry.item.boost ?? 0), argText: query.rest });
       continue;
     }
