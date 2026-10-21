@@ -63,6 +63,14 @@ The smoke test hides `PATH` and `HOME` so installed `claude`/`codex` CLIs don't 
 
 1. `npm run check`: typecheck, unit, smoke, marketplace. The Stop hook runs typecheck + unit tests only, so run the full check yourself before saying you're done.
 2. `npm run test:integration` when the change depends on real VS Code behavior the mock fakes (activation, `contributes`, editors, terminals, untitled docs).
+3. `npm run test:e2e` when a change affects what a user does end to end: package scripts and terminals, Git, team files, name resolution, `/again`. Add a scenario to `test/e2e/scenarios.test.ts` for new user-facing behavior. `SLASHI_E2E_AI=1` adds the AI scenario (two small real requests on the Claude Code sign-in), so run it only for AI changes.
 3. Real run: `npm run package`, then `code --install-extension slashi-<version>.vsix --profile "<profile>"` (without `--profile` it goes into the Default profile). Or press F5 for an Extension Development Host.
 
 Say which of these you ran and which you skipped.
+
+### Real VS Code from here: what `test:e2e` already handles, and what it can't
+
+- It unsets `ELECTRON_RUN_AS_NODE` (Claude Code's terminal sets it, which starts VS Code as plain Node) and keeps `--user-data-dir` under `/tmp` (VS Code's socket path must stay under 103 characters). Don't call `vscode-test --config` from outside the repo: it resolves its runner next to the config.
+- A test can't answer Slashi's dialogs or stub them: each extension gets its own `vscode` API object. Avoid dialogs with settings (as `git.enableSmartCommit` does) and leave dialog paths to the smoke test, whose mock can stub them.
+- A missing AI backend shows a warning that waits for a click, so the scenario hangs until mocha's timeout. Check the CLI first: `claude --version` (repair a broken `~/.local/bin/claude` with `claude install` from the extension's `resources/native-binary/claude`).
+- When a terminal scenario fails, the log prints the exact command that reached the shell and its exit code. Check it before blaming Slashi: a fixture script can fail on its own, as `node -e` did by treating `--check` as a Node flag.

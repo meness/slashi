@@ -13,7 +13,7 @@
     "reportUnusedDisableDirectives": "error"
   },
   "env": { "es2024": true, "node": true },
-  "ignorePatterns": ["dist/**", "coverage/**", "test/smoke/out/**", ".vscode-test/**"],
+  "ignorePatterns": ["dist/**", "coverage/**", "test/smoke/out/**", "test/e2e/out/**", ".vscode-test/**"],
   "rules": {
     "eqeqeq": ["error", "smart"],
     "no-var": "error",

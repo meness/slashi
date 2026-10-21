@@ -288,6 +288,7 @@ Open the folder and press **F5** (*Run Slashi*) to start an Extension Developmen
 | `npm test` | Unit tests (Vitest) |
 | `npm run test:smoke` | Activates the bundled extension against a mocked VS Code API and drives the real popup protocol |
 | `npm run test:integration` | Runs the integration suite in a real VS Code (downloads VS Code) |
+| `npm run test:e2e` | Runs user scenarios (scripts, Git, team files) in a real VS Code on a throwaway Git repo. `SLASHI_E2E_AI=1` adds an AI scenario through the Claude Code CLI |
 | `npm run bench` | Ranking benchmark |
 | `npm run screenshots` | Re-renders the README images (needs Chromium; set `CHROME_PATH`) |
 | `npm run marketplace` | Validates packs and regenerates `marketplace/index.json` |
