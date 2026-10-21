@@ -3,7 +3,7 @@ import { get, isFeatureEnabled, updateGlobal } from '../config';
 import { HELP_LINKS } from '../data/links';
 import { NAME_PATTERN, PACK_ID_PATTERN, validateCommands, type CustomCommandDef, type PackDef, type StepDef } from '../core/commandSchema';
 import { pickIcon } from '../core/icons';
-import { parseJsonc } from '../core/text';
+import { addCommand, parseJsonc } from '../core/jsonc';
 import { runCustomCommand, usesArgs, type CommandSource } from '../services/macro';
 import type { Services } from '../services/services';
 import type { SlashItem, SlashProvider } from '../types';
@@ -347,33 +347,34 @@ async function teamFileUri(): Promise<vscode.Uri> {
   return vscode.Uri.joinPath(folder.uri, TEAM_FILE);
 }
 
-async function readTeamFile(uri: vscode.Uri): Promise<{ $schema?: string; commands: CustomCommandDef[] }> {
+/** The team file's text, checked to be an array or an object with a `commands` array. */
+async function readTeamFile(uri: vscode.Uri): Promise<string> {
   let text: string;
   try {
     text = new TextDecoder().decode(await vscode.workspace.fs.readFile(uri));
   } catch {
-    return { $schema: SCHEMA_URL, commands: [] };
+    return `${JSON.stringify({ $schema: SCHEMA_URL, commands: [] }, null, 2)}\n`;
   }
   // A file we can't parse is never rewritten: that would drop every command in it.
-  let json: { commands?: CustomCommandDef[] } | CustomCommandDef[];
+  let json: unknown;
   try {
-    json = parseJsonc(text) as typeof json;
+    json = parseJsonc(text);
   } catch (err) {
     throw new Error(`Fix ${TEAM_FILE} first: ${(err as Error).message}`, { cause: err });
   }
-  if (Array.isArray(json)) return { commands: json };
-  if (!json || typeof json !== 'object' || (json.commands !== undefined && !Array.isArray(json.commands)))
+  const commands = (json as { commands?: unknown } | null)?.commands;
+  if (!Array.isArray(json) && (!json || typeof json !== 'object' || (commands !== undefined && !Array.isArray(commands))))
     throw new Error(`${TEAM_FILE} must be an array or an object with a "commands" array.`);
-  return { ...json, commands: json.commands ?? [] };
+  return text;
 }
 
 const SCHEMA_URL = 'https://raw.githubusercontent.com/meness/slashi/main/schemas/slashi.schema.json';
 
+/** Adds the command to the team file as a text edit, so comments and formatting survive. */
 async function writeTeamCommand(def: CustomCommandDef): Promise<void> {
   const uri = await teamFileUri();
-  const file = await readTeamFile(uri);
-  file.commands = [...file.commands.filter((c) => c.name !== def.name), def];
-  await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(`${JSON.stringify(file, null, 2)}\n`));
+  const text = addCommand(await readTeamFile(uri), def);
+  await vscode.workspace.fs.writeFile(uri, new TextEncoder().encode(text.endsWith('\n') ? text : `${text}\n`));
 }
 
 export async function editTeamCommands(): Promise<void> {

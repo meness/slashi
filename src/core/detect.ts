@@ -1,7 +1,7 @@
 // Detects the technologies a repository uses and generates matching slash commands.
 // Pure: the extension host scans the workspace and passes file names + manifest contents in.
 
-import { parseJsonc } from './text';
+import { parseJsonc } from './jsonc';
 
 export interface DirectoryScan {
   /** Path relative to the workspace folder, '' for the root. Uses forward slashes. */
