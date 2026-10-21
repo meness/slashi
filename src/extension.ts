@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import type { SlashiApi } from './api';
 import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, shortcutLabel, updateGlobal } from './config';
 import { parseQuery } from './core/query';
+import { pickByName } from './core/search';
 import { HELP_LINKS } from './data/links';
 import { execute, reportError } from './executor';
 import { AiProvider, pickModel } from './providers/ai';
@@ -77,7 +78,8 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
   services.runSlash = async (text) => {
     const query = parseQuery(text.startsWith('/') ? text : `/${text}`, []);
     const items = await registry.allItems();
-    const item = items.find((i) => i.name === query.head) ?? items.find((i) => i.id === text);
+    // Several providers can share a name (a `format` script and Format Document): run what the popup ranks first.
+    const item = pickByName(items, query) ?? items.find((i) => i.id === text);
     if (!item) return false;
     await execute(services, item, query.rest, undefined, services.snapshot ?? snapshotEditor());
     return true;

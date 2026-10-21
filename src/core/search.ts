@@ -242,6 +242,17 @@ function topN(results: RankedView[], limit: number): RankedView[] {
   return results.length > limit ? results.slice(0, limit) : results;
 }
 
+/**
+ * The item `/name args` runs: among exact name matches, the one the popup ranks first before any history.
+ * History is left out on purpose so a keybinding or `slash` step always means the same command.
+ */
+export function pickByName<T extends ItemView>(items: readonly T[], query: ParsedQuery): T | undefined {
+  const matches = items.filter((i) => i.name && i.name === query.head);
+  if (matches.length < 2) return matches[0];
+  const [best] = rank(indexItems(matches), query, { limit: 1 });
+  return matches.find((i) => i.id === best?.id) ?? matches[0];
+}
+
 /** Merges already-ranked lists, keeping the best score per id. */
 export function mergeRanked(lists: readonly RankedView[][], limit: number): RankedView[] {
   const byId = new Map<string, RankedView>();
