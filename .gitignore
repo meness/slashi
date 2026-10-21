@@ -13,3 +13,5 @@ out/
 
 # Local design-tool cache (impeccable)
 .impeccable/hook.cache.json
+# Local launch videos made with /brag
+brag-output*/

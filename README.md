@@ -23,6 +23,8 @@ One keyboard-first popup for your files, settings, extensions, Git, terminal, pr
   <img src="media/screenshots/hero-dark.png" alt="Slashi Spotlight popup inside VS Code" width="900">
 </picture>
 
+<img src="media/demo.gif" alt="Demo: Cmd / opens Slashi, then project scripts, settings, file actions and Do with AI" width="900">
+
 </div>
 
 ---
