@@ -36,7 +36,7 @@ A command is a name plus a list of steps that run in order:
 - `args` — a placeholder. If any step uses `${args}` and nothing was typed, Slashi asks for it.
 - `languages` — show the command only when the active editor uses one of these language IDs.
 
-All step types (`command`, `slash`, `terminal`, `setting`, `insert`, `open`, `ai`, `notify`, `input`, `pick`, `wait`) and all variables are listed in the [README](../README.md#your-own-commands) and in [`schemas/slashi.schema.json`](../schemas/slashi.schema.json). Add `"$schema"` to your file for autocomplete.
+All step types (`command`, `slash`, `terminal`, `setting`, `insert`, `open`, `ai`, `notify`, `input`, `pick`, `wait`) and all variables are listed in the [README](../README.md#make-it-yours) and in [`schemas/slashi.schema.json`](../schemas/slashi.schema.json). Add `"$schema"` to your file for autocomplete.
 
 **Quoting:** variables are inserted as-is. In terminal steps, use `${q:args}` / `${q:selection}` to shell-quote values that come from the user.
 

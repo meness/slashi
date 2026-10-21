@@ -236,7 +236,7 @@ Compact and theme-native.
 - Onboarding footer buttons step up to 36px tall with `--radius-md`.
 
 ### Result row (signature)
-32px provider tile, then title (13.5px/500) with the slash command in mono beside it, then a description line (12px muted). On the right sit a badge or category, which swaps to an Enter kbd when the row is active. The active row gets an `--accent-soft` fill plus the 3px gradient bar on the left edge. Matched characters render in Brand Ink at 700.
+32px provider tile, then title (13.5px/500) with the slash command in mono beside it, then a description line (12px muted). On the right sit a badge or category, which swaps to an Enter kbd when the row is active. The active row gets an `--accent-soft` fill plus the 3px gradient bar on the left edge. Matched characters render in Brand Ink at 700. Verified marketplace packs carry a seal-check icon in Brand Ink right after the title: a shape, so it survives high contrast, with "Verified" as its accessible name.
 
 ### Provider tile
 32px square, `--radius-md`, Phosphor duotone icon at 18px in the tile hue, 15% hue fill, 22% hue inner ring. Every provider has one, and new providers must add a tile color for both theme kinds.
@@ -245,7 +245,7 @@ Compact and theme-native.
 Pills, 24px tall, 11.5px. **Filter chips** (Studio) are hairline and muted at rest; pressed state takes the tile hue at 12% fill with a 40% border. **Scope chip** (Spotlight) appears beside the input when a `/prefix` scopes the search. **Model chip** shows the AI sparkle in AI Rose.
 
 ### Cards / Panels
-`--radius-lg`, hairline border, `--surface` at 70%, 14px (card) or 18px (panel) padding, no shadow. Hover strengthens the border to `--border`. Disabled cards drop to 60% opacity.
+`--radius-lg`, hairline border, `--surface` at 70%, 14px (card) or 18px (panel) padding, no shadow. Hover strengthens the border to `--border`. Disabled cards drop to 60% opacity. Provider cards for providers added by other extensions add a "From <extension id>" line (11px/600, muted) under the description.
 
 ### Inputs / Fields
 30px tall, `--input-bg`, `--border` outline, `--radius-sm`. Focus moves the border to `--accent` and adds the 3px accent-soft halo. The Spotlight query input is the exception: borderless, transparent, 19px, with a violet caret.
