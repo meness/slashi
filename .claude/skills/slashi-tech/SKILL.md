@@ -74,3 +74,15 @@ Say which of these you ran and which you skipped.
 - A test can't answer Slashi's dialogs or stub them: each extension gets its own `vscode` API object. Avoid dialogs with settings (as `git.enableSmartCommit` does) and leave dialog paths to the smoke test, whose mock can stub them.
 - A missing AI backend shows a warning that waits for a click, so the scenario hangs until mocha's timeout. Check the CLI first: `claude --version` (repair a broken `~/.local/bin/claude` with `claude install` from the extension's `resources/native-binary/claude`).
 - When a terminal scenario fails, the log prints the exact command that reached the shell and its exit code. Check it before blaming Slashi: a fixture script can fail on its own, as `node -e` did by treating `--check` as a Node flag.
+
+## Shipping
+
+Commit, push, open a PR or merge only when the user asks. Approval for one PR doesn't cover the next.
+
+1. **Branch** from an up-to-date `main` (`git pull`), named `<type>/<topic>`, e.g. `feat/extension-providers`. One topic per branch: PRs are squash-merged, so separate topics need separate PRs.
+2. **Commit** with a Conventional Commit subject. Keep body lines to 100 characters, or the `commit-msg` hook (commitlint) rejects the commit. The pre-commit hook runs oxlint and Prettier on staged files. Stage only your own changes; leave unrelated edits for their own commit.
+3. **Before pushing**, run `npm run check`. When the branch depends on another open PR, test-merge them in a throwaway branch and run the check there too.
+4. **Open the PR** with `gh pr create --title "<conventional title>" --body …`. The title becomes the squash commit on `main`, and its type sets the release bump (see CONTRIBUTING.md).
+5. **Watch CI** with `gh pr checks <n> --watch`. Required: Lint & format, Check on ubuntu/macos/windows, CodeQL and Conventional Commit title. Fix failures on the branch; never merge red.
+6. **Merge** with `gh pr merge <n> --squash --delete-branch`. If it fails with "head branch is not up to date", run `gh pr update-branch <n>`, wait for CI again, then merge. Merge stacked PRs one at a time for this reason.
+7. **Afterwards**, `git checkout main && git pull`. release-please opens or updates a **chore(main): release x.y.z** PR. Merging that PR publishes to the Marketplace and Open VSX, so leave it to the maintainer unless they ask.

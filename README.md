@@ -8,9 +8,8 @@
 
 One keyboard-first popup for your files, settings, extensions, Git, terminal, project scripts and AI, plus the commands you build yourself.
 
-[![VS Code Marketplace](https://vsmarketplacebadges.dev/version-short/meness.slashi.svg?label=VS%20Code%20Marketplace&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
-[![Installs](https://vsmarketplacebadges.dev/installs-short/meness.slashi.svg?label=installs&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
-[![Rating](https://vsmarketplacebadges.dev/rating-short/meness.slashi.svg?label=rating&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi&ssr=false#review-details)
+[![VS Code Marketplace](https://badgen.net/vs-marketplace/v/meness.slashi?label=VS%20Code%20Marketplace&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
+[![Installs](https://badgen.net/vs-marketplace/i/meness.slashi?label=installs&color=8b5cf6)](https://marketplace.visualstudio.com/items?itemName=meness.slashi)
 [![Open VSX](https://img.shields.io/open-vsx/v/meness/slashi?label=Open%20VSX&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 [![Open VSX downloads](https://img.shields.io/open-vsx/dt/meness/slashi?label=downloads&color=06b6d4)](https://open-vsx.org/extension/meness/slashi)
 
