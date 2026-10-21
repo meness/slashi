@@ -251,6 +251,116 @@ const check = (name, fn) => {
     assert.equal(ext.features.find((f) => f.id === 'marketplace').enabled, true);
   });
 
+  // Providers from other extensions: their own scope, toggled like built-ins, and their bugs stay contained.
+  const jiraChanged = new mock.EventEmitter();
+  let tickets = [{ id: 'KEY-1', title: 'Fix login', name: 'key-1', args: 'comment', run: (a) => (apiRan = `KEY-1 ${a}`) }];
+  const jiraDef = {
+    extensionId: 'acme.jira',
+    id: 'issues',
+    title: 'Jira',
+    icon: 'ticket',
+    prefix: 'jira',
+    items: () => tickets,
+    onDidChange: jiraChanged.event,
+  };
+  const jira = api.registerProvider(jiraDef);
+  assert.equal(await api.run('/key-1 looks good'), true);
+  check('runs items from an extension provider', () => assert.equal(apiRan, 'KEY-1 looks good'));
+  tickets = [...tickets, { id: 'KEY-2', title: 'Add dark mode', name: 'key-2', run: () => (apiRan = 'KEY-2') }];
+  jiraChanged.fire();
+  assert.equal(await api.run('/key-2'), true);
+  check('reloads an extension provider when it fires onDidChange', () => assert.equal(apiRan, 'KEY-2'));
+  check('rejects an extension provider with a taken prefix, a duplicate id or bad fields', () => {
+    assert.throws(() => api.registerProvider({ ...jiraDef, id: 'other', prefix: 'git' }), /prefix: \/git is already used/);
+    assert.throws(() => api.registerProvider({ ...jiraDef, prefix: 'jira2' }), /already registered/);
+    assert.throws(() => api.registerProvider({ ...jiraDef, id: 'x', prefix: 'x', items: undefined }), /items: must be a function/);
+  });
+  studio.webview._receive({ type: 'ready' });
+  const extState = await waitFor(
+    () => calls.posted.findLast((m) => m.type === 'state' && m.state.providers.some((p) => p.id === 'ext:acme.jira/issues')),
+    'Studio state with the extension provider',
+  );
+  check('Studio lists extension providers with their source', () => {
+    const p = extState.state.providers.find((x) => x.id === 'ext:acme.jira/issues');
+    assert.deepEqual([p.prefix, p.source, p.enabled, p.features], ['jira', 'acme.jira', true, []]);
+  });
+  studio.webview._receive({ type: 'toggleProvider', id: 'ext:acme.jira/issues', enabled: false });
+  await waitFor(() => mock.workspace.getConfiguration('slashi').get('disabledProviders', []).length, 'disabledProviders');
+  check('turns extension providers off through slashi.disabledProviders', () => {
+    assert.deepEqual(mock.workspace.getConfiguration('slashi').get('disabledProviders'), ['ext:acme.jira/issues']);
+  });
+  assert.equal(await api.run('/key-1'), false, 'a disabled provider’s items are hidden');
+  studio.webview._receive({ type: 'toggleProvider', id: 'ext:acme.jira/issues', enabled: true });
+  await waitFor(() => !mock.workspace.getConfiguration('slashi').get('disabledProviders', []).length, 'provider back on');
+  studio.webview._receive({ type: 'toggleProvider', id: 'ext:nobody/none', enabled: false });
+  await waitFor(() => takeErrors(calls.messages, /Unknown provider ext:nobody\/none/), 'unknown provider error');
+
+  // A slow items() doesn't hold up the popup; its results show once it finishes. A throwing one is logged.
+  let releaseSlow;
+  const slowDone = new Promise((r) => {
+    releaseSlow = r;
+  });
+  api.registerProvider({
+    extensionId: 'acme.slow',
+    id: 'slow',
+    title: 'Slow',
+    prefix: 'slow',
+    items: () => slowDone.then(() => [{ id: 'a', title: 'Slow Thing', name: 'slow-thing', run: () => (apiRan = 'slow') }]),
+  });
+  api.registerProvider({
+    extensionId: 'acme.broken',
+    id: 'broken',
+    title: 'Broken',
+    prefix: 'broken',
+    items: () => {
+      throw new Error('boom');
+    },
+  });
+  const slowStart = Date.now();
+  assert.equal(await api.run('/slow-thing'), false);
+  const waited = Date.now() - slowStart;
+  check('waits at most 3 s for a slow extension provider', () => assert.ok(waited >= 2900 && waited < 4500, `${waited} ms`));
+  releaseSlow();
+  for (let i = 0; !(await api.run('/slow-thing')); i++) {
+    if (i > 100) throw new Error('Timed out waiting for late results from the slow provider');
+    await new Promise((r) => {
+      setTimeout(r, 20);
+    });
+  }
+  check('shows a slow provider’s results once they arrive', () => assert.equal(apiRan, 'slow'));
+  check('logs a provider whose items() throws, and keeps the rest working', () => {
+    assert.equal(takeErrors(calls.messages, /Provider ext:acme\.broken\/broken failed/) > 0, true);
+    assert.ok(calls.messages.some((m) => m[0] === 'warn' && /took longer than 3 s/.test(m[1])));
+  });
+
+  // A provider removed while items() is still running never gets its late items back.
+  let releaseGone;
+  const gone = api.registerProvider({
+    extensionId: 'acme.gone',
+    id: 'gone',
+    title: 'Gone',
+    prefix: 'gone',
+    items: () =>
+      new Promise((r) => {
+        releaseGone = () => r([{ id: 'a', title: 'Gone Thing', name: 'gone-thing', run: () => (apiRan = 'gone') }]);
+      }),
+  });
+  const goneRun = api.run('/gone-thing');
+  await waitFor(() => releaseGone, 'the gone provider to load');
+  gone.dispose();
+  releaseGone();
+  const goneRan = await goneRun;
+  check('drops the items of a provider removed while loading', () => assert.equal(goneRan, false));
+
+  // Disposing removes the provider and its items, and the id can be registered again.
+  jira.dispose();
+  assert.equal(await api.run('/key-1'), false);
+  const jiraAgain = api.registerProvider(jiraDef);
+  jira.dispose();
+  const ranAgain = await api.run('/key-1 ok');
+  check('re-registers a removed provider, and a stale dispose leaves the new one alone', () => assert.equal(ranAgain, true));
+  jiraAgain.dispose();
+
   // Onboarding opens on first run and renders real state.
   await waitFor(() => calls.panels.find((p) => p.viewType === 'slashi.welcome'), 'onboarding panel', 3000);
   const welcome = calls.panels.find((p) => p.viewType === 'slashi.welcome');

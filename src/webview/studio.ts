@@ -14,6 +14,8 @@ interface Provider {
   description: string;
   icon: string;
   prefix: string;
+  /** Extension that registered it, for providers added through the API. */
+  source?: string;
   enabled: boolean;
   features: Feature[];
 }
@@ -142,7 +144,7 @@ function providersPage(): string {
             <div class="text"><strong>${esc(p.title)}</strong><code>/${esc(p.prefix)}</code></div>
             ${sw(p.enabled, `data-provider-toggle="${esc(p.id)}" aria-label="Enable ${esc(p.title)}"`)}
           </div>
-          <div class="desc">${esc(p.description)}</div>
+          <div class="desc">${esc(p.description)}${p.source ? ` <span class="source">From ${esc(p.source)}</span>` : ''}</div>
           ${
             p.features.length
               ? `<div class="chips">${p.features

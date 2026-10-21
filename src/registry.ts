@@ -32,6 +32,7 @@ export class Registry implements vscode.Disposable {
       vscode.workspace.onDidChangeConfiguration((e) => {
         if (
           e.affectsConfiguration('slashi.providers') ||
+          e.affectsConfiguration('slashi.disabledProviders') ||
           e.affectsConfiguration('slashi.disabledFeatures') ||
           e.affectsConfiguration('slashi.hiddenCommands')
         ) {
@@ -42,13 +43,31 @@ export class Registry implements vscode.Disposable {
   }
 
   register(provider: SlashProvider): vscode.Disposable {
+    if (this.providers.has(provider.id)) throw new Error(`A Slashi provider with the id ${provider.id} is already registered.`);
     this.providers.set(provider.id, provider);
-    if (provider.onDidChange) this.disposables.push(provider.onDidChange(() => this.invalidate(provider.id)));
+    const sub = provider.onDidChange?.(() => this.invalidate(provider.id));
+    let disposed = false;
     return new vscode.Disposable(() => {
+      // Extensions dispose it themselves and again through context.subscriptions; the second call must not remove a re-registered provider.
+      if (disposed) return;
+      disposed = true;
+      sub?.dispose();
       this.providers.delete(provider.id);
-      this.invalidate(provider.id);
+      this.forget(provider.id);
       provider.dispose?.();
     });
+  }
+
+  /** Scope prefixes in use by any registered provider, enabled or not. */
+  takenPrefixes(): Set<string> {
+    return new Set(this.all().flatMap((p) => [p.prefix, ...(p.scopes ?? []).map((s) => s.prefix)]));
+  }
+
+  /** Drops a removed provider's cache and items. */
+  private forget(id: ProviderId): void {
+    for (const itemId of this.idsByProvider.get(id) ?? []) this.byId.delete(itemId);
+    this.idsByProvider.delete(id);
+    this.invalidate(id);
   }
 
   all(): SlashProvider[] {
@@ -96,6 +115,8 @@ export class Registry implements vscode.Disposable {
         } catch (err) {
           this.log.error(`Provider ${provider.id} failed`, err);
         }
+        // Removed while loading: its items must not become runnable again.
+        if (this.providers.get(provider.id) !== provider) return { items: [], remote: [], remoteIndex: [] };
         const ids = this.idsByProvider.get(provider.id) ?? new Set<string>();
         this.idsByProvider.set(provider.id, ids);
         const current = this.pending.get(provider.id) === pending;

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, updateGlobal } from '../config';
+import { get, isFeatureEnabled, isProviderEnabled, setFeatureEnabled, setProviderEnabled, updateGlobal } from '../config';
 import type { ProviderId } from '../core/protocol';
 import { HELP_LINKS, type HelpLink } from '../data/links';
 import { BACKEND_LABELS, type BackendId, type ModelInfo } from '../llm/types';
@@ -88,7 +88,8 @@ export class Studio implements vscode.Disposable {
         void this.loadModels();
         break;
       case 'toggleProvider':
-        await updateGlobal(`providers.${m.id}`, m.enabled);
+        if (!this.services.registry.get(m.id)) throw new Error(`Unknown provider ${m.id}`);
+        await setProviderEnabled(m.id, m.enabled);
         break;
       case 'toggleFeature':
         await setFeatureEnabled(m.provider, m.feature, m.enabled);
@@ -180,6 +181,7 @@ export class Studio implements vscode.Disposable {
         description: p.description,
         icon: p.icon,
         prefix: p.prefix,
+        source: p.source,
         enabled: isProviderEnabled(p.id),
         features: p.features.length > 1 ? p.features.map((f) => ({ ...f, enabled: isFeatureEnabled(p.id, f.id) })) : [],
       }));

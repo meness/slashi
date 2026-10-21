@@ -1,6 +1,11 @@
 // Serializable shapes shared by the extension host and the webviews.
 
-export type ProviderId =
+export type ProviderId = BuiltinProviderId | ExtensionProviderId;
+
+/** Providers other extensions add through `registerProvider`: `ext:<extension id>/<id>`. */
+export type ExtensionProviderId = `ext:${string}`;
+
+export type BuiltinProviderId =
   | 'files'
   | 'navigation'
   | 'project'

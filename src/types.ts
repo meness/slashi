@@ -60,6 +60,8 @@ export interface SlashProvider {
   volatile?: boolean;
   /** Excluded from unscoped searches, only reachable through its scope. */
   scopedOnly?: boolean;
+  /** ID of the extension that registered this provider through the API; unset for built-in providers. */
+  source?: string;
   items(): SlashItem[] | Promise<SlashItem[]>;
   onDidChange?: vscode.Event<void>;
   dispose?(): void;

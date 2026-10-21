@@ -210,6 +210,8 @@ slashi?.registerCommand({
 });
 ```
 
+`registerProvider` adds a whole source of results with its own scope, such as `/jira ` listing your tickets. See [docs/BUILDING_ACTIONS.md](docs/BUILDING_ACTIONS.md#providers).
+
 ## Keyboard shortcuts
 
 | Action | macOS | Windows / Linux |
