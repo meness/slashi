@@ -70,6 +70,8 @@ export class MarketplaceProvider implements SlashProvider {
   private listings: Listing[] = [];
   private fetchedAt = 0;
   private loading?: Promise<void>;
+  /** Registries the running load was started with. */
+  private loadingKey?: string;
   private readonly subs: vscode.Disposable[];
 
   constructor(private readonly services: Services) {
@@ -92,8 +94,12 @@ export class MarketplaceProvider implements SlashProvider {
   /** Fetches every registry; failures are logged and the rest still load. */
   refresh(force = false): Promise<void> {
     if (!force && Date.now() - this.fetchedAt < TTL) return Promise.resolve();
-    this.loading ??= (async () => {
-      const registries = get<string[]>('marketplace.registries', []);
+    const registries = get<string[]>('marketplace.registries', []);
+    const key = JSON.stringify(registries);
+    // A load started before the registries setting changed would cache the old list; start a new one.
+    if (this.loading && this.loadingKey === key) return this.loading;
+    this.loadingKey = key;
+    const run = (async () => {
       const all: Listing[] = [];
       await Promise.all(
         registries.map(async (registry) => {
@@ -112,12 +118,14 @@ export class MarketplaceProvider implements SlashProvider {
           }
         }),
       );
+      if (this.loadingKey !== key) return; // superseded by a newer load
       this.listings = all;
       this.fetchedAt = Date.now();
-      this.loading = undefined;
+      this.loading = this.loadingKey = undefined;
       this.emitter.fire();
     })();
-    return this.loading;
+    this.loading = run;
+    return run;
   }
 
   items(): SlashItem[] {

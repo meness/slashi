@@ -104,7 +104,7 @@ Everything in the list comes from a **provider**. You can turn off a whole provi
 | **Navigate** | `/go` `/tab` `/@` `/err` | open tabs · symbols in file · problems · go to line (`/line 42:7`) |
 | **Project** | `/p` `/npm` | scripts (package.json, Makefile, justfile, deno, composer; package.json scripts take extra arguments, e.g. `/test --watch`) · package manager · frameworks & tools (JS, Python, Go, Rust, .NET, Java, PHP, Ruby, Elixir, Flutter/Dart with FVM and Melos, Firebase, Supabase, Docker…) |
 | **Commands** | `/cmd` | about 170 VS Code commands with slash names · every extension command |
-| **Settings** | `/set` | core settings · every extension setting. Booleans toggle, enums pick, numbers and strings edit |
+| **Settings** | `/set` | every VS Code setting · every extension setting. Booleans toggle, enums pick, numbers and strings edit; set any value for the workspace or the current language |
 | **Extensions** | `/ext` | installed extensions · Marketplace search & install · updates & uninstall |
 | **AI** | `/ai` | ask/explain/summarize · fix/edit/doc/tests/review/convert · review your Git changes · commit messages · regex & shell generators · models |
 | **Natural language** | `/do` | a sentence becomes a checked plan of actions |
@@ -240,7 +240,7 @@ The AI backend, model, URL, effort, custom instructions, plan confirmation, web 
 
 - **No telemetry.** Slashi collects nothing.
 - **API keys** live only in VS Code Secret Storage. A repository can’t change your AI backend, its URL, your instructions or your confirmation setting, so it can’t send your key or code to another server.
-- **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and terminal or Slashi settings.
+- **AI requests** go only to the backend you chose. Do-with-AI plans can use only real commands and settings. With `slashi.ai.confirmBeforeRun` off, a plan still asks before any step that can reach a shell: terminal commands, project scripts, custom commands, and settings that change what runs or what is trusted (Slashi, terminal, task, tool path, workspace trust, proxy and agent auto-approve settings).
 - **Action packs** are fetched only over HTTPS, previewed step by step before installing, and checked against their registry listing. Only packs built by Slashi carry the verified seal.
 - **Webviews** use a strict nonce-based Content Security Policy and load only bundled files. Raw HTML in model output is escaped, never rendered.
 - **Untrusted workspaces:** workspace-defined commands are ignored. Team commands (in `.vscode/slashi.json` or the workspace's `slashi.customCommands`) and packs ask before running anything that can reach a shell.

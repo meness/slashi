@@ -198,6 +198,15 @@ const check = (name, fn) => {
   // AI without any model configured explains how to set it up.
   await mock.commands.executeCommand('slashi.open');
   const panel2 = calls.panels.at(-1);
+  // The settings schema loads after activation; a newly opened Spotlight lists it.
+  panel2.webview._receive({ type: 'ready' });
+  const schemaSetting = await waitFor(
+    () => calls.posted.findLast((m) => m.type === 'init')?.data.items.find((i) => i.id === 'set:editor.cursorWidth'),
+    'schema settings',
+  );
+  check('lists every core setting from VS Code’s schema, settable per language', () =>
+    assert.ok(schemaSetting.actions.some((a) => a.id === 'language')),
+  );
   panel2.webview._receive({ type: 'ai', text: 'make the font bigger' });
   await waitFor(() => calls.messages.some((m) => m[0] === 'warning' && /Connect a model/.test(m[1])), 'AI setup hint');
   check('guides users to connect a model when AI is not configured', () => assert.ok(true));
@@ -231,7 +240,7 @@ const check = (name, fn) => {
   await mock.commands.executeCommand('slashi.open');
   const panel3 = calls.panels.at(-1);
   panel3.webview._receive({ type: 'ready' });
-  const init3 = (await waitFor(() => calls.posted.filter((m) => m.type === 'init')[1], 'second init')).data;
+  const init3 = (await waitFor(() => calls.posted.filter((m) => m.type === 'init')[2], 'third init')).data;
   const names3 = new Set(init3.items.map((i) => i.name));
   check('per-feature toggles remove only that feature', () => {
     assert.ok(!names3.has('upper'), 'case tools should be hidden');

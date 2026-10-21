@@ -379,7 +379,23 @@ const vscode = {
       copy: async () => {},
       delete: async () => {},
     },
-    openTextDocument: async (u) => ({ uri: u, version: 1, languageId: 'plaintext', isUntitled: false, getText: () => '' }),
+    openTextDocument: async (u) => ({
+      uri: u,
+      version: 1,
+      languageId: 'plaintext',
+      isUntitled: false,
+      // A slice of VS Code's settings schema, which the settings provider reads for every core setting.
+      getText: () =>
+        String(u) === 'vscode://schemas/settings/default'
+          ? JSON.stringify({
+              properties: {
+                'editor.fontSize': { $ref: '#/$defs/_1' },
+                'editor.cursorWidth': { type: 'number', description: 'Cursor width.', scope: 6 },
+              },
+              $defs: { _1: { type: 'number', description: 'Font size.', scope: 6 } },
+            })
+          : '',
+    }),
     applyEdit: async () => true,
   },
   extensions: {
