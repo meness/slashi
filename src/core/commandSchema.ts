@@ -50,6 +50,35 @@ export interface RegistryEntry {
   commands: number;
   /** Pack contains terminal steps. */
   terminal: boolean;
+  /** `packDigest` of the pack; installing checks the download against it. */
+  sha256?: string;
+}
+
+/** Slashi's own registry: the default of `slashi.marketplace.registries`. */
+export const OFFICIAL_REGISTRY = 'https://raw.githubusercontent.com/meness/slashi/main/marketplace/index.json';
+/** Author name reserved for packs the Slashi maintainers publish in the official registry. */
+export const SLASHI_AUTHOR = 'Slashi';
+
+/**
+ * Verified = built by Slashi: listed in the official registry under Slashi's name, with a digest that
+ * installing checks. Community packs in the same registry are reviewed but not verified.
+ */
+export function isVerified(registry: string, entry: RegistryEntry): boolean {
+  return registry === OFFICIAL_REGISTRY && entry.author === SLASHI_AUTHOR && entry.sha256 !== undefined;
+}
+
+/** A pack that claims to be Slashi's but isn't verified. */
+export function claimsSlashi(author: string): boolean {
+  return /slashi/i.test(author);
+}
+
+/**
+ * SHA-256 of a pack's parsed JSON, re-serialized: the same in scripts/marketplace.mjs and the extension,
+ * whatever the file's whitespace or line endings.
+ */
+export async function packDigest(raw: unknown): Promise<string> {
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', new TextEncoder().encode(JSON.stringify(raw)));
+  return Array.from(new Uint8Array(digest), (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 export interface RegistryIndex {
@@ -199,6 +228,7 @@ export function validateRegistry(raw: unknown): Validation<RegistryIndex> {
         url: e.url,
         commands: typeof e.commands === 'number' ? e.commands : 0,
         terminal: e.terminal === true,
+        sha256: isString(e.sha256) && /^[0-9a-f]{64}$/.test(e.sha256) ? e.sha256 : undefined,
       });
     });
   }

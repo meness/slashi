@@ -53,7 +53,7 @@ export async function openNative(services: Services, initialQuery = ''): Promise
   let seq = 0;
 
   const toPick = (r: RankedView): Pick => ({
-    label: `$(${toCodicon(r.icon)}) ${r.title}`,
+    label: `$(${toCodicon(r.icon)}) ${r.title}${r.verified ? ' $(verified-filled)' : ''}`,
     description: [r.name ? `/${r.name}${r.args ? ` ‹${r.args.placeholder}›` : ''}` : '', r.badge ? `· ${r.badge}` : '']
       .filter(Boolean)
       .join(' '),

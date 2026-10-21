@@ -78,6 +78,8 @@ Review guidelines:
 - Don’t collect data or call third-party services without saying so in the description.
 - Bump `version` whenever you change a pack. Users see an **update** badge.
 
+`marketplace/index.json` records a SHA-256 digest of every pack, and Slashi refuses a download that doesn't match it. Packs the Slashi maintainers publish here (`"author": "Slashi"`, reserved for them) show a **verified** seal in `/market`. Community packs are reviewed but don't get the seal, and a pack from another registry whose author claims to be Slashi is labeled **(unverified)**.
+
 ### Private registries
 
 A registry is just an `index.json`:
@@ -92,7 +94,7 @@ A registry is just an `index.json`:
 }
 ```
 
-Host it on any HTTPS server (or a private GitHub raw URL), then add it to `slashi.marketplace.registries`. Pack URLs are resolved relative to the index. Only HTTPS is allowed.
+Host it on any HTTPS server (or a private GitHub raw URL), then add it to `slashi.marketplace.registries`. Pack URLs are resolved relative to the index. Only HTTPS is allowed. Add an optional `"sha256"` to an entry (the digest `npm run marketplace` writes: SHA-256 of the pack's JSON re-serialized with `JSON.stringify`) and Slashi refuses a download that doesn't match it.
 
 ## Extension API
 

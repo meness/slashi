@@ -49,6 +49,8 @@ export interface ItemView {
   kind?: 'item' | 'scope' | 'ai';
   /** Scope prefix applied when a `scope` item is chosen. */
   scopePrefix?: string;
+  /** A marketplace pack published by Slashi in its official registry (see `isVerified`). */
+  verified?: boolean;
 }
 
 export interface ActionView {

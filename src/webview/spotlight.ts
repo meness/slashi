@@ -220,6 +220,8 @@ function highlight(text: string, positions: number[] | undefined): string {
   return open ? `${out}</mark>` : out;
 }
 
+const VERIFIED = `<span class="verified" role="img" aria-label="Verified" title="Verified: published by Slashi">${icon('seal-check', 'duotone')}</span>`;
+
 function rowHtml(item: RankedView, i: number): string {
   const slash =
     item.name && item.kind !== 'ai'
@@ -230,7 +232,7 @@ function rowHtml(item: RankedView, i: number): string {
   return `<div class="row${i === active ? ' active' : ''}" id="opt-${i}" data-i="${i}" data-provider="${esc(item.providerId)}" role="option" aria-selected="${i === active}">
     <div class="tile">${icon(item.icon, 'duotone')}</div>
     <div class="text">
-      <div class="title"><span class="label">${highlight(item.title, item.highlights)}</span>${slash}</div>
+      <div class="title"><span class="label">${highlight(item.title, item.highlights)}</span>${item.verified ? VERIFIED : ''}${slash}</div>
       ${desc ? `<div class="desc">${desc}</div>` : ''}
     </div>
     <div class="meta">
