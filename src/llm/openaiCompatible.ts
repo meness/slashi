@@ -4,9 +4,14 @@ import { AiNotConfiguredError, toAbortSignal, type Backend, type BackendId, type
 
 export const OLLAMA_DEFAULT_URL = 'http://localhost:11434/v1';
 export const OPENAI_URL = 'https://api.openai.com/v1';
+/** Used when no model is set (documented in the `slashi.ai.model` setting). */
+export const OPENAI_DEFAULT_MODEL = 'gpt-4o-mini';
 
 /** OpenAI Chat Completions over fetch: OpenAI, Ollama, LM Studio, Groq, OpenRouter, vLLM… */
 export class OpenAiCompatibleBackend implements Backend {
+  /** The default model per base URL, so requests don't list models every time. */
+  private defaultFor?: { base: string; model: string };
+
   constructor(
     readonly id: Extract<BackendId, 'openai' | 'ollama' | 'openaiCompatible'>,
     private readonly baseUrl: () => string,
@@ -43,10 +48,17 @@ export class OpenAiCompatibleBackend implements Backend {
 
   /** Picks a sensible chat model when none is configured. */
   async defaultModel(): Promise<string> {
+    if (this.id === 'openai') return OPENAI_DEFAULT_MODEL;
+    const base = this.baseUrl();
+    if (this.defaultFor?.base === base) return this.defaultFor.model;
     const models = (await this.listModels()).map((m) => m.id);
-    if (!models.length) throw new AiNotConfiguredError(`No models found at ${this.baseUrl()}. Is the server running?`);
+    if (!models.length) throw new AiNotConfiguredError(`No models found at ${base}. Is the server running?`);
     const chat = models.filter((m) => !/embed|whisper|tts|dall-e|image|audio|moderation|realtime|transcribe/i.test(m));
-    return chat.find((m) => /mini/i.test(m)) ?? chat[0] ?? models[0];
+    // Sorted so the pick doesn't depend on the order the server lists models in.
+    const sorted = [...chat].sort();
+    const model = sorted.find((m) => /mini/i.test(m)) ?? sorted[0] ?? models[0];
+    this.defaultFor = { base, model };
+    return model;
   }
 
   async stream(model: string, request: ChatRequest, onText: (text: string) => void, token: vscode.CancellationToken): Promise<string> {
@@ -58,11 +70,16 @@ export class OpenAiCompatibleBackend implements Backend {
       body: JSON.stringify({
         model: id,
         stream: true,
-        max_tokens: request.maxTokens ?? 4096,
+        // OpenAI's reasoning models reject max_tokens and count their hidden reasoning in max_completion_tokens, so a
+        // small cap (/shell asks for 400) could leave no room for the answer. Local servers still expect max_tokens.
+        ...(this.id === 'openai'
+          ? { max_completion_tokens: Math.max(request.maxTokens ?? 4096, 4096) }
+          : { max_tokens: request.maxTokens ?? 4096 }),
         messages: [{ role: 'system', content: request.system }, ...request.messages],
       }),
     });
     if (!res.ok || !res.body) {
+      if (!model) this.defaultFor = undefined;
       const detail = await res.text().catch(() => '');
       throw new Error(`${res.status} ${res.statusText}${detail ? `: ${detail.slice(0, 300)}` : ''}`);
     }
