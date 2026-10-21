@@ -1,3 +1,9 @@
 {
-  "recommendations": ["connor4312.esbuild-problem-matchers", "vitest.explorer", "oxc.oxc-vscode", "esbenp.prettier-vscode"]
+  "recommendations": [
+    "connor4312.esbuild-problem-matchers",
+    "vitest.explorer",
+    "oxc.oxc-vscode",
+    "esbenp.prettier-vscode",
+    "editorconfig.editorconfig"
+  ]
 }
