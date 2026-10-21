@@ -294,7 +294,7 @@ Open the folder and press **F5** (*Run Slashi*) to start an Extension Developmen
 | `npm run marketplace` | Validates packs and regenerates `marketplace/index.json` |
 | `npm run package` | Builds `slashi-<version>.vsix` |
 
-Releases are automated: merging the release PR publishes to the VS Code Marketplace and Open VSX and attaches the `.vsix` to the GitHub release. See [CONTRIBUTING.md](CONTRIBUTING.md) and the [design plan & audit](docs/PLAN.md).
+Releases are automated: merging the release PR publishes to the VS Code Marketplace and Open VSX and attaches the `.vsix` to the GitHub release. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Support Slashi
 

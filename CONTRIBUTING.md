@@ -34,7 +34,7 @@ test/
   e2e/                user scenarios in a real VS Code on a throwaway Git repo (npm run test:e2e)
 marketplace/          community action packs + generated index.json
 schemas/              JSON schema for commands, team files and packs
-docs/                 plan & audit, building actions
+docs/                 building actions, packs and the extension API
 ```
 
 ## Guidelines
