@@ -89,6 +89,10 @@ const THEMES = {
   },
 };
 
+// JSON for an inline <script>: escaped so a string such as `</script>` in captured data can't end the script early.
+const SCRIPT_ESCAPES = { '<': '\\u003c', '>': '\\u003e', '/': '\\u002f', '\u2028': '\\u2028', '\u2029': '\\u2029' };
+const scriptJson = (value) => JSON.stringify(value).replace(/[<>/\u2028\u2029]/g, (c) => SCRIPT_ESCAPES[c]);
+
 const asset = (p) => pathToFileURL(join(root, 'dist', 'webview', p)).href;
 
 function page({ theme, script, styles, host }) {
@@ -120,7 +124,7 @@ const spotlightInit = {
 };
 
 const spotlightHost = (data) => `(m, send) => {
-  const data = ${JSON.stringify(data)};
+  const data = ${scriptJson(data)};
   if (m.type === 'ready') setTimeout(() => send({ type: 'init', data }), 0);
   if (m.type === 'query') setTimeout(() => send({ type: 'live', seq: m.seq, items: data.live[m.query] || [] }), 0);
 }`;
@@ -183,7 +187,7 @@ const answerHost = `(m, send) => {
   if (m.type !== 'ready') return;
   send({ type: 'start', title: 'Explain', prompt: 'Explain src/core/search.ts', mode: 'answer', target: 'src/core/search.ts' });
   send({ type: 'model', label: 'Claude · claude-opus-5-5' });
-  const text = ${JSON.stringify(`**\`rank()\`** scores every item against each word you type and keeps the best matches.
+  const text = ${scriptJson(`**\`rank()\`** scores every item against each word you type and keeps the best matches.
 
 1. **Exact slash names win** — typing \`/run npm test\` matches the \`run\` item and passes \`npm test\` as arguments.
 2. **Fuzzy matching** prefers contiguous letters and word starts, so \`fs\` finds *Font Size*.
@@ -205,7 +209,7 @@ for (const theme of ['dark', 'light', 'hc']) {
 }
 
 const studioHost = (state, tab) =>
-  `(m, send) => { if (m.type === 'ready') send({ type: 'state', tab: '${tab}', state: ${JSON.stringify(state)} }); }`;
+  `(m, send) => { if (m.type === 'ready') send({ type: 'state', tab: ${scriptJson(tab)}, state: ${scriptJson(state)} }); }`;
 const studioState = {
   ...studio,
   ai: {
@@ -263,7 +267,7 @@ const onboardingState = {
 };
 const onboardingHost = (stepIndex, pressed = false) => `(m, send) => {
   if (m.type !== 'ready') return;
-  send({ type: 'state', state: ${JSON.stringify(onboardingState)} });
+  send({ type: 'state', state: ${scriptJson(onboardingState)} });
   setTimeout(() => {
     for (let i = 0; i < ${stepIndex}; i++) document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
     ${pressed ? "send({ type: 'shortcutPressed' });" : ''}
