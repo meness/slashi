@@ -2,6 +2,43 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.4.0](https://github.com/meness/slashi/compare/v0.3.0...v0.4.0) (2026-10-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* audit fixes, script arguments, /again, /review-changes and e2e tests ([#21](https://github.com/meness/slashi/issues/21))
+* **config:** never copy workspace settings into user settings
+* **custom:** slashi.customCommands set in workspace settings are now team commands: they ask before running steps that can reach a shell, and they no longer hide your user-settings commands.
+* **web:** keep web search engines in user settings
+* **custom:** slashi.web.engines is machine-scoped, so engines defined in workspace settings are ignored. Move them to user settings.
+
+### Features
+
+* add /again to repeat the last command ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **ai:** add /review-changes ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* audit fixes, script arguments, /again, /review-changes and e2e tests ([#21](https://github.com/meness/slashi/issues/21)) ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **project:** pass extra arguments to package scripts ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+
+
+### Bug Fixes
+
+* act on the active editor, falling back to the one the popup opened over ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **ai:** send max_completion_tokens to OpenAI and refresh the model label ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **config:** never copy workspace settings into user settings ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **custom:** apply the languages filter when searching ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **custom:** read team files as JSONC and keep their comments ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **files:** respect .gitignore and the current workspace folder ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **git:** ask before committing all changes when nothing is staged ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* run what the popup ranks first when slash names collide ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **ui:** stop allowing remote images in webviews ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+* **web:** keep web search engines in user settings ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+
+
+### Performance
+
+* **ai:** load the Anthropic SDK on first use ([2494c55](https://github.com/meness/slashi/commit/2494c5571cfe1bf3319a3bde7ef956c35da4ef56))
+
 ## [0.3.0](https://github.com/meness/slashi/compare/v0.2.0...v0.3.0) (2026-10-20)
 
 
