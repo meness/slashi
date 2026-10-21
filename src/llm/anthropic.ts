@@ -1,4 +1,4 @@
-import Anthropic from '@anthropic-ai/sdk';
+import type Anthropic from '@anthropic-ai/sdk';
 import type * as vscode from 'vscode';
 import { AiNotConfiguredError, toAbortSignal, type Backend, type ChatRequest, type ModelInfo } from './types';
 
@@ -25,7 +25,8 @@ export class AnthropicBackend implements Backend {
   private async client(): Promise<Anthropic> {
     const key = await this.apiKey();
     if (!key) throw new AiNotConfiguredError('Set your Anthropic API key with “Slashi: Set AI API Key”.');
-    return new Anthropic({ apiKey: key });
+    const { default: Sdk } = await import('./anthropic-sdk.js');
+    return new Sdk({ apiKey: key });
   }
 
   async listModels(): Promise<ModelInfo[]> {

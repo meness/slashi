@@ -13,6 +13,14 @@ const shared = {
   legalComments: 'none',
 };
 
+// Keeps `import('./anthropic-sdk.js')` a runtime require of dist/anthropic-sdk.js instead of inlining the SDK.
+const lazySdk = {
+  name: 'lazy-anthropic-sdk',
+  setup(build) {
+    build.onResolve({ filter: /^\.\/anthropic-sdk\.js$/ }, (args) => ({ path: args.path, external: true }));
+  },
+};
+
 const configs = [
   {
     ...shared,
@@ -22,6 +30,19 @@ const configs = [
     format: 'cjs',
     target: 'node20',
     external: ['vscode'],
+    plugins: [lazySdk],
+    // Its UMD `main` loads files with a require() esbuild can't follow; the ESM build bundles cleanly.
+    alias: { 'jsonc-parser': './node_modules/jsonc-parser/lib/esm/main.js' },
+    // As require() so `default` is the SDK class (Node's import() of a CommonJS file wraps module.exports instead).
+    supported: { 'dynamic-import': false },
+  },
+  {
+    ...shared,
+    entryPoints: ['src/llm/anthropic-sdk.ts'],
+    outfile: 'dist/anthropic-sdk.js',
+    platform: 'node',
+    format: 'cjs',
+    target: 'node20',
   },
   {
     ...shared,

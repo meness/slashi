@@ -1,5 +1,6 @@
 **
 !dist/extension.js
+!dist/anthropic-sdk.js
 !dist/webview/*.js
 !dist/webview/*.css
 !dist/webview/phosphor/**
