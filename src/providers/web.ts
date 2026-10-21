@@ -19,6 +19,14 @@ const ENGINES: { name: string; title: string; icon: string; url: string }[] = [
   { name: 'youtube', title: 'Search YouTube', icon: 'youtube-logo', url: 'https://www.youtube.com/results?search_query=%s' },
 ];
 
+function isWebUrl(url: unknown): url is string {
+  try {
+    return typeof url === 'string' && /^https?:$/.test(new URL(url.replace('%s', '')).protocol);
+  } catch {
+    return false;
+  }
+}
+
 /** Opens web searches for the typed text or the current selection. */
 export class WebProvider implements SlashProvider {
   readonly id = 'web' as const;
@@ -37,14 +45,15 @@ export class WebProvider implements SlashProvider {
   ];
 
   items(): SlashItem[] {
-    const custom = Object.entries(get<Record<string, string>>('web.engines', {})).map(([name, url]) => ({
-      name,
-      title: `Search ${name}`,
-      icon: 'globe',
-      url,
-      custom: true,
-    }));
-    const engines = [...(isFeatureEnabled('web', 'builtin') ? ENGINES : []), ...(isFeatureEnabled('web', 'custom') ? custom : [])];
+    // Slash names are matched lower-case; an engine without an http(s) URL is skipped instead of breaking the provider.
+    const custom = Object.entries(get<Record<string, string>>('web.engines', {}))
+      .map(([key, url]) => [key.trim().toLowerCase(), url] as const)
+      .filter(([name, url]) => name && !/\s/.test(name) && isWebUrl(url))
+      .map(([name, url]) => ({ name, title: `Search ${name}`, icon: 'globe', url, custom: true }));
+    const enabledCustom = isFeatureEnabled('web', 'custom') ? custom : [];
+    // One item per name: your engine replaces a built-in one of the same name.
+    const builtin = isFeatureEnabled('web', 'builtin') ? ENGINES.filter((e) => !enabledCustom.some((c) => c.name === e.name)) : [];
+    const engines = [...builtin, ...enabledCustom];
     return engines.map((engine) =>
       make({
         id: `web:${engine.name}`,

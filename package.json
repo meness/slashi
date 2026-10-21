@@ -352,11 +352,12 @@
           },
           "slashi.web.engines": {
             "type": "object",
+            "scope": "machine",
             "additionalProperties": {
               "type": "string"
             },
             "default": {},
-            "markdownDescription": "Extra web search engines. Key = slash name, value = URL with `%s` for the query. Example: `{ \"rust\": \"https://docs.rs/releases/search?query=%s\" }`."
+            "markdownDescription": "Extra web search engines. Key = slash name, value = an `https://` (or `http://`) URL with `%s` for the query. Example: `{ \"rust\": \"https://docs.rs/releases/search?query=%s\" }`. An engine with a built-in name replaces it. User settings only: a repository can't change where your searches go."
           },
           "slashi.marketplace.registries": {
             "type": "array",

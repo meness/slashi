@@ -244,7 +244,7 @@ Scoped entry points such as `slashi.openFiles`, `slashi.openGit`, `slashi.openPr
 | `slashi.marketplace.registries` | this repo | Registry index URLs (HTTPS) |
 | `slashi.files.maxIndexed` | `20000` | File index size |
 
-The AI backend, model, URL, effort, custom instructions, plan confirmation and registry settings are machine-scoped: only your user settings can change them, never a repository’s workspace settings. Search **@ext:meness.slashi** in Settings for the rest.
+The AI backend, model, URL, effort, custom instructions, plan confirmation, web search engines and registry settings are machine-scoped: only your user settings can change them, never a repository’s workspace settings. Search **@ext:meness.slashi** in Settings for the rest.
 
 ## Privacy & security
 
