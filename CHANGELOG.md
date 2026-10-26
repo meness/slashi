@@ -2,6 +2,13 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.9.0](https://github.com/meness/slashi/compare/v0.8.0...v0.9.0) (2026-10-26)
+
+
+### Features
+
+* **terminal:** run launch.json debug configurations by name ([#43](https://github.com/meness/slashi/issues/43)) ([483a827](https://github.com/meness/slashi/commit/483a82710254f6f409bc7fb5de6dbfb64c64d804))
+
 ## [0.8.0](https://github.com/meness/slashi/compare/v0.7.0...v0.8.0) (2026-10-26)
 
 
