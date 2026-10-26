@@ -6,7 +6,7 @@ const path = require('node:path');
 
 const root = process.env.SLASHI_SMOKE_ROOT || process.cwd();
 const pkg = JSON.parse(fs.readFileSync(path.join(__dirname, '../../package.json'), 'utf8'));
-const calls = { commands: [], terminals: [], messages: [], posted: [], panels: [] };
+const calls = { commands: [], terminals: [], messages: [], posted: [], panels: [], debugs: [] };
 const settings = {};
 // Values from .vscode/settings.json; they win over user settings, like in VS Code.
 const workspaceSettings = {};
@@ -428,6 +428,7 @@ const vscode = {
   },
   lm: { selectChatModels: async () => [], onDidChangeChatModels: event() },
   tasks: { fetchTasks: async () => [], executeTask: async () => undefined },
+  debug: { startDebugging: async (folder, name) => void calls.debugs.push({ folder: folder?.name, name }) },
   _calls: calls,
   _settings: settings,
 };

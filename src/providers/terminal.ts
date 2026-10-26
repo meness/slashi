@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import { isFeatureEnabled } from '../config';
+import { parseLaunchConfigs } from '../core/debugConfigs';
 import type { Services } from '../services/services';
 import type { SlashItem, SlashProvider } from '../types';
 import { ensureArgs, itemFactory } from './util';
@@ -18,6 +19,7 @@ export class TerminalProvider implements SlashProvider {
   readonly features = [
     { id: 'run', title: 'Run commands', description: '/run <command> in a reusable terminal.' },
     { id: 'tasks', title: 'VS Code tasks', description: 'Tasks from tasks.json and task providers.' },
+    { id: 'debug', title: 'Debug configurations', description: 'Named configurations and compounds from launch.json.' },
     { id: 'manage', title: 'Manage terminals', description: 'New, split, kill, clear, focus, maximize.' },
   ];
 
@@ -112,6 +114,26 @@ export class TerminalProvider implements SlashProvider {
             run: () => vscode.tasks.executeTask(task),
           }),
         );
+      }
+    }
+    if (isFeatureEnabled('terminal', 'debug')) {
+      const folders = vscode.workspace.workspaceFolders ?? [];
+      for (const folder of folders) {
+        const launch = vscode.workspace.getConfiguration('launch', folder.uri);
+        for (const { name, detail } of parseLaunchConfigs(launch.get('configurations'), launch.get('compounds'))) {
+          items.push(
+            make({
+              id: `debug:${folder.index}:${name}`,
+              title: `Debug: ${name}`,
+              description: [detail, folders.length > 1 ? folder.name : ''].filter(Boolean).join(' · '),
+              icon: 'bug',
+              category: 'Debug',
+              feature: 'debug',
+              keywords: ['debug', 'launch', 'start'],
+              run: () => vscode.debug.startDebugging(folder, name),
+            }),
+          );
+        }
       }
     }
     return items;

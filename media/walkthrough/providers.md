@@ -13,6 +13,6 @@ Each provider adds a family of slash commands. Turn whole providers — or singl
 | AI | `/ai` | `/ask`, `/fix`, `/edit`, `/tests`, `/commit-msg` |
 | Natural language | `/do` | plain-English tasks |
 | Text tools | `/tx` | case, sort, JSON, Base64, UUID… |
-| Terminal | `/term` | `/run`, tasks |
+| Terminal | `/term` | `/run`, tasks, debug configurations |
 | Git | `/git` | commit, push, branches, stash |
 | Themes, Web, My Commands, Marketplace | `/theme`, `/web`, `/my`, `/market` | |

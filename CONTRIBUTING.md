@@ -21,6 +21,7 @@ src/
   executor.ts         runs items, restores the editor, common actions
   core/               pure, unit-tested logic (no vscode import): search, query parsing,
                       project detection, pack and command validation, the webview protocol
+  data/               built-in command, setting and help-link catalogs
   providers/          one file per provider (extension.ts wraps providers from the API)
   llm/                AI backends: VS Code LM, Anthropic SDK, OpenAI-compatible, Claude Code/Codex CLIs
   services/           history, terminal, editor snapshot, packs, macro runner
