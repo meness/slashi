@@ -228,6 +228,8 @@ export function activate(context: vscode.ExtensionContext): SlashiApi {
     services.ai.onDidChange(() => void updateStatus()),
     vscode.workspace.onDidChangeConfiguration((e) => {
       if (e.affectsConfiguration('slashi.statusBar')) void updateStatus();
+      // launch.json edits arrive as changes to the `launch` section; the debug results are cached with the provider.
+      if (e.affectsConfiguration('launch')) registry.invalidate('terminal');
       if (
         e.affectsConfiguration('slashi.disabledFeatures') ||
         e.affectsConfiguration('slashi.providers') ||

@@ -190,7 +190,21 @@ const check = (name, fn) => {
   });
   panel.webview._receive({ type: 'run', id: debugItem.id, args: '' });
   await waitFor(() => calls.debugs.length, 'debug start');
-  check('starts a debug configuration by name', () => assert.deepEqual(calls.debugs[0].name, 'Server'));
+  check('starts a debug configuration by name', () => assert.equal(calls.debugs[0].name, 'Server'));
+
+  // Editing launch.json refreshes the cached debug results.
+  for (const open of calls.panels.filter((x) => x.viewType === 'slashi.spotlight' && !x.disposed)) open.dispose();
+  await mock.workspace.getConfiguration('launch').update('configurations', [{ name: 'Worker', type: 'node', request: 'attach' }]);
+  const launchInits = calls.posted.filter((m) => m.type === 'init').length;
+  await mock.commands.executeCommand('slashi.open');
+  calls.panels.at(-1).webview._receive({ type: 'ready' });
+  const launchInit = (await waitFor(() => calls.posted.filter((m) => m.type === 'init')[launchInits], 'init after a launch.json edit'))
+    .data;
+  check('shows launch.json edits without a restart', () => {
+    assert.ok(launchInit.items.some((i) => i.title === 'Debug: Worker'));
+    assert.ok(!launchInit.items.some((i) => i.title === 'Debug: Server'));
+  });
+  for (const open of calls.panels.filter((x) => x.viewType === 'slashi.spotlight' && !x.disposed)) open.dispose();
 
   // Slash commands with arguments, through the API.
   assert.equal(await api.run('/run echo hi'), true);

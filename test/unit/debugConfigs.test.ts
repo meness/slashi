@@ -34,4 +34,8 @@ describe('parseLaunchConfigs', () => {
       { name: 'Solo', detail: 'compound · 1 configuration' },
     ]);
   });
+
+  it('keeps the exact name, since the debugger matches it verbatim', () => {
+    expect(parseLaunchConfigs([{ name: ' Padded ' }], undefined)).toEqual([{ name: ' Padded ', detail: '' }]);
+  });
 });

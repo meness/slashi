@@ -11,7 +11,8 @@ export function parseLaunchConfigs(configurations: unknown, compounds: unknown):
   const seen = new Set<string>();
   const out: DebugEntry[] = [];
   const add = (raw: unknown, detail: string) => {
-    const name = typeof raw === 'string' ? raw.trim() : '';
+    // The debugger matches names verbatim, so keep them untrimmed; only blank ones are dropped.
+    const name = typeof raw === 'string' && raw.trim() ? raw : '';
     if (!name || seen.has(name)) return;
     seen.add(name);
     out.push({ name, detail });
