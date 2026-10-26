@@ -266,6 +266,20 @@ function render(): void {
   results.innerHTML = html;
   input.setAttribute('aria-activedescendant', selectable.length ? `opt-${active}` : '');
   renderMenu();
+  syncTabHint();
+}
+
+/** What Tab inserts for a row: its scope or slash name, or nothing (AI rows, unnamed items). */
+function completion(item: RankedView | undefined): string | undefined {
+  if (!item) return undefined;
+  if (item.kind === 'scope' && item.scopePrefix) return `/${item.scopePrefix} `;
+  if (item.name && item.kind !== 'ai') return `/${item.name}${item.args ? ' ' : ''}`;
+  return undefined;
+}
+
+/** The footer's Tab hint follows the selection. */
+function syncTabHint(): void {
+  footer.classList.toggle('no-complete', completion(selectable[active]) === undefined);
 }
 
 function setActive(next: number, scroll = true): void {
@@ -278,14 +292,14 @@ function setActive(next: number, scroll = true): void {
   el?.classList.add('active');
   el?.setAttribute('aria-selected', 'true');
   input.setAttribute('aria-activedescendant', `opt-${active}`);
+  syncTabHint();
   if (scroll) el?.scrollIntoView({ block: 'nearest' });
 }
 
 function complete(item: RankedView | undefined): boolean {
-  if (!item) return false;
-  if (item.kind === 'scope' && item.scopePrefix) input.value = `/${item.scopePrefix} `;
-  else if (item.name && item.kind !== 'ai') input.value = `/${item.name}${item.args ? ' ' : ''}`;
-  else return false;
+  const text = completion(item);
+  if (text === undefined) return false;
+  input.value = text;
   update();
   return true;
 }
@@ -351,7 +365,7 @@ function renderFooter(): void {
     ${data.aiEnabled ? `<span class="ai" title="AI model">${icon('sparkle')} ${esc(data.aiLabel || 'AI not set up')}</span>` : ''}
     <span class="hint"><kbd>↵</kbd> Run</span>
     <span class="hint optional"><kbd>⇧</kbd><kbd>↵</kbd> Actions</span>
-    <span class="hint optional"><kbd>Tab</kbd> Complete</span>
+    <span class="hint optional tab"><kbd>Tab</kbd> Complete</span>
     <span class="hint"><kbd>Esc</kbd> Close</span>`;
 }
 
