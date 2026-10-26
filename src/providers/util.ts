@@ -50,3 +50,8 @@ export function formatValue(value: unknown): string {
   if (typeof value === 'number') return String(value);
   return truncate(JSON.stringify(value), 28);
 }
+
+/** `vscode.open` picks the right editor (image viewer, notebook…); showTextDocument fails on binary files. */
+export function openAny(uri: vscode.Uri, viewColumn?: vscode.ViewColumn): Thenable<unknown> {
+  return vscode.commands.executeCommand('vscode.open', uri, { preview: false, viewColumn });
+}
