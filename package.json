@@ -512,6 +512,7 @@
                 "transforms.stats",
                 "terminal.run",
                 "terminal.tasks",
+                "terminal.debug",
                 "terminal.manage",
                 "git.core",
                 "git.branches",
