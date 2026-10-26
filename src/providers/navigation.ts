@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { isFeatureEnabled } from '../config';
 import type { Services } from '../services/services';
 import type { SlashItem, SlashProvider } from '../types';
-import { ensureArgs, itemFactory, openAny, truncate } from './util';
+import { ensureArgs, itemFactory, truncate } from './util';
 
 const make = itemFactory('navigation', 'Navigate');
 
@@ -109,7 +109,7 @@ export class NavigationProvider implements SlashProvider {
               if (ctx.action === 'close') {
                 await vscode.window.tabGroups.close(tab);
               } else if (uri) {
-                await openAny(uri, group.viewColumn);
+                await vscode.window.showTextDocument(uri, { viewColumn: group.viewColumn, preview: false });
                 if (ctx.action === 'pin')
                   await vscode.commands.executeCommand(tab.isPinned ? 'workbench.action.unpinEditor' : 'workbench.action.pinEditor');
               } else {
