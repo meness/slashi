@@ -194,6 +194,13 @@ kbd {
   line-height: 1;
 }
 
+/* Phosphor has no plain slash glyph; Slashi's own scope uses a text "/". */
+.ph-slash::before {
+  content: '/';
+  font-family: var(--mono);
+  font-weight: 700;
+}
+
 .tile {
   display: grid;
   place-items: center;

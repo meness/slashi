@@ -6,7 +6,7 @@ import type { Services } from '../services/services';
 import { gitignoreGlobs } from '../core/paths';
 import { currentDocument } from '../services/editor';
 import type { RunContext, SlashItem, SlashProvider } from '../types';
-import { ensureArgs, itemFactory } from './util';
+import { ensureArgs, itemFactory, openAny } from './util';
 
 const make = itemFactory('files', 'Files');
 
@@ -245,10 +245,10 @@ export class FilesProvider implements SlashProvider {
     switch (ctx.action) {
       case undefined:
       case 'open':
-        await vscode.window.showTextDocument(uri, { preview: false });
+        await openAny(uri);
         return;
       case 'openSide':
-        await vscode.window.showTextDocument(uri, { viewColumn: vscode.ViewColumn.Beside, preview: false });
+        await openAny(uri, vscode.ViewColumn.Beside);
         return;
       case 'duplicate':
         await duplicate(uri, ctx.args);
@@ -545,7 +545,7 @@ async function duplicate(uri: vscode.Uri, args: string): Promise<void> {
   if (!name) return;
   const target = vscode.Uri.joinPath(uri, '..', name);
   await vscode.workspace.fs.copy(uri, target, { overwrite: false });
-  await vscode.window.showTextDocument(target, { preview: false });
+  await openAny(target);
 }
 
 async function remove(uri: vscode.Uri): Promise<void> {

@@ -154,7 +154,7 @@ async function runStep(
       const uri = vscode.Uri.file(
         path.isAbsolute(value) ? value : path.join(workspaceRoot(ctx.services.snapshot?.document.uri) ?? '', value),
       );
-      await vscode.window.showTextDocument(uri);
+      await vscode.commands.executeCommand('vscode.open', uri);
     }
   } else if ('ai' in step) {
     const output = step.output ?? 'panel';
