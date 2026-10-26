@@ -2,6 +2,13 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.9.1](https://github.com/meness/slashi/compare/v0.9.0...v0.9.1) (2026-10-26)
+
+
+### Bug Fixes
+
+* **deps:** bump serialize-javascript to 7.1.4 ([#45](https://github.com/meness/slashi/issues/45)) ([09651b8](https://github.com/meness/slashi/commit/09651b83373c95374b0f74345afa35ded0f85273))
+
 ## [0.9.0](https://github.com/meness/slashi/compare/v0.8.0...v0.9.0) (2026-10-26)
 
 
