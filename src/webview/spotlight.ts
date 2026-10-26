@@ -269,10 +269,17 @@ function render(): void {
   syncTabHint();
 }
 
-/** Tab only does something on rows with a slash name (or a scope), so the footer hint follows the selection. */
+/** What Tab inserts for a row: its scope or slash name, or nothing (AI rows, unnamed items). */
+function completion(item: RankedView | undefined): string | undefined {
+  if (!item) return undefined;
+  if (item.kind === 'scope' && item.scopePrefix) return `/${item.scopePrefix} `;
+  if (item.name && item.kind !== 'ai') return `/${item.name}${item.args ? ' ' : ''}`;
+  return undefined;
+}
+
+/** The footer's Tab hint follows the selection. */
 function syncTabHint(): void {
-  const item = selectable[active];
-  footer.classList.toggle('no-complete', !(item && (item.kind === 'scope' ? item.scopePrefix : item.name && item.kind !== 'ai')));
+  footer.classList.toggle('no-complete', completion(selectable[active]) === undefined);
 }
 
 function setActive(next: number, scroll = true): void {
@@ -290,10 +297,9 @@ function setActive(next: number, scroll = true): void {
 }
 
 function complete(item: RankedView | undefined): boolean {
-  if (!item) return false;
-  if (item.kind === 'scope' && item.scopePrefix) input.value = `/${item.scopePrefix} `;
-  else if (item.name && item.kind !== 'ai') input.value = `/${item.name}${item.args ? ' ' : ''}`;
-  else return false;
+  const text = completion(item);
+  if (text === undefined) return false;
+  input.value = text;
   update();
   return true;
 }
