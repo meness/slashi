@@ -266,6 +266,13 @@ function render(): void {
   results.innerHTML = html;
   input.setAttribute('aria-activedescendant', selectable.length ? `opt-${active}` : '');
   renderMenu();
+  syncTabHint();
+}
+
+/** Tab only does something on rows with a slash name (or a scope), so the footer hint follows the selection. */
+function syncTabHint(): void {
+  const item = selectable[active];
+  footer.classList.toggle('no-complete', !(item && (item.kind === 'scope' ? item.scopePrefix : item.name && item.kind !== 'ai')));
 }
 
 function setActive(next: number, scroll = true): void {
@@ -278,6 +285,7 @@ function setActive(next: number, scroll = true): void {
   el?.classList.add('active');
   el?.setAttribute('aria-selected', 'true');
   input.setAttribute('aria-activedescendant', `opt-${active}`);
+  syncTabHint();
   if (scroll) el?.scrollIntoView({ block: 'nearest' });
 }
 
@@ -351,7 +359,7 @@ function renderFooter(): void {
     ${data.aiEnabled ? `<span class="ai" title="AI model">${icon('sparkle')} ${esc(data.aiLabel || 'AI not set up')}</span>` : ''}
     <span class="hint"><kbd>↵</kbd> Run</span>
     <span class="hint optional"><kbd>⇧</kbd><kbd>↵</kbd> Actions</span>
-    <span class="hint optional"><kbd>Tab</kbd> Complete</span>
+    <span class="hint optional tab"><kbd>Tab</kbd> Complete</span>
     <span class="hint"><kbd>Esc</kbd> Close</span>`;
 }
 

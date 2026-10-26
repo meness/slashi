@@ -357,6 +357,10 @@ body.vscode-high-contrast-light .row.active {
   color: var(--ai);
 }
 
+/* Hidden when the selected row has nothing to complete. */
+.footer.no-complete .hint.tab {
+  display: none;
+}
 @media (max-width: 620px) {
   .footer .hint.optional {
     display: none;
