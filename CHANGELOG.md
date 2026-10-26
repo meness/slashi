@@ -2,6 +2,18 @@
 
 All notable changes to Slashi are documented here. The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and this project follows [Semantic Versioning](https://semver.org/).
 
+## [0.8.0](https://github.com/meness/slashi/compare/v0.7.0...v0.8.0) (2026-10-26)
+
+
+### Features
+
+* **spotlight:** hide the Tab hint when the selected row can't complete ([#42](https://github.com/meness/slashi/issues/42)) ([bbd401f](https://github.com/meness/slashi/commit/bbd401f37631e6f601042802d4ec8ca71e8ba5e6))
+
+
+### Bug Fixes
+
+* open binary files and show the Slashi scope icon ([#40](https://github.com/meness/slashi/issues/40)) ([017d57a](https://github.com/meness/slashi/commit/017d57a7b97837bb6f64c2b6110267c476a812ba))
+
 ## [0.7.0](https://github.com/meness/slashi/compare/v0.6.1...v0.7.0) (2026-10-21)
 
 
